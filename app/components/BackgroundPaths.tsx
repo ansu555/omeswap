@@ -51,11 +51,11 @@ export default function BackgroundPaths() {
       data-background-paths
       className="fixed inset-0 -z-10 overflow-hidden pointer-events-none"
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-white via-white/40 to-white/20 dark:from-neutral-950 dark:via-neutral-900/80 dark:to-neutral-800/60" />
       <div className="absolute inset-0">
         <FloatingPaths position={1} />
         <FloatingPaths position={-1} />
       </div>
+      <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-transparent dark:from-neutral-950/5 dark:via-neutral-900/5 dark:to-neutral-800/5" />
     </div>
   )
 }
