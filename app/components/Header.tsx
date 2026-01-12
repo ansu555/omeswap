@@ -6,21 +6,17 @@ import { Logo } from "./logo";
 import PillNav, { PillNavItem } from "./ui/pill-nav";
 
 export const Header = () => {
-  
+
   const navItems: PillNavItem[] = [
-    { label: "Home", href: "/" },
     { label: "Trade", href: "/trade" },
-    { label: "Launchpad", href: "/launchpad" },
     { label: "Portfolio", href: "/portfolio" },
-    { label: "Developers", href: "/developers" },
     { label: "Tokens", href: "/cryptocurrencies" },
-    { label: "Pool", href: "/pool" },
     { label: "Txns", href: "/transactions" },
   ];
 
   return (
     <header className="z-50 relative">
-      <PillNav 
+      <PillNav
         items={navItems}
         LogoComponent={<Logo />}
         initialLoadAnimation={true}
