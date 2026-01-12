@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Header } from "./components/Header";
 import BackgroundPaths from "./components/BackgroundPaths";
 import { MantleWalletProvider } from "@/components/providers/mantle-wallet-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,13 +16,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
-        <MantleWalletProvider>
-          <BackgroundPaths />
-          <Header />
-          {children}
-        </MantleWalletProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <MantleWalletProvider>
+            <BackgroundPaths />
+            <Header />
+            {children}
+          </MantleWalletProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

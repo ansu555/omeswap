@@ -170,7 +170,7 @@ export default function Index() {
   }, [selectedTokenIds]);
 
   return (
-    <div className="min-h-screen bg-background pt-24">
+    <div className="min-h-screen pt-24">
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 space-y-8">
         {/* Top Row - Net Worth & Agent Wallet */}
