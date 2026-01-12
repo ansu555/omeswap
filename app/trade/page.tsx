@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Header } from "@/app/components/Header";
 import { SwapCard } from "@/components/Trade/SwapCard";
 import { PoolLiquidity } from "@/components/Trade/PoolLiquidity";
 import { TokenMiniChart } from "@/components/Trade/TokenMiniChart";
