@@ -33,7 +33,7 @@ export default function Index() {
             {/* Header is handled by layout.tsx */}
 
             <main className="container mx-auto px-4 py-8 pt-32">
-                <div className="flex flex-col lg:flex-row gap-6">
+                <div className="flex flex-col lg:flex-row gap-6 justify-center">
                     {/* Left Column - Pool Liquidity (collapsible on mobile) */}
                     <div className="hidden lg:block lg:flex-1 lg:max-w-md">
                         {showChart && (

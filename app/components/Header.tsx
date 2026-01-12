@@ -11,7 +11,7 @@ export const Header = () => {
     { label: "Explore", href: "/Explore" },
     { label: "Trade", href: "/trade" },
     { label: "Portfolio", href: "/portfolio" },
-    { label: "Tokens", href: "/cryptocurrencies" },
+    // { label: "Tokens", href: "/cryptocurrencies" },
     { label: "Txns", href: "/transactions" },
 
   ];

@@ -16,7 +16,7 @@ export function PoolLiquidity({
   const usdcPercent = (usdcReserve / total) * 100;
 
   return (
-    <div className="bg-card rounded-2xl border border-border p-6">
+    <div className="glass-card rounded-2xl border border-border p-6">
       <div className="mb-1">
         <h3 className="text-destructive font-semibold">Pool Liquidity</h3>
         <p className="text-sm text-muted-foreground">TINYMAN</p>

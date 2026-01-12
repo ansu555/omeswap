@@ -107,11 +107,11 @@
 
 @layer components {
   .swap-card {
-    @apply bg-card border border-border/50 rounded-3xl shadow-xl overflow-hidden backdrop-blur-sm;
+    @apply glass-card rounded-3xl shadow-xl;
   }
 
   .token-chart-card {
-    @apply bg-card/50 border border-border/50 rounded-xl p-4 hover:border-primary/50 transition-colors;
+    @apply glass-card rounded-xl p-4 hover:border-primary/50 transition-colors;
   }
 
   .mode-tab {
