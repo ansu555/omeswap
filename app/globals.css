@@ -227,4 +227,17 @@
     box-shadow: 0 0 0 2px hsl(var(--primary)),
       0 0 20px hsl(var(--glow-purple));
   }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
 }
