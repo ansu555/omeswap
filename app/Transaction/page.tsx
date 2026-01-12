@@ -3,7 +3,7 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { useState } from "react";
-import { Header } from "../components/Header";
+// Header is in layout.tsx
 import { TransactionAnalytics } from "@/components/transaction/TransactionAnalytics";
 import { TransactionTable } from "@/components/transaction/TransactionTable";
 import { TransactionFilters } from "@/components/transaction/TransactionFilters";
@@ -170,10 +170,9 @@ const TransactionHistory = () => {
 
     return (
         <TooltipProvider>
-            <div className="min-h-screen bg-background">
-                <Header />
+            <div className="min-h-screen bg-transparent relative z-10">
 
-                <main className="container mx-auto px-4 py-8 max-w-7xl">
+                <main className="container mx-auto px-4 py-8 pt-32 max-w-7xl">
                     {/* Page Header */}
                     <div className="flex flex-col gap-6 mb-8 animate-fade-in">
                         <div className="flex items-center gap-4">
