@@ -3,6 +3,7 @@
   "style": "new-york",
   "rsc": true,
   "tsx": true,
+  "iconLibrary": "lucide",
   "tailwind": {
     "config": "tailwind.config.ts",
     "css": "app/globals.css",
@@ -10,11 +11,10 @@
     "cssVariables": true,
     "prefix": ""
   },
-  "iconLibrary": "lucide",
   "aliases": {
     "components": "@/components",
-    "utils": "@/lib/utils",
     "ui": "@/components/ui",
+    "utils": "@/lib/utils",
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
