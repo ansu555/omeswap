@@ -73,7 +73,7 @@ export const TransactionAnalytics = ({
   ];
 
   return (
-    <Card className="mb-6 border-border/50 bg-card/50 backdrop-blur-sm animate-fade-in">
+    <Card className="mb-6 glass-card bg-card/50 animate-fade-in">
       <CardContent className="p-6">
         <div className="flex items-center gap-2 mb-6">
           <TrendingUp className="h-5 w-5 text-primary" />

@@ -79,7 +79,7 @@ export const TransactionTable = ({ transactions }: TransactionTableProps) => {
   }
 
   return (
-    <Card className="border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden animate-fade-in" style={{ animationDelay: "150ms" }}>
+    <Card className="glass-card bg-card/50 overflow-hidden animate-fade-in" style={{ animationDelay: "150ms" }}>
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
