@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { MetricsBar } from "@/components/Explore/MetricsBar";
 import { SummaryCard } from "@/components/Explore/SummaryCard";
 import { ExplorerTabs } from "@/components/Explore/ExplorerTabs";
@@ -11,162 +12,7 @@ import { SearchBar } from "@/components/Explore/SearchBar";
 import { TimeRangeSelect } from "@/components/Explore/TimeRangeSelect";
 import { TableFilters } from "@/components/Explore/TableFilters";
 
-// Mock data generators
-const generateSparklineData = (positive: boolean): number[] => {
-    const data: number[] = [];
-    let value = 50 + Math.random() * 50;
-    for (let i = 0; i < 24; i++) {
-        value += (Math.random() - (positive ? 0.4 : 0.6)) * 10;
-        data.push(Math.max(0, value));
-    }
-    return data;
-};
-
-const mockTokens: TokenRow[] = [
-    {
-        id: "1",
-        rank: 1,
-        name: "Bitcoin",
-        symbol: "BTC",
-        price: 29376.81,
-        change1h: 0.29,
-        change24h: 0.29,
-        change7d: -0.93,
-        marketCap: 570123456789,
-        volume24h: 25123456789,
-        circulatingSupply: 19000000,
-        sparklineData: generateSparklineData(false),
-        isFavorite: true,
-    },
-    {
-        id: "2",
-        rank: 2,
-        name: "Ethereum",
-        symbol: "ETH",
-        price: 1913.84,
-        change1h: -0.07,
-        change24h: -4.19,
-        change7d: 3.42,
-        marketCap: 225987654321,
-        volume24h: 15987654321,
-        circulatingSupply: 120000000,
-        sparklineData: generateSparklineData(true),
-        isFavorite: true,
-    },
-    {
-        id: "3",
-        rank: 3,
-        name: "Tether",
-        symbol: "USDT",
-        price: 0.9998,
-        change1h: 0.00,
-        change24h: 2.25,
-        change7d: 0.93,
-        marketCap: 83456789012,
-        volume24h: 45678901234,
-        circulatingSupply: 83456789012,
-        sparklineData: generateSparklineData(true),
-    },
-    {
-        id: "4",
-        rank: 4,
-        name: "BNB",
-        symbol: "BNB",
-        price: 232.86,
-        change1h: 0.20,
-        change24h: 1.07,
-        change7d: -3.04,
-        marketCap: 37123456789,
-        volume24h: 2123456789,
-        circulatingSupply: 154533345,
-        sparklineData: generateSparklineData(false),
-    },
-    {
-        id: "5",
-        rank: 5,
-        name: "XRP",
-        symbol: "XRP",
-        price: 0.47,
-        change1h: -0.19,
-        change24h: -1.58,
-        change7d: -0.89,
-        marketCap: 24567890123,
-        volume24h: 1567890123,
-        circulatingSupply: 52544091958,
-        sparklineData: generateSparklineData(false),
-    },
-    {
-        id: "6",
-        rank: 6,
-        name: "Cardano",
-        symbol: "ADA",
-        price: 0.31,
-        change1h: 0.37,
-        change24h: 2.90,
-        change7d: -2.56,
-        marketCap: 10987654321,
-        volume24h: 567890123,
-        circulatingSupply: 35401496384,
-        sparklineData: generateSparklineData(false),
-    },
-    {
-        id: "7",
-        rank: 7,
-        name: "Dogecoin",
-        symbol: "DOGE",
-        price: 0.07,
-        change1h: 0.37,
-        change24h: 5.09,
-        change7d: 9.06,
-        marketCap: 9876543210,
-        volume24h: 1234567890,
-        circulatingSupply: 145000000000,
-        sparklineData: generateSparklineData(true),
-    },
-    {
-        id: "8",
-        rank: 8,
-        name: "Solana",
-        symbol: "SOL",
-        price: 141.64,
-        change1h: -0.19,
-        change24h: 0.19,
-        change7d: 4.2,
-        marketCap: 86000000000,
-        volume24h: 181700000,
-        circulatingSupply: 607000000,
-        sparklineData: generateSparklineData(true),
-    },
-    {
-        id: "9",
-        rank: 9,
-        name: "Polygon",
-        symbol: "MATIC",
-        price: 0.58,
-        change1h: -0.31,
-        change24h: -2.10,
-        change7d: -4.20,
-        marketCap: 5678901234,
-        volume24h: 234567890,
-        circulatingSupply: 9800000000,
-        sparklineData: generateSparklineData(false),
-    },
-    {
-        id: "10",
-        rank: 10,
-        name: "Avalanche",
-        symbol: "AVAX",
-        price: 12.45,
-        change1h: 0.52,
-        change24h: 3.20,
-        change7d: 5.80,
-        marketCap: 4567890123,
-        volume24h: 345678901,
-        circulatingSupply: 366000000,
-        sparklineData: generateSparklineData(true),
-    },
-];
-
+// Mock data generators for pools and transactions (keeping these as CMC doesn't provide this data)
 const mockPools: PoolRow[] = [
     {
         id: "1",
@@ -319,11 +165,41 @@ const tokenFilters = [
 ];
 
 export default function Explorer() {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState<"tokens" | "pools" | "transactions">("tokens");
     const [searchQuery, setSearchQuery] = useState("");
     const [timeRange, setTimeRange] = useState("24h");
     const [activeFilter, setActiveFilter] = useState("all");
-    const [tokens, setTokens] = useState(mockTokens);
+    const [tokens, setTokens] = useState<TokenRow[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Fetch cryptocurrency data from our API
+    useEffect(() => {
+        const fetchTokens = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
+
+                const response = await fetch('/api/crypto?limit=100');
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch cryptocurrency data');
+                }
+
+                const data = await response.json();
+                setTokens(data.tokens || []);
+            } catch (err) {
+                console.error('Error fetching tokens:', err);
+                setError(err instanceof Error ? err.message : 'Failed to load data');
+                setTokens([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchTokens();
+    }, []);
 
     const handleToggleFavorite = (id: string) => {
         setTokens((prev) =>
@@ -426,7 +302,8 @@ export default function Explorer() {
                             <TokensTable
                                 tokens={filteredTokens}
                                 onToggleFavorite={handleToggleFavorite}
-                                onRowClick={(token) => console.log("Token clicked:", token)}
+                                onRowClick={(token) => router.push(`/token/${token.id}`)}
+                                isLoading={isLoading}
                             />
                         )}
                         {activeTab === "pools" && (
