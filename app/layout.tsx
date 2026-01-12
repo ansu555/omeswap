@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Header } from "./components/Header";
 import BackgroundPaths from "./components/BackgroundPaths";
+import { MantleWalletProvider } from "@/components/providers/mantle-wallet-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,9 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <BackgroundPaths />
-        <Header />
-        {children}
+        <MantleWalletProvider>
+          <BackgroundPaths />
+          <Header />
+          {children}
+        </MantleWalletProvider>
       </body>
     </html>
   );

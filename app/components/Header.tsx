@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import AlgorandWalletConnect from "@/components/features/algorand/algorand-wallet-connect";
-import { useWalletConnection } from "@/components/providers/txnlab-wallet-provider";
+import MantleWalletConnect from "@/components/features/mantle/mantle-wallet-connect";
 import { Logo } from "./logo";
 import PillNav, { PillNavItem } from "./ui/pill-nav";
 
 export const Header = () => {
-  const { activeAccount } = useWalletConnection();
   
   const navItems: PillNavItem[] = [
     { label: "Home", href: "/" },
@@ -30,7 +28,7 @@ export const Header = () => {
         pillColor="#fff"
         pillTextColor="#111"
         hoveredPillTextColor="#fff"
-        rightContent={<AlgorandWalletConnect variant="compact" />}
+        rightContent={<MantleWalletConnect variant="default" />}
       />
     </header>
   );
