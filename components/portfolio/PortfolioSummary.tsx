@@ -48,14 +48,13 @@ export function PortfolioSummary({
           >
             {formatCurrency(selectedWorth)}
           </motion.p>
-          
+
           <div className="mt-4 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground text-sm">24h</span>
               <span
-                className={`flex items-center gap-1 text-sm font-medium ${
-                  isPositive24h ? "text-success" : "text-destructive"
-                }`}
+                className={`flex items-center gap-1 text-sm font-medium ${isPositive24h ? "text-success" : "text-destructive"
+                  }`}
               >
                 {isPositive24h ? (
                   <TrendingUp className="w-3 h-3" />
@@ -89,9 +88,8 @@ export function PortfolioSummary({
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground text-sm">30 days change</span>
             <span
-              className={`font-medium ${
-                isPositive30d ? "text-success" : "text-destructive"
-              }`}
+              className={`font-medium ${isPositive30d ? "text-success" : "text-destructive"
+                }`}
             >
               {isPositive30d ? "+" : ""}
               {change30dPercent.toFixed(2)}%

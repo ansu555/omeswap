@@ -42,11 +42,10 @@ export function TokenChip({
       whileHover={{ scale: 1.03 }}
       whileTap={{ scale: 0.98 }}
       onClick={() => onToggle(id)}
-      className={`flex-shrink-0 w-36 p-4 rounded-xl transition-all duration-200 ${
-        isSelected
+      className={`flex-shrink-0 w-36 p-4 rounded-xl transition-all duration-200 ${isSelected
           ? "token-selected bg-secondary"
           : "glass-card hover:bg-secondary/50"
-      }`}
+        }`}
       aria-pressed={isSelected}
       aria-label={`${symbol} token, ${formatCurrency(holdingValue)}, ${percentOfPortfolio.toFixed(1)}% of portfolio`}
     >
@@ -69,11 +68,11 @@ export function TokenChip({
           {symbol}
         </span>
       </div>
-      
+
       <p className="text-foreground font-semibold text-lg mb-1">
         {formatCurrency(holdingValue)}
       </p>
-      
+
       <p className="text-muted-foreground text-xs">
         {percentOfPortfolio.toFixed(1)}%
       </p>

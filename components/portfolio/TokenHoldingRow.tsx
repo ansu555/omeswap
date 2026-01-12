@@ -41,11 +41,10 @@ export function TokenHoldingRow({
           whileTap={{ scale: 0.98 }}
           onClick={onSelectAll}
           disabled={tokens.length === 0}
-          className={`flex-shrink-0 w-24 h-28 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all duration-200 ${
-            allSelected
+          className={`flex-shrink-0 w-24 h-28 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all duration-200 ${allSelected
               ? "border-primary bg-primary/10 text-primary"
               : "border-border text-muted-foreground hover:border-primary/50 hover:text-primary"
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
           aria-label="Select all tokens"
         >
           {allSelected ? (

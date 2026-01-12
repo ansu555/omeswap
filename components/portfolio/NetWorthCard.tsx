@@ -33,11 +33,11 @@ export function NetWorthCard({
         <motion.div
           initial={{ y: -20, rotate: -10, opacity: 0 }}
           animate={{ y: 0, rotate: 0, opacity: 1 }}
-          transition={{ 
-            type: "spring", 
-            stiffness: 300, 
+          transition={{
+            type: "spring",
+            stiffness: 300,
             damping: 20,
-            delay: 0.3 
+            delay: 0.3
           }}
           className="absolute -top-6 -right-4 z-10"
         >
@@ -57,10 +57,10 @@ export function NetWorthCard({
       >
         {/* Background glow effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent" />
-        
+
         <div className="relative z-10">
           <p className="text-primary text-sm font-medium mb-2">Net Worth</p>
-          
+
           <div className="flex items-baseline gap-2 mb-3">
             <motion.span
               key={netWorthUsd}
@@ -75,11 +75,10 @@ export function NetWorthCard({
 
           <div className="flex items-center gap-2 mb-6">
             <span
-              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium ${
-                isPositive
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium ${isPositive
                   ? "bg-success/20 text-success"
                   : "bg-destructive/20 text-destructive"
-              }`}
+                }`}
             >
               {isPositive ? (
                 <TrendingUp className="w-3 h-3" />

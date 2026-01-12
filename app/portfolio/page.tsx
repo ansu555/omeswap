@@ -8,7 +8,6 @@ import { AgentWalletCard } from "@/components/portfolio/AgentWalletCard";
 import { TokenHoldingRow } from "@/components/portfolio/TokenHoldingRow";
 import { PortfolioSummary } from "@/components/portfolio/PortfolioSummary";
 import { PortfolioTable, type PortfolioRow } from "@/components/portfolio/PortfolioTable";
-import stickerImage from "@/assets/portfolio-sticker.png";
 
 // Mock data for demonstration
 const MOCK_TOKENS = [
@@ -181,7 +180,6 @@ export default function Index() {
               netWorthUsd={totalPortfolioValue}
               change24hPercent={avgChange24h}
               chartData={chartData}
-              stickerImageUrl={stickerImage.src}
             />
           </div>
           <div className="lg:col-span-1">
