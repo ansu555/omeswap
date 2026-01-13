@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import MantleWalletConnect from "@/components/features/mantle/mantle-wallet-connect";
+import { MantleWalletConnect } from "@/components/features/mantle";
 import { Logo } from "@/components/layout/logo";
 import PillNav, { PillNavItem } from "@/components/ui/pill-nav";
 
