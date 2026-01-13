@@ -2,14 +2,14 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MetricsBar } from "@/components/Explore/MetricsBar";
-import { SummaryCard } from "@/components/Explore/SummaryCard";
-import { ExplorerTabs } from "@/components/Explore/ExplorerTabs";
-import { TokensTable, TokenRow } from "@/components/Explore/TokensTable";
-import { PoolsTable, PoolRow } from "@/components/Explore/PoolsTable";
-import { TransactionsTable, TransactionRow } from "@/components/Explore/TransactionsTable";
-import { SearchBar } from "@/components/Explore/SearchBar";
-import { TableFilters } from "@/components/Explore/TableFilters";
+import { MetricsBar } from "@/components/explore/MetricsBar";
+import { SummaryCard } from "@/components/explore/SummaryCard";
+import { ExplorerTabs } from "@/components/explore/ExplorerTabs";
+import { TokensTable, TokenRow } from "@/components/explore/TokensTable";
+import { PoolsTable, PoolRow } from "@/components/explore/PoolsTable";
+import { TransactionsTable, TransactionRow } from "@/components/explore/TransactionsTable";
+import { SearchBar } from "@/components/explore/SearchBar";
+import { TableFilters } from "@/components/explore/TableFilters";
 
 // Mock data for transactions only
 const mockTransactions: TransactionRow[] = [

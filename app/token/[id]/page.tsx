@@ -1,14 +1,12 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { Header } from "@/app/components/Header";
 
 export default function TokenDetailPage() {
     const { id } = useParams();
 
     return (
         <div className="min-h-screen">
-            <Header />
             <div className="pt-32 max-w-[1200px] mx-auto px-4 md:px-6">
                 <div className="glass-card p-12 rounded-3xl border bg-card/50 backdrop-blur-xl relative overflow-hidden group">
                     {/* Animated background element */}

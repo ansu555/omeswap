@@ -17,7 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import type { Transaction, TransactionType } from "@/app/Transaction/page";
+import type { Transaction, TransactionType } from "@/app/transactions/page";
 
 interface TransactionTableProps {
   transactions: Transaction[];
