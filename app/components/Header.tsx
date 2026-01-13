@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import MantleWalletConnect from "@/components/features/mantle/mantle-wallet-connect";
 import { Logo } from "./logo";
 import PillNav, { PillNavItem } from "./ui/pill-nav";
@@ -8,10 +8,12 @@ import PillNav, { PillNavItem } from "./ui/pill-nav";
 export const Header = () => {
 
   const navItems: PillNavItem[] = [
+    { label: "Explore", href: "/Explore" },
     { label: "Trade", href: "/trade" },
     { label: "Portfolio", href: "/portfolio" },
-    { label: "Tokens", href: "/cryptocurrencies" },
-    { label: "Txns", href: "/transactions" },
+    // { label: "Tokens", href: "/cryptocurrencies" },
+    { label: "Txns", href: "/Transaction" },
+
   ];
 
   return (

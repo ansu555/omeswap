@@ -12,7 +12,7 @@ interface AgentWalletCardProps {
 }
 
 export function AgentWalletCard({
-  walletName,
+
   balanceUsd,
   walletAddress,
   onRecharge,
