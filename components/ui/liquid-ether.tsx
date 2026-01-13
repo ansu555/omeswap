@@ -142,7 +142,7 @@ export default function LiquidEther({
       coords = new THREE.Vector2();
       coords_old = new THREE.Vector2();
       diff = new THREE.Vector2();
-      timer: ReturnType<typeof setTimeout> | null = null;
+      timer: number | null = null;
       container: HTMLElement | null = null;
       docTarget: Document | null = null;
       listenerTarget: Window | null = null;
@@ -550,7 +550,7 @@ export default function LiquidEther({
           this.scene.add(this.plane);
         }
       }
-      update() {
+      update(..._args: any[]) {
         if (!Common.renderer || !this.scene || !this.camera) return;
         Common.renderer.setRenderTarget(this.props.output || null);
         Common.renderer.render(this.scene, this.camera);
