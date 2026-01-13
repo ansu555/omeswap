@@ -10,6 +10,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Omeswap",
   description: "Omeswap Application",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
