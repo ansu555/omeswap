@@ -4,6 +4,33 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
+/* Basel font family for landing page */
+:root {
+  --f-family: Basel, -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --f-size-micro: 12px;
+  --f-size-small: 14px;
+  --f-size-medium: 16px;
+  --f-size-true: 16px;
+  --f-size-large: 18px;
+  --f-weight-micro: 485;
+  --f-weight-small: 485;
+  --f-weight-medium: 535;
+  --f-weight-true: 485;
+  --f-weight-large: 485;
+  --f-weight-book: 485;
+  --f-lineHeight-micro: 16px;
+  --f-lineHeight-small: 18.2px;
+  --f-lineHeight-medium: 20.8px;
+  --f-lineHeight-true: 20.8px;
+  --f-lineHeight-large: 23.4px;
+}
+
+.font-basel {
+  font-family: var(--f-family);
+  font-weight: var(--f-weight-book);
+  font-style: normal;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import type { TransactionType, SortOrder } from "@/app/transactions/page";
+import type { TransactionType, SortOrder } from "@/app/(app)/transactions/page";
 
 interface TransactionFiltersProps {
   typeFilter: TransactionType | "ALL";
