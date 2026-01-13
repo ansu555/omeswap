@@ -12,9 +12,10 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 interface MantleWalletConnectProps {
   variant?: 'default' | 'outline' | 'ghost';
+  className?: string;
 }
 
-export default function MantleWalletConnect({ variant = 'default' }: MantleWalletConnectProps) {
+export default function MantleWalletConnect({ variant = 'default', className }: MantleWalletConnectProps) {
   return (
     <ConnectButton.Custom>
       {({
@@ -50,7 +51,7 @@ export default function MantleWalletConnect({ variant = 'default' }: MantleWalle
             {(() => {
               if (!connected) {
                 return (
-                  <Button onClick={openConnectModal} variant={variant}>
+                  <Button onClick={openConnectModal} variant={variant} className={className}>
                     <Wallet className="mr-2 h-4 w-4" />
                     Connect Wallet
                   </Button>
@@ -59,7 +60,7 @@ export default function MantleWalletConnect({ variant = 'default' }: MantleWalle
 
               if (chain.unsupported) {
                 return (
-                  <Button onClick={openChainModal} variant="destructive">
+                  <Button onClick={openChainModal} variant="destructive" className={className}>
                     <Network className="mr-2 h-4 w-4" />
                     Wrong Network
                   </Button>
@@ -70,7 +71,7 @@ export default function MantleWalletConnect({ variant = 'default' }: MantleWalle
                 <div className="flex gap-2 items-center">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant={variant}>
+                      <Button variant={variant} className={className}>
                         <Wallet className="mr-2 h-4 w-4" />
                         {account.displayName}
                         {account.displayBalance
