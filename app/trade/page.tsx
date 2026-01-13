@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { SwapCard } from "@/components/Trade/SwapCard";
-import { PoolLiquidity } from "@/components/Trade/PoolLiquidity";
-import { TokenMiniChart } from "@/components/Trade/TokenMiniChart";
-import { SwapHistory } from "@/components/Trade/SwapHistory";
-import { ToggleSection } from "@/components/Trade/ToggleSection";
+import { SwapCard } from "@/components/trade/SwapCard";
+import { PoolLiquidity } from "@/components/trade/PoolLiquidity";
+import { TokenMiniChart } from "@/components/trade/TokenMiniChart";
+import { SwapHistory } from "@/components/trade/SwapHistory";
+import { ToggleSection } from "@/components/trade/ToggleSection";
 import { MessageCircle, Sliders } from "lucide-react";
 
 const MOCK_HISTORY = [
