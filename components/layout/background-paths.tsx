@@ -45,7 +45,7 @@ function FloatingPaths({ position }: { position: number }) {
   )
 }
 
-export default function BackgroundPaths() {
+export function BackgroundPaths() {
   return (
     <div
       data-background-paths
