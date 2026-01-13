@@ -15,7 +15,7 @@ interface MantleWalletConnectProps {
   className?: string;
 }
 
-export default function MantleWalletConnect({ variant = 'default', className = '' }: MantleWalletConnectProps) {
+export function MantleWalletConnect({ variant = 'default', className = '' }: MantleWalletConnectProps) {
   const { connectors, connect, isPending } = useConnect();
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();

@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "./logo";
 import { ChevronDown } from "lucide-react";
 import { gsap } from "gsap";
-import MantleWalletConnect from "@/components/features/mantle/mantle-wallet-connect";
+import { MantleWalletConnect } from "@/components/features/mantle/mantle-wallet-connect";
 
 type NavItem = {
   label: string;
@@ -21,7 +21,7 @@ export const Header = () => {
   const navRef = useRef<HTMLDivElement>(null);
 
   const navItems: NavItem[] = [
-    { label: "Explore", href: "/Explore" },
+    { label: "Explore", href: "/explore" },
     { label: "Trade", href: "/trade" },
     { label: "Portfolio", href: "/portfolio" },
     { label: "Tokens", href: "/cryptocurrencies" },

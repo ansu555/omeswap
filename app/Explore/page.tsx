@@ -1,15 +1,15 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { MetricsBar } from "@/components/Explore/MetricsBar";
-import { SummaryCard } from "@/components/Explore/SummaryCard";
-import { ExplorerTabs } from "@/components/Explore/ExplorerTabs";
-import { TokensTable, TokenRow } from "@/components/Explore/TokensTable";
-import { PoolsTable, PoolRow } from "@/components/Explore/PoolsTable";
-import { TransactionsTable, TransactionRow } from "@/components/Explore/TransactionsTable";
-import { SearchBar } from "@/components/Explore/SearchBar";
-import { TimeRangeSelect } from "@/components/Explore/TimeRangeSelect";
-import { TableFilters } from "@/components/Explore/TableFilters";
+import { MetricsBar } from "@/components/explore/MetricsBar";
+import { SummaryCard } from "@/components/explore/SummaryCard";
+import { ExplorerTabs } from "@/components/explore/ExplorerTabs";
+import { TokensTable, TokenRow } from "@/components/explore/TokensTable";
+import { PoolsTable, PoolRow } from "@/components/explore/PoolsTable";
+import { TransactionsTable, TransactionRow } from "@/components/explore/TransactionsTable";
+import { SearchBar } from "@/components/explore/SearchBar";
+import { TimeRangeSelect } from "@/components/explore/TimeRangeSelect";
+import { TableFilters } from "@/components/explore/TableFilters";
 
 // Mock data generators
 const generateSparklineData = (positive: boolean): number[] => {
