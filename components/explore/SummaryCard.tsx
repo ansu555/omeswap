@@ -17,7 +17,7 @@ interface SummaryCardProps {
 
 export const SummaryCard = ({ title, items, type }: SummaryCardProps) => {
   return (
-    <div className="bg-card text-card-foreground rounded-2xl shadow-lg p-5 border border-border flex-1 min-w-[280px]">
+    <div className="glass-card text-card-foreground rounded-2xl p-5 flex-1 min-w-[280px]">
       <h3 className="text-sm font-medium text-muted-foreground mb-3">{title}</h3>
       <div className="space-y-2">
         {items.map((item) => (

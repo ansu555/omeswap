@@ -6,7 +6,6 @@ import { PoolLiquidity } from "@/components/trade/PoolLiquidity";
 import { TokenMiniChart } from "@/components/trade/TokenMiniChart";
 import { SwapHistory } from "@/components/trade/SwapHistory";
 import { ToggleSection } from "@/components/trade/ToggleSection";
-import { MessageCircle, Sliders } from "lucide-react";
 
 const MOCK_HISTORY = [
     {
@@ -33,7 +32,7 @@ export default function Index() {
 
             <main className="container mx-auto px-4 py-8 pt-32">
                 <div className="flex flex-col lg:flex-row gap-6 justify-center">
-                    {/* Left Column - Pool Liquidity (collapsible on mobile) */}
+                    {/* Left Column - Pool Liquidity (only when chart toggled) */}
                     <div className="hidden lg:block lg:flex-1 lg:max-w-md">
                         {showChart && (
                             <div className="animate-fade-in">
@@ -48,7 +47,7 @@ export default function Index() {
                     </div>
 
                     {/* Center Column - Swap Card */}
-                    <div className="flex flex-col items-center gap-6 lg:w-[420px]">
+                    <div className="flex flex-col items-center gap-6 lg:w-[420px] flex-shrink-0">
                         <SwapCard />
 
                         {/* Toggle Buttons */}
@@ -94,31 +93,7 @@ export default function Index() {
                         <SwapHistory records={MOCK_HISTORY} onRefresh={() => { }} />
                     </div>
                 )}
-
-                {/* Mobile Pool Liquidity (shown when chart toggled) */}
-                {showChart && (
-                    <div className="mt-6 lg:hidden animate-fade-in">
-                        <PoolLiquidity
-                            algoReserve={19.3905}
-                            usdcReserve={10.7756}
-                            totalLiquidity="13.93M"
-                            lastUpdated="12/01/2026, 15:06:55"
-                        />
-                    </div>
-                )}
             </main>
-
-            {/* Floating Action Buttons */}
-            <div className="fixed right-4 bottom-4 flex flex-col gap-2">
-                <button className="w-12 h-12 rounded-full bg-secondary border border-border flex items-center justify-center hover:bg-accent transition-colors">
-                    <Sliders className="w-5 h-5" />
-                </button>
-                <button className="w-12 h-12 rounded-full bg-card border border-border flex items-center justify-center hover:bg-accent transition-colors shadow-lg">
-                    <MessageCircle className="w-5 h-5" />
-                </button>
-            </div>
-
-
         </div>
     );
 }

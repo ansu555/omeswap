@@ -110,7 +110,7 @@ export const StatsWidget = ({ label, value, change = 0, chartData, className }: 
     return (
         <div
             className={cn(
-                "w-full bg-card text-card-foreground rounded-2xl shadow-lg p-5 border border-border",
+                "w-full glass-card text-card-foreground rounded-2xl p-5",
                 className
             )}
         >
