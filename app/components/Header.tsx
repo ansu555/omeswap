@@ -2,8 +2,8 @@
 
 import React from "react";
 import MantleWalletConnect from "@/components/features/mantle/mantle-wallet-connect";
-import { Logo } from "./logo";
-import PillNav, { PillNavItem } from "./ui/pill-nav";
+import { Logo } from "@/components/layout/logo";
+import PillNav, { PillNavItem } from "@/components/ui/pill-nav";
 
 export const Header = () => {
 

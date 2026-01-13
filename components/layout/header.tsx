@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "./logo";
 import { ChevronDown } from "lucide-react";
 import { gsap } from "gsap";
-import { MantleWalletConnect } from "@/components/features/mantle/mantle-wallet-connect";
+import { MantleWalletConnect } from "@/components/features/mantle";
 
 type NavItem = {
   label: string;

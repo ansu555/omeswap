@@ -1,1 +1,1 @@
-export { MantleWalletConnect } from './mantle-wallet-connect';
+export { default as MantleWalletConnect } from './mantle-wallet-connect';
