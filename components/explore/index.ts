@@ -1,4 +1,5 @@
 export { MetricsBar } from './MetricsBar';
+export { StatsWidget, StatsWidgetsGrid } from './StatsWidget';
 export { SummaryCard } from './SummaryCard';
 export { ExplorerTabs } from './ExplorerTabs';
 export { TokensTable, type TokenRow } from './TokensTable';

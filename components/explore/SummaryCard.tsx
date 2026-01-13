@@ -1,10 +1,12 @@
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface SummaryItem {
   name: string;
   symbol: string;
   value: string;
   change?: number;
+  imageUrl?: string;
 }
 
 interface SummaryCardProps {
@@ -15,8 +17,8 @@ interface SummaryCardProps {
 
 export const SummaryCard = ({ title, items, type }: SummaryCardProps) => {
   return (
-    <div className="glass-card rounded-lg p-4 flex-1 min-w-[280px]">
-      <h3 className="text-sm font-medium text-foreground mb-3">{title}</h3>
+    <div className="bg-card text-card-foreground rounded-2xl shadow-lg p-5 border border-border flex-1 min-w-[280px]">
+      <h3 className="text-sm font-medium text-muted-foreground mb-3">{title}</h3>
       <div className="space-y-2">
         {items.map((item) => (
           <div
@@ -24,6 +26,15 @@ export const SummaryCard = ({ title, items, type }: SummaryCardProps) => {
             className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-muted/30 cursor-pointer transition-colors group"
           >
             <div className="flex items-center gap-2">
+              {item.imageUrl && (
+                <Image
+                  src={item.imageUrl}
+                  alt={item.name}
+                  width={20}
+                  height={20}
+                  className="rounded-full"
+                />
+              )}
               <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
                 {item.name}
               </span>
@@ -32,8 +43,8 @@ export const SummaryCard = ({ title, items, type }: SummaryCardProps) => {
             <span
               className={cn(
                 "text-sm font-mono font-medium",
-                type === "gainers" && "text-success",
-                type === "losers" && "text-destructive",
+                type === "gainers" && "text-green-500",
+                type === "losers" && "text-orange-500",
                 type === "trending" && "text-foreground"
               )}
             >
