@@ -12,9 +12,10 @@ import {
 
 interface MantleWalletConnectProps {
   variant?: 'default' | 'outline' | 'ghost';
+  className?: string;
 }
 
-export default function MantleWalletConnect({ variant = 'default' }: MantleWalletConnectProps) {
+export default function MantleWalletConnect({ variant = 'default', className = '' }: MantleWalletConnectProps) {
   const { connectors, connect, isPending } = useConnect();
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
@@ -42,6 +43,7 @@ export default function MantleWalletConnect({ variant = 'default' }: MantleWalle
         onClick={() => injectedConnector && connect({ connector: injectedConnector })}
         disabled={isPending}
         variant={variant}
+        className={className}
       >
         <Wallet className="mr-2 h-4 w-4" />
         {isPending ? 'Connecting...' : 'Connect Wallet'}
@@ -64,7 +66,7 @@ export default function MantleWalletConnect({ variant = 'default' }: MantleWalle
       
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant={variant}>
+          <Button variant={variant} className={className}>
             <Wallet className="mr-2 h-4 w-4" />
             {address?.substring(0, 6)}...{address?.substring(address.length - 4)}
           </Button>
