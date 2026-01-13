@@ -1,7 +1,8 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 import { Wallet, LogOut, Copy, ExternalLink, Network } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,13 +10,71 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { cn } from '@/lib/utils';
 
 interface MantleWalletConnectProps {
   variant?: 'default' | 'outline' | 'ghost';
   className?: string;
 }
 
-export default function MantleWalletConnect({ variant = 'default', className }: MantleWalletConnectProps) {
+// Lamp-style button component
+function LampButton({ 
+  children, 
+  onClick, 
+  className,
+}: { 
+  children: React.ReactNode; 
+  onClick?: () => void; 
+  className?: string;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
+  const showLamp = isHovered || isPressed;
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onTouchStart={() => setIsPressed(true)}
+      onTouchEnd={() => setIsPressed(false)}
+      className={cn(
+        "relative cursor-pointer text-sm font-semibold px-6 py-2 rounded-full transition-colors",
+        "text-foreground/80 hover:text-primary",
+        showLamp && "bg-muted text-primary",
+        className
+      )}
+    >
+      <span className="flex items-center gap-2">{children}</span>
+      <AnimatePresence>
+        {showLamp && (
+          <motion.div
+            layoutId="wallet-lamp"
+            className="absolute inset-0 w-full bg-primary/5 rounded-full -z-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 30,
+            }}
+          >
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-t-full">
+              <div className="absolute w-12 h-6 bg-primary/20 rounded-full blur-md -top-2 -left-2" />
+              <div className="absolute w-8 h-6 bg-primary/20 rounded-full blur-md -top-1" />
+              <div className="absolute w-4 h-4 bg-primary/20 rounded-full blur-sm top-0 left-2" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </button>
+  );
+}
+
+export default function MantleWalletConnect({ className }: MantleWalletConnectProps) {
   return (
     <ConnectButton.Custom>
       {({
@@ -48,36 +107,41 @@ export default function MantleWalletConnect({ variant = 'default', className }: 
               },
             })}
           >
-            {(() => {
-              if (!connected) {
-                return (
-                  <Button onClick={openConnectModal} variant={variant} className={className}>
-                    <Wallet className="mr-2 h-4 w-4" />
-                    Connect Wallet
-                  </Button>
-                );
-              }
+            <div className="flex items-center bg-background/5 border border-border backdrop-blur-lg py-1 px-1 rounded-full shadow-lg">
+              {(() => {
+                if (!connected) {
+                  return (
+                    <LampButton onClick={openConnectModal} className={className}>
+                      <Wallet className="h-4 w-4" />
+                      <span className="hidden sm:inline">Connect Wallet</span>
+                    </LampButton>
+                  );
+                }
 
-              if (chain.unsupported) {
-                return (
-                  <Button onClick={openChainModal} variant="destructive" className={className}>
-                    <Network className="mr-2 h-4 w-4" />
-                    Wrong Network
-                  </Button>
-                );
-              }
+                if (chain.unsupported) {
+                  return (
+                    <LampButton onClick={openChainModal} className={cn("text-red-400", className)}>
+                      <Network className="h-4 w-4" />
+                      <span className="hidden sm:inline">Wrong Network</span>
+                    </LampButton>
+                  );
+                }
 
-              return (
-                <div className="flex gap-2 items-center">
+                return (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant={variant} className={className}>
-                        <Wallet className="mr-2 h-4 w-4" />
-                        {account.displayName}
-                        {account.displayBalance
-                          ? ` (${account.displayBalance})`
-                          : ''}
-                      </Button>
+                      <div>
+                        <LampButton className={className}>
+                          <Wallet className="h-4 w-4" />
+                          <span className="hidden sm:inline">
+                            {account.displayName}
+                            {account.displayBalance
+                              ? ` (${account.displayBalance})`
+                              : ''}
+                          </span>
+                          <span className="sm:hidden">{account.displayName}</span>
+                        </LampButton>
+                      </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
                       <div className="px-2 py-1.5 text-sm font-semibold">
@@ -124,9 +188,9 @@ export default function MantleWalletConnect({ variant = 'default', className }: 
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </div>
-              );
-            })()}
+                );
+              })()}
+            </div>
           </div>
         );
       }}

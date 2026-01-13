@@ -1,51 +1,32 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Logo } from "./logo";
-import { ChevronDown } from "lucide-react";
+import { Compass, ArrowLeftRight, Wallet, Coins, Receipt } from "lucide-react";
 import { gsap } from "gsap";
 import { MantleWalletConnect } from "@/components/features/mantle";
+import { NavBar } from "@/components/ui/nav-bar";
 
-type NavItem = {
-  label: string;
-  href?: string;
-  dropdown?: { label: string; href: string }[];
-};
+const navItems = [
+  { name: "Explore", url: "/explore", icon: Compass },
+  { name: "Trade", url: "/trade", icon: ArrowLeftRight },
+  { name: "Portfolio", url: "/portfolio", icon: Wallet },
+  { name: "Tokens", url: "/cryptocurrencies", icon: Coins },
+  { name: "Txns", url: "/transactions", icon: Receipt },
+];
 
 export const Header = () => {
-  const pathname = usePathname();
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const logoRef = useRef<HTMLAnchorElement>(null);
-  const navRef = useRef<HTMLDivElement>(null);
-
-  const navItems: NavItem[] = [
-    { label: "Explore", href: "/explore" },
-    { label: "Trade", href: "/trade" },
-    { label: "Portfolio", href: "/portfolio" },
-    // { label: "Tokens", href: "/cryptocurrencies" },
-    { label: "Txns", href: "/transactions" },
-  ];
 
   useEffect(() => {
     // Initial load animation
     const logo = logoRef.current;
-    const nav = navRef.current;
 
     if (logo) {
       gsap.fromTo(logo, { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" });
     }
-    if (nav) {
-      gsap.fromTo(nav, { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.5, delay: 0.1, ease: "power3.out" });
-    }
   }, []);
-
-  const isActive = (item: NavItem) => {
-    if (item.href) return pathname === item.href;
-    if (item.dropdown) return item.dropdown.some((d) => pathname === d.href);
-    return false;
-  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
@@ -60,63 +41,14 @@ export const Header = () => {
             <Logo />
           </Link>
 
-          {/* Center Navigation */}
-          <div ref={navRef} className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
-              <div
-                key={item.label}
-                className="relative"
-                onMouseEnter={() => item.dropdown && setOpenDropdown(item.label)}
-                onMouseLeave={() => setOpenDropdown(null)}
-              >
-                {item.href ? (
-                  <Link
-                    href={item.href}
-                    className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
-                      isActive(item)
-                        ? "bg-purple-500/20 text-purple-400 border border-purple-500/40"
-                        : "text-gray-300 hover:text-white hover:bg-white/5"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ) : (
-                  <button
-                    className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
-                      isActive(item)
-                        ? "bg-purple-500/20 text-purple-400 border border-purple-500/40"
-                        : "text-gray-300 hover:text-white hover:bg-white/5"
-                    }`}
-                  >
-                    {item.label}
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${openDropdown === item.label ? "rotate-180" : ""}`} />
-                  </button>
-                )}
-
-                {/* Dropdown Menu */}
-                {item.dropdown && openDropdown === item.label && (
-                  <div className="absolute top-full left-0 mt-2 py-2 min-w-[160px] bg-[#1a1a2e]/95 backdrop-blur-lg border border-purple-500/20 rounded-xl shadow-xl">
-                    {item.dropdown.map((dropdownItem) => (
-                      <Link
-                        key={dropdownItem.href}
-                        href={dropdownItem.href}
-                        className="block px-4 py-2 text-sm text-gray-300 hover:text-purple-400 hover:bg-purple-500/10 transition-colors"
-                      >
-                        {dropdownItem.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+          {/* Center Navigation - New Lamp NavBar */}
+          <div className="hidden md:block absolute left-1/2 -translate-x-1/2">
+            <NavBar items={navItems} />
           </div>
 
           {/* Right Section - Connect Wallet */}
           <div className="hidden md:flex items-center">
-            <MantleWalletConnect 
-              variant="outline" 
-              className="rounded-full border-purple-500/60 text-purple-400 hover:bg-purple-500/10 hover:text-purple-400"
-            />
+            <MantleWalletConnect />
           </div>
 
           {/* Mobile Menu Button */}
@@ -125,6 +57,11 @@ export const Header = () => {
             <span className="w-5 h-0.5 bg-white rounded-full" />
           </button>
         </nav>
+      </div>
+
+      {/* Mobile Bottom NavBar */}
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 mb-6 md:hidden">
+        <NavBar items={navItems} />
       </div>
     </header>
   );
