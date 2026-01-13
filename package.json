@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@coingecko/coingecko-typescript": "^2.5.0",
     "@hookform/resolvers": "^5.2.2",
     "@metamask/sdk": "^0.34.0",
     "@radix-ui/react-accordion": "^1.2.12",

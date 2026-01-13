@@ -9,68 +9,9 @@ import { TokensTable, TokenRow } from "@/components/Explore/TokensTable";
 import { PoolsTable, PoolRow } from "@/components/Explore/PoolsTable";
 import { TransactionsTable, TransactionRow } from "@/components/Explore/TransactionsTable";
 import { SearchBar } from "@/components/Explore/SearchBar";
-import { TimeRangeSelect } from "@/components/Explore/TimeRangeSelect";
 import { TableFilters } from "@/components/Explore/TableFilters";
 
-// Mock data generators for pools and transactions (keeping these as CMC doesn't provide this data)
-const mockPools: PoolRow[] = [
-    {
-        id: "1",
-        rank: 1,
-        token0: { name: "Ethereum", symbol: "ETH" },
-        token1: { name: "USD Coin", symbol: "USDC" },
-        fee: 0.3,
-        tvl: 245000000,
-        volume24h: 89000000,
-        volume7d: 623000000,
-        apr: 12.45,
-    },
-    {
-        id: "2",
-        rank: 2,
-        token0: { name: "Ethereum", symbol: "ETH" },
-        token1: { name: "Wrapped BTC", symbol: "WBTC" },
-        fee: 0.3,
-        tvl: 189000000,
-        volume24h: 45000000,
-        volume7d: 315000000,
-        apr: 8.92,
-    },
-    {
-        id: "3",
-        rank: 3,
-        token0: { name: "USD Coin", symbol: "USDC" },
-        token1: { name: "Tether", symbol: "USDT" },
-        fee: 0.01,
-        tvl: 156000000,
-        volume24h: 234000000,
-        volume7d: 1638000000,
-        apr: 4.21,
-    },
-    {
-        id: "4",
-        rank: 4,
-        token0: { name: "Ethereum", symbol: "ETH" },
-        token1: { name: "DAI", symbol: "DAI" },
-        fee: 0.3,
-        tvl: 98000000,
-        volume24h: 32000000,
-        volume7d: 224000000,
-        apr: 10.15,
-    },
-    {
-        id: "5",
-        rank: 5,
-        token0: { name: "Wrapped BTC", symbol: "WBTC" },
-        token1: { name: "USD Coin", symbol: "USDC" },
-        fee: 0.3,
-        tvl: 87000000,
-        volume24h: 28000000,
-        volume7d: 196000000,
-        apr: 9.67,
-    },
-];
-
+// Mock data for transactions only
 const mockTransactions: TransactionRow[] = [
     {
         id: "1",
@@ -124,38 +65,6 @@ const mockTransactions: TransactionRow[] = [
     },
 ];
 
-const metrics = [
-    { label: "Total Market Cap", value: "$1.30T", change: 2.15 },
-    { label: "24h Volume", value: "$79.4B", change: -1.32 },
-    { label: "BTC Dominance", value: "46.3%" },
-    { label: "ETH Dominance", value: "17.4%" },
-    { label: "Active Addresses", value: "1.2M", change: 5.67 },
-];
-
-const topGainers = [
-    { name: "Shiba Inu", symbol: "SHIB", value: "", change: 15.30 },
-    { name: "Dogecoin", symbol: "DOGE", value: "", change: 5.20 },
-    { name: "Avalanche", symbol: "AVAX", value: "", change: 3.20 },
-    { name: "BNB", symbol: "BNB", value: "", change: 2.50 },
-    { name: "Chainlink", symbol: "LINK", value: "", change: 1.50 },
-];
-
-const topLosers = [
-    { name: "Polkadot", symbol: "DOT", value: "", change: -2.10 },
-    { name: "Polygon", symbol: "MATIC", value: "", change: -2.10 },
-    { name: "XRP", symbol: "XRP", value: "", change: -1.50 },
-    { name: "Ethereum", symbol: "ETH", value: "", change: -0.80 },
-    { name: "Solana", symbol: "SOL", value: "", change: -0.50 },
-];
-
-const trending = [
-    { name: "Tether", symbol: "USDT", value: "$1.00", change: 0 },
-    { name: "Bitcoin", symbol: "BTC", value: "$29,324.52", change: 0 },
-    { name: "Ethereum", symbol: "ETH", value: "$1,876.34", change: 0 },
-    { name: "BNB", symbol: "BNB", value: "$240.56", change: 0 },
-    { name: "XRP", symbol: "XRP", value: "$0.47", change: 0 },
-];
-
 const tokenFilters = [
     { id: "all", label: "All Cryptocurrencies" },
     { id: "favorites", label: "Favorites" },
@@ -168,18 +77,20 @@ export default function Explorer() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<"tokens" | "pools" | "transactions">("tokens");
     const [searchQuery, setSearchQuery] = useState("");
-    const [timeRange, setTimeRange] = useState("24h");
     const [activeFilter, setActiveFilter] = useState("all");
     const [tokens, setTokens] = useState<TokenRow[]>([]);
+    const [pools, setPools] = useState<PoolRow[]>([]);
+    const [gainers, setGainers] = useState<any[]>([]);
+    const [losers, setLosers] = useState<any[]>([]);
+    const [trending, setTrending] = useState<any[]>([]);
+    const [metrics, setMetrics] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     // Fetch cryptocurrency data from our API
     useEffect(() => {
         const fetchTokens = async () => {
             try {
                 setIsLoading(true);
-                setError(null);
 
                 const response = await fetch('/api/crypto?limit=100');
 
@@ -189,9 +100,13 @@ export default function Explorer() {
 
                 const data = await response.json();
                 setTokens(data.tokens || []);
+                setPools(data.pools || []);
+                setGainers(data.gainers || []);
+                setLosers(data.losers || []);
+                setTrending(data.trending || []);
+                setMetrics(data.metrics || []);
             } catch (err) {
                 console.error('Error fetching tokens:', err);
-                setError(err instanceof Error ? err.message : 'Failed to load data');
                 setTokens([]);
             } finally {
                 setIsLoading(false);
@@ -242,14 +157,14 @@ export default function Explorer() {
     }, [tokens, searchQuery, activeFilter]);
 
     const filteredPools = useMemo(() => {
-        if (!searchQuery) return mockPools;
+        if (!searchQuery) return pools;
         const query = searchQuery.toLowerCase();
-        return mockPools.filter(
+        return pools.filter(
             (pool) =>
                 pool.token0.symbol.toLowerCase().includes(query) ||
                 pool.token1.symbol.toLowerCase().includes(query)
         );
-    }, [searchQuery]);
+    }, [searchQuery, pools]);
 
     return (
         <div className="min-h-screen">
@@ -261,8 +176,8 @@ export default function Explorer() {
             <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 space-y-6">
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <SummaryCard title="Top Gainers" items={topGainers} type="gainers" />
-                    <SummaryCard title="Top Losers" items={topLosers} type="losers" />
+                    <SummaryCard title="Top Gainers" items={gainers} type="gainers" />
+                    <SummaryCard title="Top Losers" items={losers} type="losers" />
                     <SummaryCard title="Trending" items={trending} type="trending" />
                 </div>
 
@@ -272,7 +187,6 @@ export default function Explorer() {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <ExplorerTabs activeTab={activeTab} onTabChange={setActiveTab} />
                         <div className="flex items-center gap-3">
-                            <TimeRangeSelect value={timeRange} onChange={setTimeRange} />
                             <SearchBar
                                 value={searchQuery}
                                 onChange={setSearchQuery}
