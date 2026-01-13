@@ -20,14 +20,12 @@ interface NavBarProps {
 
 export function NavBar({ items, className }: NavBarProps) {
   const pathname = usePathname();
-  const [activeTab, setActiveTab] = useState(items[0].name);
+  const [activeTab, setActiveTab] = useState<string | null>(null);
 
-  // Sync active tab with pathname
+  // Sync active tab with pathname - only show active if on a matching route
   useEffect(() => {
     const currentItem = items.find((item) => item.url === pathname);
-    if (currentItem) {
-      setActiveTab(currentItem.name);
-    }
+    setActiveTab(currentItem ? currentItem.name : null);
   }, [pathname, items]);
 
   return (
