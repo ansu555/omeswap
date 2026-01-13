@@ -12,8 +12,11 @@ export function ToggleSection({ label, isVisible, onToggle }: ToggleSectionProps
     <button
       onClick={onToggle}
       className={cn(
-        "toggle-btn flex items-center gap-2",
-        isVisible && "toggle-btn-active"
+        "flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200",
+        "border border-border/50 hover:border-primary/50",
+        isVisible
+          ? "bg-primary/20 text-primary border-primary/50"
+          : "bg-card/50 text-muted-foreground hover:text-foreground hover:bg-card"
       )}
     >
       {isVisible ? (

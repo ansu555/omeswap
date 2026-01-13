@@ -223,7 +223,6 @@ export async function GET() {
 
         let tokens: TokenRow[] = [];
         let pools: PoolRow[] = [];
-        let dataSource = 'coingecko';
 
         // Try CoinGecko first
         try {
@@ -245,7 +244,6 @@ export async function GET() {
             if (coinMarketCapKey) {
                 const cmcData = await fetchFromCoinMarketCap(coinMarketCapKey);
                 tokens = transformCMCData(cmcData);
-                dataSource = 'coinmarketcap';
             } else {
                 throw new Error('Both CoinGecko and CoinMarketCap failed, and no CMC key available');
             }
@@ -269,10 +267,6 @@ export async function GET() {
                 label: 'Active Tokens',
                 value: tokens.length.toString(),
             },
-            {
-                label: 'Data Source',
-                value: dataSource === 'coingecko' ? 'CoinGecko' : 'CoinMarketCap',
-            },
         ];
 
         // Calculate top gainers (top 5 by 24h change)
@@ -284,6 +278,7 @@ export async function GET() {
                 symbol: t.symbol,
                 value: `$${t.price.toFixed(t.price < 1 ? 4 : 2)}`,
                 change: t.change24h,
+                imageUrl: t.imageUrl,
             }));
 
         // Calculate top losers (bottom 5 by 24h change)
@@ -295,6 +290,7 @@ export async function GET() {
                 symbol: t.symbol,
                 value: `$${t.price.toFixed(t.price < 1 ? 4 : 2)}`,
                 change: t.change24h,
+                imageUrl: t.imageUrl,
             }));
 
         // Calculate trending (top 5 by volume)
@@ -306,6 +302,7 @@ export async function GET() {
                 symbol: t.symbol,
                 value: `$${t.price.toFixed(t.price < 1 ? 4 : 2)}`,
                 change: 0, // Trending doesn't show change
+                imageUrl: t.imageUrl,
             }));
 
         const response: CryptoAPIResponse = {

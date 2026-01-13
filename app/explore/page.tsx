@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MetricsBar } from "@/components/explore/MetricsBar";
+import { StatsWidgetsGrid } from "@/components/explore/StatsWidget";
 import { SummaryCard } from "@/components/explore/SummaryCard";
 import { ExplorerTabs } from "@/components/explore/ExplorerTabs";
 import { TokensTable, TokenRow } from "@/components/explore/TokensTable";
@@ -168,12 +168,10 @@ export default function Explorer() {
 
     return (
         <div className="min-h-screen">
-            {/* Metrics Bar */}
-            <div className="pt-24">
-                <MetricsBar metrics={metrics} />
-            </div>
+            <div className="max-w-[1600px] mx-auto px-4 md:px-6 pt-32 pb-6 space-y-6">
+                {/* Stats Widgets */}
+                <StatsWidgetsGrid metrics={metrics} />
 
-            <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 space-y-6">
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <SummaryCard title="Top Gainers" items={gainers} type="gainers" />

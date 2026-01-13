@@ -197,6 +197,7 @@ export interface SummaryItem {
     symbol: string;
     value: string;
     change?: number;
+    imageUrl?: string;
 }
 
 // Metric Type

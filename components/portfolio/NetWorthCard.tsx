@@ -27,7 +27,7 @@ export function NetWorthCard({
   };
 
   return (
-    <div className="relative">
+    <div className="relative h-full">
       {/* Floating sticker */}
       {stickerImageUrl && (
         <motion.div
@@ -53,7 +53,7 @@ export function NetWorthCard({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="gradient-card rounded-2xl p-6 relative overflow-hidden glow-purple"
+        className="gradient-card rounded-2xl p-6 relative overflow-hidden glow-purple h-full"
       >
         {/* Background glow effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent" />
