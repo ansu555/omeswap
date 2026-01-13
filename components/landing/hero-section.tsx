@@ -309,7 +309,7 @@ export function HeroSection() {
   }, []);
 
   return (
-    <div className="relative bg-black font-basel">
+    <div className="relative bg-transparent font-basel">
       <LandingHeader />
 
       <div className="relative min-h-screen">
@@ -327,7 +327,7 @@ export function HeroSection() {
         </div>
       </div>
 
-      <div className="bg-black relative z-10" style={{ marginTop: '-10vh' }}>
+      <div className="bg-transparent relative z-10" style={{ marginTop: '-10vh' }}>
         <ScreenshotSection screenshotRef={screenshotRef} />
         <ProtocolStatsSection />
       </div>

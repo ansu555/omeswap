@@ -448,8 +448,8 @@ const itemVariants = {
 
 export function BentoGrid() {
   return (
-    <section className="py-16 md:py-24 px-4 md:px-8 bg-black font-basel">
-      <div className="container mx-auto max-w-[90rem]">
+    <section className="relative py-16 md:py-24 px-4 md:px-8 bg-transparent font-basel">
+      <div className="container mx-auto max-w-[90rem] relative z-10">
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
