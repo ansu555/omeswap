@@ -1,0 +1,23 @@
+.crypto-logo-cursor-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.crypto-logo-cursor-inner {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.crypto-logo-cursor-item {
+  position: absolute;
+  user-select: none;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 8px rgba(243, 198, 35, 0.3));
+}
+
+.crypto-logo-cursor-item img {
+  object-fit: contain;
+}
