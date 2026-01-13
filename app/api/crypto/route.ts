@@ -223,7 +223,6 @@ export async function GET() {
 
         let tokens: TokenRow[] = [];
         let pools: PoolRow[] = [];
-        let dataSource = 'coingecko';
 
         // Try CoinGecko first
         try {
@@ -245,7 +244,6 @@ export async function GET() {
             if (coinMarketCapKey) {
                 const cmcData = await fetchFromCoinMarketCap(coinMarketCapKey);
                 tokens = transformCMCData(cmcData);
-                dataSource = 'coinmarketcap';
             } else {
                 throw new Error('Both CoinGecko and CoinMarketCap failed, and no CMC key available');
             }

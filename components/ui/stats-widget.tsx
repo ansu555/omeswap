@@ -2,10 +2,10 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ArrowUp, ArrowDown } from 'lucide-react';
 
 // A small utility function to generate random numbers in a range
-const getRandom = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const getRandom = (min: number, max: number): number => Math.floor(Math.random() * (max - min + 1)) + min;
 
 // A function to generate a smooth SVG path from data points
-const generateSmoothPath = (points, width, height) => {
+const generateSmoothPath = (points: number[], width: number, height: number): string => {
     if (!points || points.length < 2) {
         return `M 0 ${height}`;
     }
@@ -40,8 +40,8 @@ const StatsWidget = () => {
         change: 36,
         chartData: [30, 55, 45, 75, 60, 85, 70],
     });
-    const linePathRef = useRef(null);
-    const areaPathRef = useRef(null);
+    const linePathRef = useRef<SVGPathElement>(null);
+    const areaPathRef = useRef<SVGPathElement>(null);
 
     // Function to generate new random data for interactivity
     const updateStats = () => {
@@ -85,8 +85,8 @@ const StatsWidget = () => {
             const length = path.getTotalLength();
             // --- Animate Line ---
             path.style.transition = 'none';
-            path.style.strokeDasharray = length + ' ' + length;
-            path.style.strokeDashoffset = length;
+            path.style.strokeDasharray = `${length} ${length}`;
+            path.style.strokeDashoffset = `${length}`;
 
             // --- Animate Area ---
             area.style.transition = 'none';
