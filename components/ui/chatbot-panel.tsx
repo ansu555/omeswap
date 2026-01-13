@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   MessageCircle,
   X,
@@ -88,22 +88,23 @@ export function ChatbotPanel() {
     textareaRef.current?.focus()
   }
 
-  if (!isOpen) return null
-
   const hasMessages = messages.length > 0
 
   return (
-    <motion.div
-      initial={{ width: 0, opacity: 0 }}
-      animate={{ width: 420, opacity: 1 }}
-      exit={{ width: 0, opacity: 0 }}
-      transition={{
-        type: "spring",
-        stiffness: 400,
-        damping: 40,
-      }}
-      className="h-full pt-32 pr-6 pb-6 flex-shrink-0"
-    >
+    <AnimatePresence mode="wait">
+      {isOpen && (
+        <motion.div
+          key="chatbot-panel"
+          initial={{ width: 0, opacity: 0 }}
+          animate={{ width: 420, opacity: 1 }}
+          exit={{ width: 0, opacity: 0 }}
+          transition={{
+            type: "spring",
+            stiffness: 400,
+            damping: 40,
+          }}
+          className="h-full pt-32 pr-6 pb-6 flex-shrink-0"
+        >
       <div className="h-full glass-card rounded-xl flex flex-col overflow-hidden border border-border/50">
         {/* Header */}
         <div className="flex items-center justify-end gap-1 p-3 flex-shrink-0">
@@ -311,8 +312,10 @@ export function ChatbotPanel() {
             AI can make mistakes, please verify important information.
           </p>
         </div>
-      </div>
-    </motion.div>
+        </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -329,10 +332,10 @@ export function ChatToggleButton() {
     >
       <Button
         onClick={openChat}
-        className="flex items-center gap-2 rounded-full px-4 py-2 bg-card border border-border shadow-lg hover:bg-accent animate-heartbeat-glow"
+        className="flex items-center gap-2.5 rounded-full px-5 py-3 bg-card border border-border shadow-lg hover:bg-accent animate-heartbeat-glow text-base"
         variant="ghost"
       >
-        <MessageCircle className="h-5 w-5" />
+        <MessageCircle className="h-6 w-6" />
         <span>Ask AI</span>
       </Button>
     </motion.div>
