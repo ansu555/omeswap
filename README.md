@@ -75,16 +75,59 @@ export { Logo } from './logo';
 
 ## Getting Started
 
-```bash
-# Install dependencies
-npm install
+### Prerequisites
 
-# Run development server
-npm run dev
+1. **CoinMarketCap API Key** (Required)
+   - Sign up at [CoinMarketCap API](https://coinmarketcap.com/api/)
+   - Get your API key from the dashboard
 
-# Build for production
-npm run build
-```
+2. **OpenAI API Key** (Required for AI analysis)
+   - Sign up at [OpenAI Platform](https://platform.openai.com/)
+   - Create an API key from the API keys section
+
+### Setup
+
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+2. **Configure Environment Variables**
+   
+   Create a `.env.local` file in the root directory:
+   ```bash
+   # CoinMarketCap API Key (Required for live token data)
+   COINMARKETCAP_API_KEY=your_coinmarketcap_api_key_here
+   
+   # OpenAI API Key (Required for AI-generated token analysis)
+   OPENAI_API_KEY=your_openai_api_key_here
+   ```
+   
+   Replace the placeholder values with your actual API keys.
+
+3. **Run development server**
+   ```bash
+   npm run dev
+   ```
+
+4. **Build for production**
+   ```bash
+   npm run build
+   ```
+
+### Environment Variables
+
+- `COINMARKETCAP_API_KEY` - Your CoinMarketCap API key (required for live token data and graphs)
+- `OPENAI_API_KEY` - Your OpenAI API key (required for AI-generated fundamental and technical analysis)
+
+### Features
+
+- **Live Token Data**: Real-time cryptocurrency data from CoinMarketCap API
+- **Token Analysis Pages**: Detailed analysis with audit scores, charts, and metrics
+- **AI-Powered Analysis**: OpenAI-generated fundamental and technical analysis for each token
+- **Historical Charts**: Price history visualization with multiple time ranges (24h, 7d, 1m, 3m, 1y, Max)
+- **Audit Scores**: Comprehensive scoring system (Financial, Fundamental, Social, Security)
+- **Similar Tokens**: Recommendations for related cryptocurrencies
 
 ## Tech Stack
 

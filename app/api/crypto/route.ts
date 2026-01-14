@@ -308,6 +308,11 @@ export async function GET(request: Request) {
             }
         }
 
+        // Helper function to format numbers with commas
+        const formatNumberWithCommas = (num: number): string => {
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+
         // Calculate metrics from token data
         const totalMarketCap = tokens.reduce((sum, t) => sum + t.marketCap, 0);
         const totalVolume24h = tokens.reduce((sum, t) => sum + t.volume24h, 0);
@@ -315,16 +320,16 @@ export async function GET(request: Request) {
         const metrics: Metric[] = [
             {
                 label: 'Total Market Cap',
-                value: `$${(totalMarketCap / 1e9).toFixed(2)}B`,
+                value: `$${formatNumberWithCommas(totalMarketCap / 1e9)}B`,
                 change: tokens.length > 0 ? tokens.reduce((sum, t) => sum + t.change24h, 0) / tokens.length : 0
             },
             {
                 label: '24h Volume',
-                value: `$${(totalVolume24h / 1e6).toFixed(2)}M`,
+                value: `$${formatNumberWithCommas(totalVolume24h / 1e6)}M`,
             },
             {
                 label: 'Active Tokens',
-                value: tokens.length.toString(),
+                value: tokens.length.toLocaleString('en-US'),
             },
         ];
 
