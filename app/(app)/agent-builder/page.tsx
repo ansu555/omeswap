@@ -152,6 +152,7 @@ export default function AgentBuilderPage() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
+        {/* @ts-ignore - direction prop is valid for react-resizable-panels */}
         <ResizablePanelGroup direction="horizontal" className="h-full">
           {/* Block Palette */}
           {!isPaletteCollapsed && (
