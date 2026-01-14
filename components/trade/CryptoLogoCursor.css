@@ -2,7 +2,8 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  pointer-events: auto;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .crypto-logo-cursor-inner {

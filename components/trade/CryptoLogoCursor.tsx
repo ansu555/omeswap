@@ -122,11 +122,9 @@ export function CryptoLogoCursor({
   );
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    container.addEventListener("mousemove", handleMouseMove);
-    return () => container.removeEventListener("mousemove", handleMouseMove);
+    // Use document-level listener so pointer-events: none on container doesn't block it
+    document.addEventListener("mousemove", handleMouseMove);
+    return () => document.removeEventListener("mousemove", handleMouseMove);
   }, [handleMouseMove]);
 
   useEffect(() => {
