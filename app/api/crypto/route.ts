@@ -53,24 +53,40 @@ const transformCoinGeckoData = (cgData: CoinGeckoMarket[]): TokenRow[] => {
     }));
 };
 
-// Transform CoinMarketCap data to TokenRow format (fallback)
+// Transform CoinMarketCap data to TokenRow format (Primary source)
 const transformCMCData = (cmcData: CMCResponse): TokenRow[] => {
-    return cmcData.data.map((crypto) => ({
-        id: crypto.id.toString(),
-        rank: crypto.cmc_rank,
-        name: crypto.name,
-        symbol: crypto.symbol,
-        imageUrl: `https://s2.coinmarketcap.com/static/img/coins/64x64/${crypto.id}.png`,
-        price: crypto.quote.USD.price,
-        change1h: crypto.quote.USD.percent_change_1h,
-        change24h: crypto.quote.USD.percent_change_24h,
-        change7d: crypto.quote.USD.percent_change_7d,
-        marketCap: crypto.quote.USD.market_cap,
-        volume24h: crypto.quote.USD.volume_24h,
-        circulatingSupply: crypto.circulating_supply,
-        sparklineData: generateSparklineData(crypto.quote.USD.percent_change_7d),
-        isFavorite: false,
-    }));
+    if (!cmcData.data || !Array.isArray(cmcData.data)) {
+        return [];
+    }
+
+    const tokens: TokenRow[] = [];
+
+    for (const crypto of cmcData.data) {
+        const quote = crypto.quote?.USD;
+        if (!quote) {
+            // Skip if no USD quote data
+            continue;
+        }
+
+        tokens.push({
+            id: crypto.id.toString(),
+            rank: crypto.cmc_rank || 0,
+            name: crypto.name || 'Unknown',
+            symbol: crypto.symbol || 'UNKNOWN',
+            imageUrl: `https://s2.coinmarketcap.com/static/img/coins/64x64/${crypto.id}.png`,
+            price: quote.price || 0,
+            change1h: quote.percent_change_1h || 0,
+            change24h: quote.percent_change_24h || 0,
+            change7d: quote.percent_change_7d || 0,
+            marketCap: quote.market_cap || 0,
+            volume24h: quote.volume_24h || 0,
+            circulatingSupply: crypto.circulating_supply || 0,
+            sparklineData: generateSparklineData(quote.percent_change_7d || 0),
+            isFavorite: false,
+        });
+    }
+
+    return tokens;
 };
 
 // Transform GeckoTerminal pools to PoolRow format
@@ -195,57 +211,100 @@ async function fetchPoolsFromGeckoTerminal(): Promise<GeckoTerminalResponse> {
     return await response.json();
 }
 
-// Fallback to CoinMarketCap
-async function fetchFromCoinMarketCap(apiKey: string): Promise<CMCResponse> {
+// Fetch from CoinMarketCap (Primary source)
+async function fetchFromCoinMarketCap(apiKey: string, limit: number = 100): Promise<CMCResponse> {
+    if (!apiKey || apiKey === 'your_coinmarketcap_api_key_here') {
+        throw new Error('CoinMarketCap API key is required');
+    }
+
     const response = await fetch(
-        `https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?start=1&limit=100&convert=USD`,
+        `https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?start=1&limit=${limit}&convert=USD`,
         {
             method: 'GET',
             headers: {
                 'X-CMC_PRO_API_KEY': apiKey,
                 'Accept': 'application/json',
             },
-            next: { revalidate: 300 },
+            next: { revalidate: 300 }, // Cache for 5 minutes
         }
     );
 
     if (!response.ok) {
-        throw new Error(`CoinMarketCap API error: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`CoinMarketCap API error: ${response.status} - ${errorText}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    
+    // Check for API errors in response
+    if (data.status?.error_code && data.status.error_code !== 0) {
+        throw new Error(`CoinMarketCap API error: ${data.status.error_message || 'Unknown error'}`);
+    }
+
+    return data;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        const { searchParams } = new URL(request.url);
+        const limit = parseInt(searchParams.get('limit') || '100', 10);
+
         const coinGeckoKey = process.env.COINGECKO_API_KEY || '';
         const coinMarketCapKey = process.env.COINMARKETCAP_API_KEY || '';
 
         let tokens: TokenRow[] = [];
         let pools: PoolRow[] = [];
 
-        // Try CoinGecko first
-        try {
-            const cgData = await fetchFromCoinGecko(coinGeckoKey);
-            tokens = transformCoinGeckoData(cgData);
-
-            // Fetch pools from GeckoTerminal
+        // Try CoinMarketCap first (Primary source)
+        if (coinMarketCapKey && coinMarketCapKey !== 'your_coinmarketcap_api_key_here') {
             try {
-                const gtData = await fetchPoolsFromGeckoTerminal();
-                pools = transformGeckoTerminalPools(gtData);
-            } catch (poolError) {
-                console.warn('GeckoTerminal fetch failed:', poolError);
-                pools = []; // Empty pools on error
-            }
-        } catch (cgError) {
-            console.warn('CoinGecko fetch failed, falling back to CoinMarketCap:', cgError);
-
-            // Fallback to CoinMarketCap
-            if (coinMarketCapKey) {
-                const cmcData = await fetchFromCoinMarketCap(coinMarketCapKey);
+                const cmcData = await fetchFromCoinMarketCap(coinMarketCapKey, limit);
                 tokens = transformCMCData(cmcData);
-            } else {
-                throw new Error('Both CoinGecko and CoinMarketCap failed, and no CMC key available');
+
+                // Fetch pools from GeckoTerminal (still using GeckoTerminal for pools)
+                try {
+                    const gtData = await fetchPoolsFromGeckoTerminal();
+                    pools = transformGeckoTerminalPools(gtData);
+                } catch (poolError) {
+                    console.warn('GeckoTerminal fetch failed:', poolError);
+                    pools = []; // Empty pools on error
+                }
+            } catch (cmcError) {
+                console.warn('CoinMarketCap fetch failed, falling back to CoinGecko:', cmcError);
+                
+                // Fallback to CoinGecko
+                try {
+                    const cgData = await fetchFromCoinGecko(coinGeckoKey);
+                    tokens = transformCoinGeckoData(cgData);
+
+                    // Fetch pools from GeckoTerminal
+                    try {
+                        const gtData = await fetchPoolsFromGeckoTerminal();
+                        pools = transformGeckoTerminalPools(gtData);
+                    } catch (poolError) {
+                        console.warn('GeckoTerminal fetch failed:', poolError);
+                        pools = []; // Empty pools on error
+                    }
+                } catch (cgError) {
+                    throw new Error('Both CoinMarketCap and CoinGecko failed. Please check your API keys.');
+                }
+            }
+        } else {
+            // No CMC key, try CoinGecko
+            try {
+                const cgData = await fetchFromCoinGecko(coinGeckoKey);
+                tokens = transformCoinGeckoData(cgData);
+
+                // Fetch pools from GeckoTerminal
+                try {
+                    const gtData = await fetchPoolsFromGeckoTerminal();
+                    pools = transformGeckoTerminalPools(gtData);
+                } catch (poolError) {
+                    console.warn('GeckoTerminal fetch failed:', poolError);
+                    pools = []; // Empty pools on error
+                }
+            } catch (cgError) {
+                throw new Error('CoinMarketCap API key is required. Please set COINMARKETCAP_API_KEY in your .env file.');
             }
         }
 
