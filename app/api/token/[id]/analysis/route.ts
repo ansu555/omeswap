@@ -185,5 +185,3 @@ The market is currently in a ${trend.toLowerCase()} phase. Traders should monito
 }
 
 
-
----
