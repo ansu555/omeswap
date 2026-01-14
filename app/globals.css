@@ -347,4 +347,33 @@
   .animate-heartbeat-glow {
     animation: heartbeat-glow 2.5s ease-in-out infinite;
   }
+
+  /* React Flow Custom Styles */
+  .react-flow__node {
+    @apply cursor-pointer;
+  }
+
+  .react-flow__edge-path {
+    @apply stroke-2;
+  }
+
+  .react-flow__handle {
+    @apply border-2 border-white cursor-crosshair;
+  }
+
+  .react-flow__handle-connecting {
+    @apply bg-primary;
+  }
+
+  .react-flow__minimap {
+    @apply rounded-lg overflow-hidden;
+  }
+
+  .react-flow__controls {
+    @apply gap-2;
+  }
+
+  .react-flow__controls-button {
+    @apply bg-card border-border hover:bg-accent;
+  }
 }
