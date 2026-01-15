@@ -198,7 +198,7 @@ export default function Explorer() {
 
     return (
         <div className="min-h-screen">
-            <div className="max-w-[1600px] mx-auto px-4 md:px-6 pt-32 pb-6 space-y-6">
+            <div className="max-w-[1600px] mx-auto px-4 md:px-6 pt-6 pb-6 space-y-6">
                 {/* Stats Widgets */}
                 <StatsWidgetsGrid metrics={metrics} />
 
