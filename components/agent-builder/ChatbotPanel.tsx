@@ -6,14 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Agent, ChatMessage } from '@/types/agent-builder';
+import { Agent, AgentBlock, BlockConnection, ChatMessage } from '@/types/agent-builder';
 import { AgentChatbotService } from '@/lib/agent-builder/chatbot';
 import { Send, Bot, User, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ChatbotPanelProps {
   currentAgent: Agent | null;
-  onBlocksGenerated: (blocks: any[]) => void;
+  onBlocksGenerated: (blocks: AgentBlock[], connections: BlockConnection[]) => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
 }
@@ -88,7 +88,7 @@ What would you like to build?`,
 
       // If blocks were generated, notify parent
       if (response.blocks && response.blocks.length > 0) {
-        onBlocksGenerated(response.blocks);
+        onBlocksGenerated(response.blocks, response.connections || []);
       }
     } catch (error) {
       console.error('Error processing message:', error);

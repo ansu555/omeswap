@@ -125,6 +125,7 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
   blocks?: AgentBlock[];
+  connections?: BlockConnection[];
   suggestions?: string[];
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Agent, AgentBlock } from '@/types/agent-builder';
+import { Agent, AgentBlock, BlockConnection } from '@/types/agent-builder';
 import { AgentStorageManager, generateAgentId } from '@/lib/agent-builder/storage';
 import { AgentToolbar, BlockPalette, ChatbotPanel, FlowCanvas } from '@/components/agent-builder';
 import AgentManager from '@/components/agent-builder/AgentManager';
@@ -96,28 +96,23 @@ export default function AgentBuilderPage() {
     });
   }, []);
 
-  const handleBlocksGenerated = useCallback((blocks: AgentBlock[]) => {
+  const handleBlocksGenerated = useCallback((blocks: AgentBlock[], connections: BlockConnection[]) => {
     if (!currentAgent) return;
 
-    // Add generated blocks to the agent
-    const newBlocks = blocks.map((block, index) => ({
-      ...block,
-      position: {
-        x: 300 + index * 250,
-        y: 200 + Math.random() * 100,
-      },
-    }));
+    // Blocks already have positions from the chatbot service, so we don't need to recalculate
 
     setCurrentAgent((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
-        blocks: [...prev.blocks, ...newBlocks],
+        blocks: [...prev.blocks, ...blocks],
+        connections: [...prev.connections, ...connections],
         updatedAt: new Date().toISOString(),
       };
     });
 
-    toast.success(`Added ${blocks.length} block(s) to canvas`);
+    const connectionText = connections.length > 0 ? ` and ${connections.length} connection(s)` : '';
+    toast.success(`Added ${blocks.length} block(s)${connectionText} to canvas`);
   }, [currentAgent]);
 
   if (!currentAgent) {
