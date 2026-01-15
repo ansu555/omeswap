@@ -12,18 +12,27 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
   const [amount0, setAmount0] = useState<string>('');
   const [amount1, setAmount1] = useState<string>('');
   
-  const { writeContract, data: hash, isPending: isWritePending } = useWriteContract();
+  const { writeContract, data: hash, isPending: isWritePending, error: writeError } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const [error, setError] = useState<string | null>(null);
 
   const token0 = TOKENS[token0Symbol];
   const token1 = TOKENS[token1Symbol];
+
+  // Determine token ordering (token0 < token1 by address)
+  const token0Addr = token0.address.toLowerCase() < token1.address.toLowerCase() 
+    ? token0.address as Address 
+    : token1.address as Address;
+  const token1Addr = token0.address.toLowerCase() < token1.address.toLowerCase() 
+    ? token1.address as Address 
+    : token0.address as Address;
 
   // Get pool ID
   const { data: poolId } = useReadContract({
     address: CONTRACT_ADDRESSES.POOLS as Address,
     abi: MultiTokenLiquidityPoolsABI,
     functionName: 'getPoolId',
-    args: [token0.address as Address, token1.address as Address],
+    args: [token0Addr, token1Addr],
     chainId: mantleTestnet.id,
   });
 
@@ -126,21 +135,46 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
 
   // Add liquidity
   const addLiquidity = async () => {
-    if (!amount0 || !amount1 || !poolId) return;
-
-    writeContract({
-      address: CONTRACT_ADDRESSES.POOLS as Address,
-      abi: MultiTokenLiquidityPoolsABI,
-      functionName: 'addLiquidity',
-      args: [
-        poolId as bigint,
-        parseEther(amount0),
-        parseEther(amount1),
-        BigInt(0), // min amount0
-        BigInt(0), // min amount1
-      ],
-      chainId: mantleTestnet.id,
+    console.log('addLiquidity called', {
+      amount0,
+      amount1,
+      poolId,
+      poolIdType: typeof poolId,
     });
+
+    // Validate inputs - poolId can be 0n (BigInt zero is valid)
+    if (!amount0 || !amount1 || poolId === undefined || poolId === null) {
+      console.error('Missing required values for addLiquidity:', {
+        amount0: !!amount0,
+        amount1: !!amount1,
+        poolId: poolId !== undefined && poolId !== null,
+      });
+      return;
+    }
+
+    try {
+      console.log('Calling addLiquidity with params:', {
+        poolId: poolId.toString(),
+        amount0: parseEther(amount0).toString(),
+        amount1: parseEther(amount1).toString(),
+      });
+
+      writeContract({
+        address: CONTRACT_ADDRESSES.POOLS as Address,
+        abi: MultiTokenLiquidityPoolsABI,
+        functionName: 'addLiquidity',
+        args: [
+          poolId as bigint,
+          parseEther(amount0),
+          parseEther(amount1),
+          BigInt(0), // min amount0
+          BigInt(0), // min amount1
+        ],
+        chainId: mantleTestnet.id,
+      });
+    } catch (error: any) {
+      console.error('Error in addLiquidity:', error);
+    }
   };
 
   // Remove liquidity
@@ -192,6 +226,21 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
     return parseEther(amount1) > (allowance1 as bigint);
   };
 
+  // Handle write errors
+  useEffect(() => {
+    if (writeError) {
+      setError(writeError.message || 'Transaction failed');
+      console.error('Write contract error:', writeError);
+    }
+  }, [writeError]);
+
+  // Clear error on success
+  useEffect(() => {
+    if (isSuccess) {
+      setError(null);
+    }
+  }, [isSuccess]);
+
   // Refetch data after transaction
   useEffect(() => {
     if (isSuccess) {
@@ -233,6 +282,7 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
     isLoading: isWritePending || isConfirming,
     isSuccess,
     hash,
+    error,
   };
 }
 
