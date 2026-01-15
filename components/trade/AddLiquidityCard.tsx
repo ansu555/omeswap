@@ -39,6 +39,7 @@ export function AddLiquidityCard() {
     isLoading,
     isSuccess,
     hash,
+    error,
   } = useLiquidity(token0Symbol, token1Symbol);
 
   const token0 = TOKENS[token0Symbol];
@@ -94,7 +95,7 @@ export function AddLiquidityCard() {
   }
 
   return (
-    <div className="swap-card w-full max-w-md p-1">
+    <div className="swap-card w-full p-1">
       <div className="p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold">Add Liquidity</h3>
@@ -247,7 +248,13 @@ export function AddLiquidityCard() {
           
           {!needsApproval0 && !needsApproval1 && (
             <button
-              onClick={addLiquidity}
+              onClick={(e) => {
+                e.preventDefault();
+                console.log('Add Liquidity button clicked', { isValidLiquidity, isLoading, amount0, amount1 });
+                if (isValidLiquidity && !isLoading) {
+                  addLiquidity();
+                }
+              }}
               disabled={!isValidLiquidity || isLoading}
               className="swap-action-btn w-full"
             >
@@ -255,6 +262,14 @@ export function AddLiquidityCard() {
             </button>
           )}
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mt-2 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+            <div className="font-medium mb-1">Transaction Error</div>
+            <div className="text-xs">{error}</div>
+          </div>
+        )}
 
         {/* Success Message */}
         {isSuccess && hash && (

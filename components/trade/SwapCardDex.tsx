@@ -35,12 +35,14 @@ export function SwapCardDex() {
     setSlippage,
     estimatedOutput,
     balance,
+    hasLiquidity,
+    poolExists,
     needsApproval,
-    approveToken,
-    executeSwap,
+    approveAndSwap,
     isLoading,
     isSuccess,
     hash,
+    error,
   } = useDexSwap();
 
   const [mode, setMode] = useState<SwapMode>("swap");
@@ -72,7 +74,15 @@ export function SwapCardDex() {
     }
   };
 
-  const isValidSwap = amountIn && parseFloat(amountIn) > 0 && parseFloat(balance) >= parseFloat(amountIn);
+  const hasValidAmount = amountIn && parseFloat(amountIn) > 0;
+  const hasSufficientBalance = parseFloat(balance) >= parseFloat(amountIn || '0');
+  const isValidSwap =
+    hasValidAmount &&
+    hasSufficientBalance &&
+    hasLiquidity &&
+    poolExists &&
+    parseFloat(estimatedOutput) > 0;
+  const canApprove = hasValidAmount && hasSufficientBalance;
   const isWrongNetwork = isConnected && chain?.id !== mantleTestnet.id;
 
   const TokenSelectorModal = ({
@@ -152,7 +162,7 @@ export function SwapCardDex() {
   }
 
   return (
-    <div className="swap-card w-full max-w-md p-1">
+    <div className="swap-card w-full p-1">
       {/* Mode Selector */}
       <div className="flex items-center justify-between p-5 pb-2 gap-3">
         <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1 overflow-x-auto scrollbar-hide">
@@ -303,24 +313,30 @@ export function SwapCardDex() {
           )}
         </div>
 
-        {/* Action Buttons */}
-        {needsApproval ? (
-          <button
-            onClick={approveToken}
-            disabled={!isValidSwap || isLoading}
-            className="swap-action-btn mt-4"
-          >
-            {isLoading ? "Approving..." : `Approve ${payTokenData.symbol}`}
-          </button>
-        ) : (
-          <button
-            onClick={executeSwap}
-            disabled={!isValidSwap || isLoading}
-            className="swap-action-btn mt-4"
-          >
-            {isLoading ? "Swapping..." : isValidSwap ? "Swap" : "Enter Amount"}
-          </button>
-        )}
+        {/* Action Button - Combined Approve & Swap */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            console.log('Button clicked', { isValidSwap, isLoading, hasLiquidity, poolExists, estimatedOutput });
+            if (isValidSwap && !isLoading) {
+              approveAndSwap();
+            }
+          }}
+          disabled={!isValidSwap || isLoading}
+          className="swap-action-btn mt-4"
+        >
+          {isLoading 
+            ? (needsApproval ? "Approving..." : "Swapping...") 
+            : isValidSwap 
+              ? (needsApproval ? `Approve & Swap ${payTokenData.symbol}` : "Swap")
+              : !hasLiquidity || !poolExists 
+                ? "No Liquidity" 
+                : parseFloat(estimatedOutput) === 0 
+                  ? "Enter Amount" 
+                  : "Enter Amount"
+          }
+        </button>
+        
 
         {/* Success Message */}
         {isSuccess && hash && (
@@ -339,10 +355,28 @@ export function SwapCardDex() {
           </div>
         )}
 
-        {/* Info */}
+        {/* Error Message */}
+        {error && (
+          <div className="mt-2 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+            <div className="font-medium mb-1">Transaction Error</div>
+            <div className="text-xs">{error}</div>
+          </div>
+        )}
+
+        {/* Info Messages */}
         {parseFloat(balance) < parseFloat(amountIn || '0') && amountIn && (
           <div className="mt-2 text-sm text-destructive">
             Insufficient balance
+          </div>
+        )}
+        {amountIn && parseFloat(amountIn) > 0 && !poolExists && (
+          <div className="mt-2 text-sm text-warning">
+            Pool does not exist. Create pool first or select different tokens.
+          </div>
+        )}
+        {amountIn && parseFloat(amountIn) > 0 && poolExists && !hasLiquidity && (
+          <div className="mt-2 text-sm text-warning">
+            Pool exists but has no liquidity. Add liquidity first.
           </div>
         )}
       </div>

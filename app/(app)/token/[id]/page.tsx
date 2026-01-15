@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import {
   TokenHeader,
@@ -82,104 +82,37 @@ function formatSupply(num: number | null): string {
 export default function TokenDetailPage() {
   const { id } = useParams();
   const [activeCategory, setActiveCategory] = useState("fundamental");
-  const [tokenData, setTokenData] = useState<TokenData | null>(null);
-  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // Fetch token data and analysis
-  useEffect(() => {
-    async function fetchTokenData() {
-      if (!id) return;
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        // Fetch token details
-        const tokenResponse = await fetch(`/api/token/${id}`);
-        if (!tokenResponse.ok) {
-          throw new Error(`Failed to fetch token data: ${tokenResponse.statusText}`);
-        }
-        const token: TokenData = await tokenResponse.json();
-        setTokenData(token);
-
-        // Fetch analysis data
-        const analysisResponse = await fetch(`/api/token/${id}/analysis`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            tokenName: token.name,
-            symbol: token.symbol,
-            price: token.price,
-            marketCap: token.marketCap,
-            volume24h: token.volume24h,
-            priceChange24h: token.priceChange24h,
-            auditScores: token.auditScores,
-            tags: token.tags,
-          }),
-        });
-
-        if (analysisResponse.ok) {
-          const analysis: AnalysisData = await analysisResponse.json();
-          setAnalysisData(analysis);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load token data');
-        console.error('Error fetching token data:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchTokenData();
-  }, [id]);
-
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen pb-12">
-        <div className="pt-28 max-w-[1400px] mx-auto px-4 md:px-6">
-          <div className="dashboard-card p-8 text-center">
-            <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-muted rounded w-1/3 mx-auto"></div>
-              <div className="h-4 bg-muted rounded w-1/2 mx-auto"></div>
-            </div>
-            <p className="text-muted-foreground mt-4">Loading token data...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show error state
-  if (error || !tokenData) {
-    return (
-      <div className="min-h-screen pb-12">
-        <div className="pt-28 max-w-[1400px] mx-auto px-4 md:px-6">
-          <div className="dashboard-card p-8 text-center">
-            <div className="text-destructive text-xl font-semibold mb-2">Error Loading Token</div>
-            <p className="text-muted-foreground">{error || 'Token not found'}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Calculate FDV (Fully Diluted Valuation)
-  const fdv = tokenData.maxSupply
-    ? tokenData.price * tokenData.maxSupply
-    : tokenData.marketCap;
-
-  // Estimate TVL (Total Value Locked) - simplified calculation
-  const tvl = tokenData.marketCap * 0.1; // Rough estimate: 10% of market cap
+  // Get token data based on ID, fallback to a generic display
+  const tokenId = (id as string)?.toLowerCase() as TokenId;
+  const token = tokenData[tokenId] || {
+    name: String(id).charAt(0).toUpperCase() + String(id).slice(1),
+    ticker: String(id).toUpperCase().slice(0, 4),
+    chain: "Blockchain",
+    price: 1.0,
+    priceChange24h: 0.0,
+    overallScore: 7.5,
+    description: `${String(id).charAt(0).toUpperCase() + String(id).slice(1)} is a cryptocurrency token. Detailed analytics and information will be displayed here once integrated with live data sources.`,
+    scores: {
+      financial: 75,
+      fundamental: 70,
+      social: 80,
+      security: 72,
+    },
+    marketCap: "$0",
+    volume24h: "$0",
+    volumeChange: 0,
+    circulatingSupply: "0",
+    maxSupply: "∞",
+    liquidityRatio: 50,
+    tvl: "$0",
+    fdv: "$0",
+  };
 
   const categories = [
-    { id: "fundamental", label: "Fundamental", score: tokenData.auditScores.fundamental },
-    { id: "social", label: "Social", score: tokenData.auditScores.social },
-    { id: "security", label: "Security", score: tokenData.auditScores.security },
+    { id: "fundamental", label: "Fundamental", score: token.scores.fundamental },
+    { id: "social", label: "Social", score: token.scores.social },
+    { id: "security", label: "Security", score: token.scores.security },
   ];
 
   return (
@@ -188,23 +121,19 @@ export default function TokenDetailPage() {
         {/* Token Header */}
         <div className="dashboard-card">
           <TokenHeader
-            name={tokenData.name}
-            ticker={tokenData.symbol}
-            chain={tokenData.tags.includes('layer-1') ? 'Layer 1' : tokenData.tags.includes('ethereum-ecosystem') ? 'Ethereum' : 'Multi-Chain'}
-            price={tokenData.price}
-            priceChange24h={tokenData.priceChange24h}
-            overallScore={tokenData.auditScores.overall}
-            imageUrl={tokenData.imageUrl}
+            name={token.name}
+            ticker={token.ticker}
+            chain={token.chain}
+            price={token.price}
+            priceChange24h={token.priceChange24h}
+            overallScore={token.overallScore}
+            imageUrl={token.imageUrl}
           />
         </div>
 
         {/* Price Chart & Swap */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6">
-          <PriceChart 
-            basePrice={tokenData.price} 
-            priceChange24h={tokenData.priceChange24h}
-            historicalData={tokenData.historicalData}
-          />
+          <PriceChart basePrice={token.price} priceChange24h={token.priceChange24h} />
           <SwapCard />
         </div>
 
@@ -213,16 +142,16 @@ export default function TokenDetailPage() {
           {/* Left: Stats Card + Score Cards */}
           <div className="flex flex-col gap-6">
             <StatsCard
-              tvl={formatNumber(tvl)}
-              marketCap={formatNumber(tokenData.marketCap)}
-              fdv={formatNumber(fdv)}
-              volume1d={formatNumber(tokenData.volume24h)}
+              tvl={token.tvl}
+              marketCap={token.marketCap}
+              fdv={token.fdv}
+              volume1d={token.volume24h}
             />
             <div className="grid grid-cols-2 gap-4">
-              <ScoreCard label="Financial" score={tokenData.auditScores.financial} />
-              <ScoreCard label="Fundamental" score={tokenData.auditScores.fundamental} />
-              <ScoreCard label="Social" score={tokenData.auditScores.social} />
-              <ScoreCard label="Security" score={tokenData.auditScores.security} />
+              <ScoreCard label="Financial" score={token.scores.financial} />
+              <ScoreCard label="Fundamental" score={token.scores.fundamental} />
+              <ScoreCard label="Social" score={token.scores.social} />
+              <ScoreCard label="Security" score={token.scores.security} />
             </div>
           </div>
 
@@ -289,8 +218,8 @@ export default function TokenDetailPage() {
         <div className="space-y-6">
           {activeCategory === "fundamental" && (
             <FundamentalAnalysis
-              description={analysisData?.fundamental || `Loading fundamental analysis for ${tokenData.name}...`}
-              website={`https://coinmarketcap.com/currencies/${tokenData.name.toLowerCase().replace(/\s+/g, '-')}/`}
+              description={token.description}
+              website={`${token.ticker.toLowerCase()}.org`}
             />
           )}
 

@@ -209,9 +209,9 @@ export default function Explorer() {
 
     const filteredPools = useMemo(() => {
         // Convert DEX pools to PoolRow format
-        const dexPoolRows: PoolRow[] = dexPools.map((pool, index) => ({
-            id: pool.id,
-            rank: index + 1,
+        const dexPoolRows: PoolRow[] = dexPools.map((pool) => ({
+            id: String(pool.poolId), // Use poolId directly as string
+            rank: pool.poolId + 1,
             token0: {
                 name: pool.token0.name,
                 symbol: pool.token0.symbol,
@@ -222,9 +222,9 @@ export default function Explorer() {
             },
             fee: 0.3, // 0.3% fee
             tvl: pool.tvl,
-            volume24h: pool.tvl * 0.1, // Estimate 10% daily volume
-            volume7d: pool.tvl * 0.7, // Estimate 70% weekly volume
-            apr: pool.tvl > 0 ? 15 + Math.random() * 20 : 0, // Estimate 15-35% APR
+            volume24h: pool.volume24h,
+            volume7d: pool.volume7d,
+            apr: pool.apr,
         }));
 
         // Combine API pools with DEX pools
@@ -294,7 +294,11 @@ export default function Explorer() {
                         {activeTab === "pools" && (
                             <PoolsTable
                                 pools={filteredPools}
-                                onRowClick={(pool) => console.log("Pool clicked:", pool)}
+                                onRowClick={(pool) => {
+                                    console.log('Pool clicked:', pool);
+                                    // Use pool.id directly (it's already the pool ID number)
+                                    router.push(`/pool/${pool.id}`);
+                                }}
                             />
                         )}
                         {activeTab === "transactions" && (

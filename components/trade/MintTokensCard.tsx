@@ -101,7 +101,7 @@ export function MintTokensCard() {
   }
 
   return (
-    <div className="swap-card w-full max-w-2xl p-1">
+    <div className="swap-card w-full p-1">
       <div className="p-5">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
