@@ -3,7 +3,7 @@
 import React, { useRef, useEffect } from "react";
 import Link from "next/link";
 import { Logo } from "./logo";
-import { Compass, ArrowLeftRight, Wallet, Coins, Receipt } from "lucide-react";
+import { Compass, ArrowLeftRight, Wallet, Coins, Receipt, Bot } from "lucide-react";
 import { gsap } from "gsap";
 import { MantleWalletConnect } from "@/components/features/mantle";
 import { NavBar } from "@/components/ui/nav-bar";
@@ -12,6 +12,7 @@ const navItems = [
   { name: "Explore", url: "/explore", icon: Compass },
   { name: "Trade", url: "/trade", icon: ArrowLeftRight },
   { name: "Portfolio", url: "/portfolio", icon: Wallet },
+  { name: "Agent", url: "/agent-builder", icon: Bot },
   { name: "Tokens", url: "/cryptocurrencies", icon: Coins },
   { name: "Txns", url: "/transactions", icon: Receipt },
 ];

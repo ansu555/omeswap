@@ -14,6 +14,10 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 interface PriceChartProps {
   basePrice?: number;
   priceChange24h?: number;
+  historicalData?: Array<{
+    timestamp: number;
+    price: number;
+  }>;
 }
 
 const generateChartData = (days: number, basePrice: number = 85000) => {
@@ -52,11 +56,34 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function PriceChart({ basePrice = 85000, priceChange24h = 0 }: PriceChartProps) {
+export function PriceChart({ basePrice = 85000, priceChange24h = 0, historicalData }: PriceChartProps) {
   const [activeTimeframe, setActiveTimeframe] = useState("1y");
   const days = timeframes.find((t) => t.id === activeTimeframe)?.days || 365;
 
-  const data = useMemo(() => generateChartData(days, basePrice), [days, basePrice]);
+  const data = useMemo(() => {
+    // If we have real historical data, use it
+    if (historicalData && historicalData.length > 0) {
+      const now = Date.now();
+      const targetDays = days;
+      const millisInDay = 24 * 60 * 60 * 1000;
+      const cutoffTime = now - (targetDays * millisInDay);
+      
+      // Filter data for the selected timeframe
+      const filtered = historicalData.filter(d => d.timestamp >= cutoffTime);
+      
+      // Format for chart
+      return filtered.map(point => ({
+        date: new Date(point.timestamp).toLocaleDateString("en-US", { 
+          month: "short", 
+          day: "numeric" 
+        }),
+        price: point.price,
+      }));
+    }
+    
+    // Fallback to generated data if no historical data
+    return generateChartData(days, basePrice);
+  }, [days, basePrice, historicalData]);
 
   const formatPrice = (value: number) => {
     if (value >= 1000) {
