@@ -87,8 +87,21 @@ export function useWalletAnalysis(
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error occurred');
-      setError(error);
       console.error('Wallet analysis error:', error);
+
+      // Fallback to demo data so UI is not blank
+      setData({
+        portfolio_summary: {
+          total_value_usd: '0',
+          total_tokens: 0,
+          total_nfts: 0,
+        },
+        token_balances: [],
+        nft_holdings: [],
+        transactions: [],
+      });
+
+      setError(error);
     } finally {
       setIsLoading(false);
       isFetchingRef.current = false;
