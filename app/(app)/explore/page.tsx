@@ -88,7 +88,7 @@ export default function Explorer() {
     const [isLoading, setIsLoading] = useState(true);
     
     // Fetch DEX pools from smart contracts
-    const { pools: dexPools, poolCount } = useDexPools();
+    const { pools: dexPools } = useDexPools();
 
     // Fetch cryptocurrency data from our API
     useEffect(() => {
@@ -130,6 +130,49 @@ export default function Explorer() {
                 token.id === id ? { ...token, isFavorite: !token.isFavorite } : token
             )
         );
+    };
+
+    // Convert token name/symbol to Kryll-compatible slug
+    const getTokenSlug = (token: TokenRow): string => {
+        const slugMap: Record<string, string> = {
+            'Bitcoin': 'bitcoin',
+            'BTC': 'bitcoin',
+            'Ethereum': 'ethereum',
+            'ETH': 'ethereum',
+            'Tether': 'tether',
+            'USDT': 'tether',
+            'BNB': 'binancecoin',
+            'Binance Coin': 'binancecoin',
+            'Solana': 'solana',
+            'SOL': 'solana',
+            'XRP': 'ripple',
+            'Ripple': 'ripple',
+            'USD Coin': 'usd-coin',
+            'USDC': 'usd-coin',
+            'Dogecoin': 'dogecoin',
+            'DOGE': 'dogecoin',
+            'Cardano': 'cardano',
+            'ADA': 'cardano',
+            'Avalanche': 'avalanche-2',
+            'AVAX': 'avalanche-2',
+            'TRON': 'tron',
+            'TRX': 'tron',
+            'Polkadot': 'polkadot',
+            'DOT': 'polkadot',
+            'Toncoin': 'toncoin',
+            'TON': 'toncoin',
+            'Polygon': 'polygon',
+            'MATIC': 'polygon',
+            'Uniswap': 'uniswap',
+            'UNI': 'uniswap',
+        };
+
+        // Try exact matches first
+        if (slugMap[token.name]) return slugMap[token.name];
+        if (slugMap[token.symbol]) return slugMap[token.symbol];
+        
+        // Fallback: convert name to lowercase slug
+        return token.name.toLowerCase().replace(/\s+/g, '-');
     };
 
     const filteredTokens = useMemo(() => {
@@ -244,7 +287,7 @@ export default function Explorer() {
                             <TokensTable
                                 tokens={filteredTokens}
                                 onToggleFavorite={handleToggleFavorite}
-                                onRowClick={(token) => router.push(`/token/${token.id}`)}
+                                onRowClick={(token) => router.push(`/token/${getTokenSlug(token)}`)}
                                 isLoading={isLoading}
                             />
                         )}

@@ -20,6 +20,7 @@ interface TokenData {
   name: string;
   symbol: string;
   imageUrl: string;
+  description: string;
   price: number;
   priceChange24h: number;
   rank: number;
@@ -47,6 +48,12 @@ interface TokenData {
   tags: string[];
   dateAdded: string;
   lastUpdated: string;
+  kryllData?: {
+    financial: any;
+    fundamental: any;
+    social: any;
+    security: any;
+  };
 }
 
 interface AnalysisData {
@@ -223,11 +230,21 @@ export default function TokenDetailPage() {
           <div className="dashboard-card h-full">
             <h2 className="dashboard-card-title mb-4">About {tokenData.name}</h2>
             <div className="space-y-3">
-              <p className="text-muted-foreground leading-relaxed">
-                {analysisData?.fundamental.split('\n\n')[0] || 
-                  `${tokenData.name} (${tokenData.symbol}) is a cryptocurrency with a market cap of ${formatNumber(tokenData.marketCap)}. It ranks #${tokenData.rank} on CoinMarketCap.`}
-              </p>
-              <div className="grid grid-cols-2 gap-2 pt-2 text-sm">
+              {tokenData.description ? (
+                <div className="text-muted-foreground leading-relaxed max-h-[400px] overflow-y-auto pr-2">
+                  {tokenData.description.split('\n\n').map((paragraph, idx) => (
+                    <p key={idx} className="mb-3">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground leading-relaxed">
+                  {analysisData?.fundamental.split('\n\n')[0] || 
+                    `${tokenData.name} (${tokenData.symbol}) is a cryptocurrency with a market cap of ${formatNumber(tokenData.marketCap)}. It ranks #${tokenData.rank} on CoinMarketCap.`}
+                </p>
+              )}
+              <div className="grid grid-cols-2 gap-2 text-sm border-t border-border mt-4 pt-4">
                 <div>
                   <span className="text-muted-foreground">Circulating Supply:</span>
                   <p className="font-medium">{formatSupply(tokenData.circulatingSupply)}</p>
@@ -235,6 +252,14 @@ export default function TokenDetailPage() {
                 <div>
                   <span className="text-muted-foreground">Max Supply:</span>
                   <p className="font-medium">{formatSupply(tokenData.maxSupply)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">CEX Volume:</span>
+                  <p className="font-medium">{formatNumber(tokenData.volumeBreakdown.cex)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">DEX Volume:</span>
+                  <p className="font-medium">{formatNumber(tokenData.volumeBreakdown.dex)}</p>
                 </div>
               </div>
               {tokenData.tags.length > 0 && (
