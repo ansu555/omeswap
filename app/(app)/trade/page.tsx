@@ -50,22 +50,8 @@ export default function TradePage() {
 
             <main className="container mx-auto px-4 py-6 pt-6">
                 <div className="flex flex-col lg:flex-row gap-6 justify-center">
-                    {/* Left Column - Pool Liquidity (only when chart toggled) */}
-                    <div className="hidden lg:block lg:flex-1 lg:max-w-md">
-                        {showChart && (
-                            <div className="animate-fade-in">
-                                <PoolLiquidity
-                                    algoReserve={19.3905}
-                                    usdcReserve={10.7756}
-                                    totalLiquidity="13.93M"
-                                    lastUpdated="12/01/2026, 15:06:55"
-                                />
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Right - Full Width Trading Interface */}
-                    <div className="lg:col-span-8 order-1 lg:order-2">
+                    {/* Main Trading Interface */}
+                    <div className="w-full max-w-4xl mx-auto">
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                             <TabsList className="grid w-full grid-cols-3 mb-6">
                                 <TabsTrigger value="swap">Swap</TabsTrigger>
@@ -87,7 +73,7 @@ export default function TradePage() {
                         </Tabs>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

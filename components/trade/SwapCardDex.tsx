@@ -106,7 +106,7 @@ export function SwapCardDex() {
     try {
       // Simulate price fetch - in production, replace with actual API
       const newPrices: Record<string, PriceData> = {};
-      Object.keys(tokens).forEach((symbol) => {
+      Object.keys(DEFAULT_TOKENS).forEach((symbol) => {
         // Simulate small price fluctuations for demo
         const basePrice = DEFAULT_TOKENS[symbol]?.price || 1;
         const fluctuation = (Math.random() - 0.5) * 0.01; // +/- 0.5%
@@ -134,7 +134,7 @@ export function SwapCardDex() {
     } finally {
       setIsLoadingPrices(false);
     }
-  }, [tokens]);
+  }, []);
 
   // Real-time price polling
   useEffect(() => {
