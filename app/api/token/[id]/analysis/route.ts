@@ -184,3 +184,4 @@ Market State: ${trend === 'Bullish' ? 'Uptrend' : trend === 'Bearish' ? 'Downtre
 The market is currently in a ${trend.toLowerCase()} phase. Traders should monitor key support and resistance levels, volume patterns, and broader market sentiment when making trading decisions.`;
 }
 
+

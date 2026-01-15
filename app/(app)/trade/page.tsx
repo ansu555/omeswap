@@ -1,15 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SwapCardDex } from "@/components/trade/SwapCardDex";
-import { AddLiquidityCard } from "@/components/trade/AddLiquidityCard";
-import { MintTokensCard } from "@/components/trade/MintTokensCard";
+import { SwapCard } from "@/components/trade/SwapCard";
 import { PoolLiquidity } from "@/components/trade/PoolLiquidity";
 import { TokenMiniChart } from "@/components/trade/TokenMiniChart";
 import { SwapHistory } from "@/components/trade/SwapHistory";
 import { ToggleSection } from "@/components/trade/ToggleSection";
 import { CryptoLogoCursor } from "@/components/trade/CryptoLogoCursor";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const MOCK_HISTORY = [
     {
@@ -30,7 +27,6 @@ export default function TradePage() {
     const [showChart, setShowChart] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
     const [cryptoLogos, setCryptoLogos] = useState<string[]>([]);
-    const [activeTab, setActiveTab] = useState("swap");
 
     // Fetch crypto logos from backend
     useEffect(() => {
@@ -65,6 +61,8 @@ export default function TradePage() {
                     logoSize={36}
                 />
             )}
+
+            {/* Header is handled by layout.tsx */}
 
             <div className="container mx-auto px-4 pt-24 pb-12 max-w-7xl">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
