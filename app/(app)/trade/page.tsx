@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SwapCard } from "@/components/trade/SwapCard";
 import { PoolLiquidity } from "@/components/trade/PoolLiquidity";
 import { TokenMiniChart } from "@/components/trade/TokenMiniChart";
 import { SwapHistory } from "@/components/trade/SwapHistory";
 import { ToggleSection } from "@/components/trade/ToggleSection";
+import { CryptoLogoCursor } from "@/components/trade/CryptoLogoCursor";
 
 const MOCK_HISTORY = [
     {
@@ -25,9 +26,42 @@ const MOCK_HISTORY = [
 export default function Index() {
     const [showChart, setShowChart] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
+    const [cryptoLogos, setCryptoLogos] = useState<string[]>([]);
+
+    // Fetch crypto logos from backend
+    useEffect(() => {
+        const fetchCryptoLogos = async () => {
+            try {
+                const response = await fetch("/api/crypto?limit=20");
+                if (response.ok) {
+                    const data = await response.json();
+                    const logos = (data.tokens || [])
+                        .map((token: { imageUrl?: string }) => token.imageUrl)
+                        .filter(Boolean);
+                    setCryptoLogos(logos);
+                }
+            } catch (error) {
+                console.error("Failed to fetch crypto logos:", error);
+            }
+        };
+        fetchCryptoLogos();
+    }, []);
 
     return (
         <div className="min-h-screen bg-transparent relative z-10">
+            {/* Crypto Logo Cursor Background */}
+            {cryptoLogos.length > 0 && (
+                <CryptoLogoCursor
+                    images={cryptoLogos}
+                    spacing={100}
+                    randomFloat={true}
+                    exitDuration={0.4}
+                    removalInterval={40}
+                    maxPoints={12}
+                    logoSize={36}
+                />
+            )}
+
             {/* Header is handled by layout.tsx */}
 
             <main className="container mx-auto px-4 py-8 pt-32">
