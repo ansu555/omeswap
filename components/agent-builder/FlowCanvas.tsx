@@ -20,7 +20,7 @@ import { generateBlockId, generateConnectionId } from '@/lib/agent-builder/stora
 import AgentBlockNode from './AgentBlockNode';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, Maximize2, Save } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const nodeTypes = {
@@ -206,10 +206,6 @@ function FlowCanvasInner({ agent, onAgentUpdate }: FlowCanvasProps) {
     reactFlowInstance?.zoomOut();
   };
 
-  const handleSave = () => {
-    toast.success('Agent saved to local storage');
-  };
-
   return (
     <div className="w-full h-full relative" ref={reactFlowWrapper}>
       <ReactFlow
@@ -239,7 +235,7 @@ function FlowCanvasInner({ agent, onAgentUpdate }: FlowCanvasProps) {
           className="!bg-card !border-2"
         />
 
-        <Panel position="top-right" className="flex gap-2">
+        <Panel position="top-right">
           <Card className="flex gap-1 p-1">
             <Button size="icon" variant="ghost" onClick={handleZoomIn} className="h-8 w-8">
               <ZoomIn className="w-4 h-4" />
@@ -250,21 +246,6 @@ function FlowCanvasInner({ agent, onAgentUpdate }: FlowCanvasProps) {
             <Button size="icon" variant="ghost" onClick={handleFitView} className="h-8 w-8">
               <Maximize2 className="w-4 h-4" />
             </Button>
-          </Card>
-          <Button onClick={handleSave} variant="default" size="sm">
-            <Save className="w-4 h-4 mr-2" />
-            Save
-          </Button>
-        </Panel>
-
-        <Panel position="top-center">
-          <Card className="px-4 py-2">
-            <div className="text-center">
-              <h3 className="font-semibold text-sm">{agent.name}</h3>
-              <p className="text-xs text-muted-foreground">
-                {agent.blocks.length} blocks • {agent.connections.length} connections
-              </p>
-            </div>
           </Card>
         </Panel>
 

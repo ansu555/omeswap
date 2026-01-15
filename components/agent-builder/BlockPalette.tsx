@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { BLOCK_TEMPLATES, BLOCK_CATEGORIES } from '@/lib/agent-builder/block-templates';
-import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -33,8 +32,8 @@ export default function BlockPalette({ onToggleCollapse }: BlockPaletteProps) {
   };
 
   return (
-    <Card className="h-full flex flex-col border-r">
-      <div className="p-4 border-b bg-muted/30">
+    <div className="h-full flex flex-col border-r border-border/50">
+      <div className="p-4 border-b border-border/50">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold">Block Library</h3>
           {onToggleCollapse && (
@@ -62,20 +61,18 @@ export default function BlockPalette({ onToggleCollapse }: BlockPaletteProps) {
       </div>
 
       <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="flex-1 flex flex-col">
-        <div className="border-b px-2">
-          <ScrollArea className="w-full">
-            <TabsList className="w-full justify-start h-auto p-2 bg-transparent">
-              {BLOCK_CATEGORIES.map((category) => (
-                <TabsTrigger
-                  key={category}
-                  value={category}
-                  className="text-xs px-3 py-1.5"
-                >
-                  {category}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </ScrollArea>
+        <div className="border-b border-border/50 px-2 overflow-x-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+          <TabsList className="inline-flex w-max justify-start h-auto p-2 bg-transparent">
+            {BLOCK_CATEGORIES.map((category) => (
+              <TabsTrigger
+                key={category}
+                value={category}
+                className="text-xs px-3 py-1.5 whitespace-nowrap"
+              >
+                {category}
+              </TabsTrigger>
+            ))}
+          </TabsList>
         </div>
 
         {BLOCK_CATEGORIES.map((category) => (
@@ -100,7 +97,7 @@ export default function BlockPalette({ onToggleCollapse }: BlockPaletteProps) {
           </TabsContent>
         ))}
       </Tabs>
-    </Card>
+    </div>
   );
 }
 
@@ -113,11 +110,12 @@ function BlockPaletteItem({ template, onDragStart }: BlockPaletteItemProps) {
   const IconComponent = (Icons as any)[template.icon] || Icons.Box;
 
   return (
-    <Card
+    <div
       draggable
       onDragStart={(e) => onDragStart(e, template)}
       className={cn(
-        'p-3 cursor-grab active:cursor-grabbing',
+        'p-3 cursor-grab active:cursor-grabbing rounded-lg',
+        'glass-card border border-border/50',
         'hover:shadow-md transition-all duration-200',
         'hover:scale-[1.02] border-l-4'
       )}
@@ -145,6 +143,6 @@ function BlockPaletteItem({ template, onDragStart }: BlockPaletteItemProps) {
           </p>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

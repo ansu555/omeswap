@@ -62,13 +62,12 @@ const AgentBlockNode = memo(({ data, selected }: NodeProps<BlockNodeData>) => {
     <Card
       className={cn(
         'min-w-[220px] max-w-[280px] transition-all duration-200',
-        'border-2 shadow-lg hover:shadow-xl',
+        'glass-card border shadow-lg hover:shadow-xl',
         selected ? 'ring-2 ring-primary ring-offset-2' : '',
         !data.isValid && 'border-destructive'
       )}
       style={{
-        borderColor: selected ? data.color : undefined,
-        backgroundColor: 'hsl(var(--card))',
+        borderColor: selected ? data.color : `${data.color}50`,
       }}
     >
       {/* Input Handle */}

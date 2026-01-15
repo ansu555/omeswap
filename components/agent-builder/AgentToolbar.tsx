@@ -3,7 +3,6 @@
 import React from 'react';
 import { Agent } from '@/types/agent-builder';
 import { AgentValidator } from '@/lib/agent-builder/storage';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -161,7 +160,7 @@ export default function AgentToolbar({
 
   return (
     <>
-      <Card className="flex items-center justify-between p-3 border-b rounded-none">
+      <div className="flex items-center justify-between p-3 bg-transparent">
         {/* Agent Info */}
         <div className="flex items-center gap-4 flex-1">
           <Input
@@ -267,7 +266,7 @@ export default function AgentToolbar({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </Card>
+      </div>
 
       <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
         <AlertDialogContent>
