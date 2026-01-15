@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NetWorthCard } from "@/components/portfolio/NetWorthCard";
@@ -8,72 +8,14 @@ import { AgentWalletCard } from "@/components/portfolio/AgentWalletCard";
 import { TokenHoldingRow } from "@/components/portfolio/TokenHoldingRow";
 import { PortfolioSummary } from "@/components/portfolio/PortfolioSummary";
 import { PortfolioTable, type PortfolioRow } from "@/components/portfolio/PortfolioTable";
+import { AddressManager } from "@/components/portfolio/AddressManager";
+import { useMantleWallet, useWalletAnalysis, useCustomAddressAnalysis } from "@/hooks";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
-// Mock data for demonstration
-const MOCK_TOKENS = [
-  {
-    id: "eth-ethereum",
-    chain: "ethereum",
-    symbol: "ETH",
-    amount: "2.3456",
-    priceUsd: 3420.21,
-    change24h: -2.1,
-    change30d: 12.5,
-    imageUrl: "https://cryptologos.cc/logos/ethereum-eth-logo.png?v=035",
-  },
-  {
-    id: "usdc-arbitrum",
-    chain: "arbitrum",
-    symbol: "USDC",
-    amount: "5450.00",
-    priceUsd: 1.0,
-    change24h: 0.01,
-    change30d: 0.02,
-    imageUrl: "https://cryptologos.cc/logos/usd-coin-usdc-logo.png?v=035",
-  },
-  {
-    id: "uni-base",
-    chain: "base",
-    symbol: "UNI",
-    amount: "125.50",
-    priceUsd: 12.45,
-    change24h: 5.2,
-    change30d: -8.3,
-    imageUrl: "https://cryptologos.cc/logos/uniswap-uni-logo.png?v=035",
-  },
-  {
-    id: "arb-arbitrum",
-    chain: "arbitrum",
-    symbol: "ARB",
-    amount: "2500.00",
-    priceUsd: 0.82,
-    change24h: 3.4,
-    change30d: 15.6,
-    imageUrl: "https://cryptologos.cc/logos/arbitrum-arb-logo.png?v=035",
-  },
-  {
-    id: "op-optimism",
-    chain: "optimism",
-    symbol: "OP",
-    amount: "850.00",
-    priceUsd: 2.15,
-    change24h: -1.2,
-    change30d: 22.4,
-    imageUrl: "https://cryptologos.cc/logos/optimism-ethereum-op-logo.png?v=035",
-  },
-  {
-    id: "link-ethereum",
-    chain: "ethereum",
-    symbol: "LINK",
-    amount: "45.75",
-    priceUsd: 18.92,
-    change24h: 1.8,
-    change30d: 5.2,
-    imageUrl: "https://cryptologos.cc/logos/chainlink-link-logo.png?v=035",
-  },
-];
-
-// Generate chart data
+// Generate chart data based on current value
 const generateChartData = (baseValue: number, variance: number, points: number) => {
   const data = [];
   let value = baseValue;
@@ -88,62 +30,100 @@ const generateChartData = (baseValue: number, variance: number, points: number) 
 };
 
 export default function Index() {
-  const [selectedTokenIds, setSelectedTokenIds] = useState<Set<string>>(new Set());
-  const [hideDust, setHideDust] = useState(false);
+  const { address: connectedAddress, isConnected } = useMantleWallet();
+  const [useCustomAddress, setUseCustomAddress] = useState(false);
+  const [hideDust, setHideDust] = useState(true); // Hide dust by default
   const [mergeChains, setMergeChains] = useState(true);
+  
+  // Connected wallet analysis
+  const { 
+    data: connectedData, 
+    isLoading: connectedLoading, 
+    error: connectedError 
+  } = useWalletAnalysis({
+    autoFetch: isConnected && !useCustomAddress,
+    chains: ['ethereum', 'polygon'],
+  });
 
-  // Calculate total portfolio value
+  // Custom address analysis
+  const {
+    data: customData,
+    isLoading: customLoading,
+    error: customError,
+    analyzeAddress,
+    currentAddress: customAddress,
+  } = useCustomAddressAnalysis();
+
+  // Determine which data source to use
+  const walletData = useCustomAddress ? customData : connectedData;
+  const isLoading = useCustomAddress ? customLoading : connectedLoading;
+  const error = useCustomAddress ? customError : connectedError;
+  const currentAddress = useCustomAddress ? customAddress : connectedAddress;
+
+  // Handle address selection from AddressManager
+  const handleSelectAddress = (address: string, chains: string[]) => {
+    setUseCustomAddress(true);
+    analyzeAddress(address, chains);
+  };
+
+  // Switch back to connected wallet
+  useEffect(() => {
+    if (isConnected && !useCustomAddress && connectedAddress) {
+      // Auto-analyze connected wallet
+    }
+  }, [isConnected, useCustomAddress, connectedAddress]);
+
+  // Convert API data to UI format
+  const tokens = useMemo(() => {
+    if (!walletData?.token_balances) return [];
+    
+    return walletData.token_balances
+      .map((token, index) => ({
+        id: `${token.chain}-${token.token_symbol}-${index}`,
+        chain: token.chain,
+        symbol: token.token_symbol,
+        amount: token.balance_formatted,
+        priceUsd: parseFloat(token.price_usd || '0'),
+        change24h: parseFloat(token.price_change_24h || '0'),
+        change30d: 0, // Not available from API
+        imageUrl: token.logo_url || undefined,
+        valueUsd: token.value_usd ? parseFloat(token.value_usd) : 0,
+      }))
+      .sort((a, b) => b.valueUsd - a.valueUsd); // Sort by value, highest first
+  }, [walletData]);
+
+  // Calculate total portfolio value from real data
   const totalPortfolioValue = useMemo(() => {
-    return MOCK_TOKENS.reduce((sum, token) => {
-      return sum + parseFloat(token.amount) * token.priceUsd;
-    }, 0);
-  }, []);
+    if (!walletData?.portfolio_summary) return 0;
+    return parseFloat(walletData.portfolio_summary.total_value_usd);
+  }, [walletData]);
 
-  // Calculate selected worth
-  const selectedWorth = useMemo(() => {
-    if (selectedTokenIds.size === 0) return totalPortfolioValue;
-    return MOCK_TOKENS.filter((t) => selectedTokenIds.has(t.id)).reduce(
-      (sum, token) => sum + parseFloat(token.amount) * token.priceUsd,
-      0
-    );
-  }, [selectedTokenIds, totalPortfolioValue]);
-
-  // Chart data
+  // Chart data based on real portfolio value
   const chartData = useMemo(
     () => generateChartData(totalPortfolioValue, totalPortfolioValue * 0.05, 30),
     [totalPortfolioValue]
   );
 
-  // Token toggle handler
-  const handleToggleToken = useCallback((id: string) => {
-    setSelectedTokenIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }, []);
+  // Calculate average 24h change from real data
+  const avgChange24h = useMemo(() => {
+    if (tokens.length === 0) return 0;
+    return tokens.reduce((sum, t) => sum + t.change24h, 0) / tokens.length;
+  }, [tokens]);
 
-  // Select all handler
-  const handleSelectAll = useCallback(() => {
-    setSelectedTokenIds((prev) => {
-      if (prev.size === MOCK_TOKENS.length) {
-        return new Set();
-      }
-      return new Set(MOCK_TOKENS.map((t) => t.id));
-    });
-  }, []);
+  // Calculate average 30d change (using 24h as approximation)
+  const avgChange30d = useMemo(() => {
+    return avgChange24h * 2; // Approximate
+  }, [avgChange24h]);
 
-  // Table rows
+  // Table rows from real data
   const tableRows: PortfolioRow[] = useMemo(() => {
-    const filteredTokens =
-      selectedTokenIds.size === 0
-        ? MOCK_TOKENS
-        : MOCK_TOKENS.filter((t) => selectedTokenIds.has(t.id));
-
+    let filteredTokens = tokens;
+    
+    // Hide dust tokens (value < $0.01 or no price data)
+    if (hideDust) {
+      filteredTokens = tokens.filter(token => token.valueUsd >= 0.01);
+    }
+    
     return filteredTokens.map((token) => ({
       id: token.id,
       chain: token.chain,
@@ -151,28 +131,107 @@ export default function Index() {
       amount: token.amount,
       priceUsd: token.priceUsd,
       change24hPercent: token.change24h,
-      change30dPercent: token.change30d,
+      change30dPercent: token.change30d || token.change24h * 2,
       holdingUsd: parseFloat(token.amount) * token.priceUsd,
       newsCount: Math.floor(Math.random() * 10),
       imageUrl: token.imageUrl,
     }));
-  }, [selectedTokenIds]);
+  }, [tokens, hideDust]);
 
-  // Calculate average changes
-  const avgChange24h = useMemo(() => {
-    const tokens = selectedTokenIds.size === 0 ? MOCK_TOKENS : MOCK_TOKENS.filter((t) => selectedTokenIds.has(t.id));
-    return tokens.reduce((sum, t) => sum + t.change24h, 0) / (tokens.length || 1);
-  }, [selectedTokenIds]);
+  if (!isConnected && !useCustomAddress) {
+    return (
+      <div className="min-h-screen pt-24">
+        <main className="container mx-auto px-4 py-8 space-y-8">
+          {/* Address Manager for non-connected users */}
+          <div className="flex justify-end mb-4">
+            <AddressManager 
+              currentAddress={currentAddress || null}
+              onSelectAddress={handleSelectAddress}
+            />
+          </div>
 
-  const avgChange30d = useMemo(() => {
-    const tokens = selectedTokenIds.size === 0 ? MOCK_TOKENS : MOCK_TOKENS.filter((t) => selectedTokenIds.has(t.id));
-    return tokens.reduce((sum, t) => sum + t.change30d, 0) / (tokens.length || 1);
-  }, [selectedTokenIds]);
+          <Card>
+            <CardContent className="pt-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-12"
+              >
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-secondary flex items-center justify-center">
+                  <span className="text-4xl">👛</span>
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  Connect Your Wallet or Add an Address
+                </h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Connect your wallet or use the "Add Address" button above to analyze any 
+                  Ethereum address across multiple chains.
+                </p>
+              </motion.div>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen pt-24">
+        <main className="container mx-auto px-4 py-8 space-y-8">
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-96 w-full" />
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen pt-24">
+        <main className="container mx-auto px-4 py-8">
+          <Alert variant="destructive">
+            <AlertDescription>
+              Failed to load wallet data: {error.message}
+            </AlertDescription>
+          </Alert>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-24">
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 space-y-8">
+        {/* Address Manager Bar */}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            {currentAddress && (
+              <div className="text-sm">
+                <span className="text-muted-foreground">Analyzing:</span>{" "}
+                <span className="font-mono font-medium">
+                  {currentAddress.slice(0, 10)}...{currentAddress.slice(-8)}
+                </span>
+              </div>
+            )}
+            {isConnected && useCustomAddress && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setUseCustomAddress(false)}
+              >
+                Switch to Connected Wallet
+              </Button>
+            )}
+          </div>
+          <AddressManager 
+            currentAddress={currentAddress || null}
+            onSelectAddress={handleSelectAddress}
+          />
+        </div>
+
         {/* Top Row - Net Worth & Agent Wallet */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
           <div className="lg:col-span-2 h-full">
@@ -194,13 +253,15 @@ export default function Index() {
         </div>
 
         {/* Token Holding Row */}
-        <TokenHoldingRow
-          tokens={MOCK_TOKENS}
-          selectedTokenIds={selectedTokenIds}
-          onToggleToken={handleToggleToken}
-          onSelectAll={handleSelectAll}
-          totalPortfolioValue={totalPortfolioValue}
-        />
+        {tokens.length > 0 && (
+          <TokenHoldingRow
+            tokens={hideDust ? tokens.filter(t => t.valueUsd >= 0.01) : tokens}
+            selectedTokenIds={new Set()}
+            onToggleToken={() => {}}
+            onSelectAll={() => {}}
+            totalPortfolioValue={totalPortfolioValue}
+          />
+        )}
 
         {/* Tabs */}
         <Tabs defaultValue="portfolio" className="w-full">
@@ -221,24 +282,22 @@ export default function Index() {
 
           <TabsContent value="portfolio" className="mt-6 space-y-6">
             <PortfolioSummary
-              selectedWorth={selectedWorth}
+              selectedWorth={totalPortfolioValue}
               change24hPercent={avgChange24h}
               change30dPercent={avgChange30d}
-              coinCount={
-                selectedTokenIds.size === 0
-                  ? MOCK_TOKENS.length
-                  : selectedTokenIds.size
-              }
+              coinCount={hideDust ? tableRows.length : tokens.length}
               chartData={chartData}
             />
 
-            <PortfolioTable
-              rows={tableRows}
-              hideDust={hideDust}
-              mergeChains={mergeChains}
-              onToggleHideDust={() => setHideDust(!hideDust)}
-              onToggleMergeChains={() => setMergeChains(!mergeChains)}
-            />
+            {tableRows.length > 0 && (
+              <PortfolioTable
+                rows={tableRows}
+                hideDust={hideDust}
+                mergeChains={mergeChains}
+                onToggleHideDust={() => setHideDust(!hideDust)}
+                onToggleMergeChains={() => setMergeChains(!mergeChains)}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="nft" className="mt-6">
@@ -251,11 +310,12 @@ export default function Index() {
                 <span className="text-4xl">🖼️</span>
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">
-                No NFTs Found
+                NFT Gallery
               </h3>
               <p className="text-muted-foreground max-w-md mx-auto">
-                Your NFT collection will appear here once you acquire some.
-                Start exploring marketplaces to find unique digital assets.
+                {walletData?.nft_holdings && walletData.nft_holdings.length > 0
+                  ? `You have ${walletData.nft_holdings.length} NFT(s) in your wallet.`
+                  : "Your NFT collection will appear here once you acquire some."}
               </p>
             </motion.div>
           </TabsContent>
