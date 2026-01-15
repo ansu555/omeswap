@@ -6,7 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "hardhat:compile": "cd ../Mantel_contract && npx hardhat compile",
+    "hardhat:test": "cd ../Mantel_contract && npx hardhat test",
+    "hardhat:mint": "cd ../Mantel_contract && npx hardhat run scripts/mintTokens.js --network mantleSepolia",
+    "hardhat:liquidity": "cd ../Mantel_contract && npx hardhat run scripts/addLiquidity.js --network mantleSepolia",
+    "hardhat:swap": "cd ../Mantel_contract && npx hardhat run scripts/swap.js --network mantleSepolia",
+    "hardhat:multihop": "cd ../Mantel_contract && npx hardhat run scripts/multiHopSwap.js --network mantleSepolia",
+    "hardhat:quickstart": "cd ../Mantel_contract && npx hardhat run scripts/quickStart.js --network mantleSepolia"
   },
   "dependencies": {
     "@coingecko/coingecko-typescript": "^2.5.0",
