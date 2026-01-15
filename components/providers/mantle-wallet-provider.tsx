@@ -3,8 +3,8 @@
 import { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider } from 'wagmi';
-import { mantle, mantleTestnet } from 'wagmi/chains';
 import { getDefaultConfig, RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
+import { mantle, mantleTestnet } from '@/lib/chains/mantle';
 import '@rainbow-me/rainbowkit/styles.css';
 
 // Create a query client for React Query
@@ -14,7 +14,7 @@ const queryClient = new QueryClient();
 const config = getDefaultConfig({
   appName: 'Mantle Dex',
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'YOUR_PROJECT_ID',
-  chains: [mantle, mantleTestnet],
+  chains: [mantleTestnet, mantle],
   ssr: true,
 });
 

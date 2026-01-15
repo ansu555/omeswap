@@ -1,19 +1,43 @@
 import { NextResponse } from 'next/server';
-import type { CMCCryptocurrency, CMCQuote } from '../../crypto/types';
 
-// DeFi Llama Historical Data Types
-interface DefiLlamaPricePoint {
-    timestamp: number;
-    price: number;
-}
-
-interface DefiLlamaResponse {
-    coins: {
-        [key: string]: {
-            price: number;
-            timestamp: number;
-            symbol: string;
-            confidence: number;
+// Kryll API Response Types
+interface KryllApiResponse {
+    status: string;
+    code: number;
+    data: {
+        id: string;
+        symbol: string;
+        name: string;
+        tokenLogo: string;
+        description: string;
+        hashtag: string | null;
+        global_score: number;
+        financial: {
+            score: number;
+            market: {
+                price: number;
+                marketcap: number;
+                volume_24h: number | null;
+                circulating_supply: number | null;
+                total_supply: number | null;
+                history: {
+                    monthly: Array<[number, number]>;
+                    daily: Array<[number, number]>;
+                };
+            };
+            liquidity?: any;
+        };
+        fundamental: {
+            score: number;
+            [key: string]: any;
+        };
+        social: {
+            score: number;
+            [key: string]: any;
+        };
+        security: {
+            score: number;
+            [key: string]: any;
         };
     };
 }
@@ -24,6 +48,7 @@ export interface TokenDetailResponse {
     name: string;
     symbol: string;
     imageUrl: string;
+    description: string;
     price: number;
     priceChange24h: number;
     rank: number;
@@ -32,7 +57,7 @@ export interface TokenDetailResponse {
     circulatingSupply: number;
     totalSupply: number | null;
     maxSupply: number | null;
-    // Audit Scores (calculated based on metrics)
+    // Audit Scores from Kryll
     auditScores: {
         financial: number;
         fundamental: number;
@@ -55,141 +80,113 @@ export interface TokenDetailResponse {
     tags: string[];
     dateAdded: string;
     lastUpdated: string;
-}
-
-// Calculate audit scores based on token metrics
-function calculateAuditScores(token: CMCCryptocurrency): {
-    financial: number;
-    fundamental: number;
-    social: number;
-    security: number;
-    overall: number;
-} {
-    const quote = token.quote.USD;
-    
-    // Financial Score (0-100): Based on market cap, volume, liquidity
-    const financialScore = Math.min(100, Math.max(0,
-        (Math.log10(quote.market_cap || 1) / 12) * 40 + // Market cap component
-        (Math.log10(quote.volume_24h || 1) / 11) * 30 + // Volume component
-        (token.num_market_pairs / 500) * 30 // Market pairs component
-    ));
-
-    // Fundamental Score (0-100): Based on supply, age, market pairs
-    const ageInDays = (Date.now() - new Date(token.date_added).getTime()) / (1000 * 60 * 60 * 24);
-    const fundamentalScore = Math.min(100, Math.max(0,
-        (ageInDays / 365) * 30 + // Age component
-        (token.num_market_pairs / 300) * 40 + // Market pairs
-        (token.max_supply ? 30 : 0) // Supply cap bonus
-    ));
-
-    // Social Score (0-100): Based on rank and market presence
-    const socialScore = Math.min(100, Math.max(0,
-        (token.cmc_rank ? (101 - token.cmc_rank) : 50) + // Rank component
-        (token.num_market_pairs / 200) * 30 // Market presence
-    ));
-
-    // Security Score (0-100): Based on age, stability, supply
-    const securityScore = Math.min(100, Math.max(0,
-        Math.min(ageInDays / 365, 1) * 40 + // Age/trust component
-        (token.max_supply ? 30 : 20) + // Supply cap
-        (Math.abs(quote.percent_change_24h) < 20 ? 30 : 10) // Price stability
-    ));
-
-    const overall = (financialScore + fundamentalScore + socialScore + securityScore) / 4;
-
-    return {
-        financial: Math.round(financialScore),
-        fundamental: Math.round(fundamentalScore),
-        social: Math.round(socialScore),
-        security: Math.round(securityScore),
-        overall: Math.round(overall * 10) / 10, // Round to 1 decimal
+    // Raw Kryll data for advanced analysis
+    kryllData?: {
+        financial: any;
+        fundamental: any;
+        social: any;
+        security: any;
     };
 }
 
-// Fetch token detail from CoinMarketCap
-async function fetchTokenFromCMC(apiKey: string, tokenId: string): Promise<CMCCryptocurrency | null> {
-    if (!apiKey || apiKey === 'your_coinmarketcap_api_key_here') {
-        throw new Error('CoinMarketCap API key is required');
-    }
+// Fetch token data from Kryll API
+async function fetchTokenFromKryll(tokenSlug: string): Promise<KryllApiResponse | null> {
+    try {
+        const response = await fetch(
+            `https://dapi.kryll.io/xray/audit/${tokenSlug}`,
+            {
+                method: 'GET',
+                headers: {
+                    'accept': '*/*',
+                    'accept-language': 'en-US,en;q=0.9',
+                    'origin': 'https://app.kryll.io',
+                    'referer': 'https://app.kryll.io/',
+                },
+                next: { revalidate: 300 }, // Cache for 5 minutes
+            }
+        );
 
-    const response = await fetch(
-        `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?id=${tokenId}&convert=USD`,
-        {
-            method: 'GET',
-            headers: {
-                'X-CMC_PRO_API_KEY': apiKey,
-                'Accept': 'application/json',
-            },
-            next: { revalidate: 300 }, // Cache for 5 minutes
+        if (!response.ok) {
+            console.warn(`Kryll API error for ${tokenSlug}: ${response.status}`);
+            return null;
         }
-    );
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`CoinMarketCap API error: ${response.status} - ${errorText}`);
-    }
+        const data: KryllApiResponse = await response.json();
+        
+        if (data.status !== 'OK' || data.code !== 200) {
+            console.warn(`Kryll API returned non-OK status for ${tokenSlug}`);
+            return null;
+        }
 
-    const data = await response.json();
-    
-    if (data.status?.error_code && data.status.error_code !== 0) {
-        throw new Error(`CoinMarketCap API error: ${data.status.error_message || 'Unknown error'}`);
-    }
-
-    const tokenData = data.data?.[tokenId];
-    if (!tokenData) {
+        return data;
+    } catch (error) {
+        console.error('Error fetching from Kryll API:', error);
         return null;
     }
-
-    return tokenData;
 }
 
-// Fetch historical data from DeFi Llama
-async function fetchHistoricalDataFromDefiLlama(symbol: string, days: number = 365): Promise<Array<{ timestamp: number; price: number }>> {
-    try {
-        // DeFi Llama uses coingecko IDs, so we'll use a different approach
-        // For now, we'll generate synthetic data based on current price
-        // In production, you'd map CMC symbols to Coingecko IDs
-        
-        // Alternative: Use CoinMarketCap historical endpoint (requires higher tier)
-        // For now, return empty array - we'll generate synthetic data on frontend
-        return [];
-    } catch (error) {
-        console.warn('DeFi Llama fetch failed:', error);
-        return [];
-    }
+// Map common token IDs/names to Kryll slugs
+function getKryllSlug(tokenId: string): string {
+    // Convert numeric IDs or names to Kryll-compatible slugs
+    const slugMap: Record<string, string> = {
+        '1': 'bitcoin',
+        'bitcoin': 'bitcoin',
+        'btc': 'bitcoin',
+        '1027': 'ethereum',
+        'ethereum': 'ethereum',
+        'eth': 'ethereum',
+        '825': 'tether',
+        'tether': 'tether',
+        'usdt': 'tether',
+        '1839': 'binancecoin',
+        'bnb': 'binancecoin',
+        '5426': 'solana',
+        'solana': 'solana',
+        'sol': 'solana',
+        '52': 'ripple',
+        'xrp': 'ripple',
+        '3408': 'usd-coin',
+        'usdc': 'usd-coin',
+        '74': 'dogecoin',
+        'doge': 'dogecoin',
+        '2010': 'cardano',
+        'ada': 'cardano',
+        '5805': 'avalanche-2',
+        'avax': 'avalanche-2',
+        '1958': 'tron',
+        'trx': 'tron',
+        '6636': 'polkadot',
+        'dot': 'polkadot',
+        '11419': 'toncoin',
+        'ton': 'toncoin',
+        '3890': 'polygon',
+        'matic': 'polygon',
+        '4687': 'binance-usd',
+        'busd': 'binance-usd',
+        '7083': 'uniswap',
+        'uni': 'uniswap',
+    };
+
+    const normalized = tokenId.toLowerCase().trim();
+    return slugMap[normalized] || normalized;
 }
 
-// Generate synthetic historical data based on current metrics
-function generateHistoricalData(
-    currentPrice: number,
-    priceChange24h: number,
-    priceChange7d: number,
-    days: number = 365
-): Array<{ timestamp: number; price: number }> {
-    const data: Array<{ timestamp: number; price: number }> = [];
-    const now = Date.now();
-    const dayMs = 24 * 60 * 60 * 1000;
+// Calculate price change from historical data
+function calculatePriceChange24h(historicalData: Array<[number, number]>): number {
+    if (!historicalData || historicalData.length < 2) return 0;
     
-    // Generate data points for the last N days
-    for (let i = days; i >= 0; i--) {
-        const timestamp = now - (i * dayMs);
-        
-        // Create a trend based on 7d and 24h changes
-        const trend = priceChange7d / 7; // Daily trend
-        const volatility = Math.random() * 0.02 - 0.01; // Small random volatility
-        
-        // Calculate price at this point
-        const daysAgo = days - i;
-        const priceChange = (trend * daysAgo) + (volatility * daysAgo);
-        const price = currentPrice * (1 - priceChange / 100);
-        
-        data.push({
-            timestamp,
-            price: Math.max(0, price),
-        });
-    }
+    const dailyData = historicalData.filter(([timestamp]) => {
+        const dayMs = 24 * 60 * 60 * 1000;
+        return Date.now() - timestamp < 30 * dayMs; // Last 30 days
+    });
     
-    return data;
+    if (dailyData.length < 2) return 0;
+    
+    const latestPrice = dailyData[dailyData.length - 1][1];
+    const yesterdayPrice = dailyData[dailyData.length - 2][1];
+    
+    if (yesterdayPrice === 0) return 0;
+    return ((latestPrice - yesterdayPrice) / yesterdayPrice) * 100;
 }
 
 export async function GET(
@@ -201,74 +198,90 @@ export async function GET(
         const { searchParams } = new URL(request.url);
         const days = parseInt(searchParams.get('days') || '365', 10);
 
-        const coinMarketCapKey = process.env.COINMARKETCAP_API_KEY || '';
-
-        if (!coinMarketCapKey || coinMarketCapKey === 'your_coinmarketcap_api_key_here') {
-            return NextResponse.json(
-                { error: 'CoinMarketCap API key is required' },
-                { status: 500 }
-            );
-        }
-
-        // Fetch token data from CMC
-        const tokenData = await fetchTokenFromCMC(coinMarketCapKey, tokenId);
+        // Get Kryll slug for the token
+        const kryllSlug = getKryllSlug(tokenId);
         
-        if (!tokenData) {
+        // Fetch data from Kryll API
+        const kryllData = await fetchTokenFromKryll(kryllSlug);
+        
+        if (!kryllData || !kryllData.data) {
             return NextResponse.json(
                 { error: 'Token not found' },
                 { status: 404 }
             );
         }
 
-        const quote = tokenData.quote.USD;
+        const data = kryllData.data;
         
-        // Calculate audit scores
-        const auditScores = calculateAuditScores(tokenData);
+        // Convert historical data from Kryll format
+        const historicalData: Array<{ timestamp: number; price: number }> = [];
         
-        // Generate or fetch historical data
-        let historicalData = await fetchHistoricalDataFromDefiLlama(tokenData.symbol, days);
-        if (historicalData.length === 0) {
-            // Generate synthetic data if DeFi Llama fails
-            historicalData = generateHistoricalData(
-                quote.price,
-                quote.percent_change_24h,
-                quote.percent_change_7d,
-                days
-            );
+        // Use daily history if available, otherwise monthly
+        const historyData = data.financial.market.history?.daily || data.financial.market.history?.monthly || [];
+        
+        for (const [timestamp, price] of historyData) {
+            historicalData.push({ timestamp, price });
         }
-
-        // Estimate volume breakdown (CMC doesn't provide this directly)
-        // In production, you'd fetch this from another API
+        
+        // Calculate 24h price change
+        const priceChange24h = calculatePriceChange24h(historyData);
+        
+        // Estimate volume breakdown (Kryll doesn't provide this directly)
+        const volume24h = data.financial.market.volume_24h || 0;
         const volumeBreakdown = {
-            cex: quote.volume_24h * 0.95, // Estimate 95% CEX
-            dex: quote.volume_24h * 0.05, // Estimate 5% DEX
+            cex: volume24h * 0.95, // Estimate 95% CEX
+            dex: volume24h * 0.05, // Estimate 5% DEX
         };
 
         // Calculate liquidity ratio
-        const liquidityRatio = tokenData.max_supply && tokenData.circulating_supply
-            ? (tokenData.circulating_supply / tokenData.max_supply) * 100
-            : 95; // Default if no max supply
+        const circulatingSupply = data.financial.market.circulating_supply || 0;
+        const totalSupply = data.financial.market.total_supply || 0;
+        const liquidityRatio = totalSupply > 0 ? (circulatingSupply / totalSupply) * 100 : 100;
+
+        // Determine rank from marketcap (approximate - would need full market data)
+        // For now, use a simple heuristic based on market cap
+        const marketCap = data.financial.market.marketcap || 0;
+        let estimatedRank = 100;
+        if (marketCap > 1000000000000) estimatedRank = 1; // >1T = top
+        else if (marketCap > 100000000000) estimatedRank = 5; // >100B
+        else if (marketCap > 10000000000) estimatedRank = 20; // >10B
+        else if (marketCap > 1000000000) estimatedRank = 50; // >1B
+        else estimatedRank = 100;
 
         const response: TokenDetailResponse = {
-            id: tokenData.id.toString(),
-            name: tokenData.name,
-            symbol: tokenData.symbol,
-            imageUrl: `https://s2.coinmarketcap.com/static/img/coins/64x64/${tokenData.id}.png`,
-            price: quote.price,
-            priceChange24h: quote.percent_change_24h,
-            rank: tokenData.cmc_rank || 0,
-            marketCap: quote.market_cap,
-            volume24h: quote.volume_24h,
-            circulatingSupply: tokenData.circulating_supply,
-            totalSupply: tokenData.total_supply,
-            maxSupply: tokenData.max_supply,
-            auditScores,
-            historicalData,
+            id: data.id,
+            name: data.name,
+            symbol: data.symbol.toUpperCase(),
+            imageUrl: data.tokenLogo || `https://via.placeholder.com/64?text=${data.symbol.toUpperCase()}`,
+            description: data.description || '',
+            price: data.financial.market.price || 0,
+            priceChange24h: priceChange24h,
+            rank: estimatedRank,
+            marketCap: data.financial.market.marketcap || 0,
+            volume24h: volume24h,
+            circulatingSupply: circulatingSupply,
+            totalSupply: totalSupply,
+            maxSupply: totalSupply, // Kryll doesn't distinguish max from total
+            auditScores: {
+                financial: Math.round(data.financial.score),
+                fundamental: Math.round(data.fundamental.score),
+                social: Math.round(data.social.score),
+                security: Math.round(data.security.score),
+                overall: Math.round(data.global_score * 10) / 10,
+            },
+            historicalData: historicalData.slice(-days), // Limit to requested days
             volumeBreakdown,
             liquidityRatio: Math.round(liquidityRatio),
-            tags: tokenData.tags || [],
-            dateAdded: tokenData.date_added,
-            lastUpdated: tokenData.last_updated,
+            tags: data.hashtag ? [data.hashtag] : [],
+            dateAdded: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(), // Fallback
+            lastUpdated: new Date().toISOString(),
+            // Include raw Kryll data for advanced analysis
+            kryllData: {
+                financial: data.financial,
+                fundamental: data.fundamental,
+                social: data.social,
+                security: data.security,
+            },
         };
 
         return NextResponse.json(response);
@@ -283,6 +296,4 @@ export async function GET(
         );
     }
 }
-
-
 

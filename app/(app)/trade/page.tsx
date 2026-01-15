@@ -1,32 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SwapCard } from "@/components/trade/SwapCard";
-import { PoolLiquidity } from "@/components/trade/PoolLiquidity";
-import { TokenMiniChart } from "@/components/trade/TokenMiniChart";
-import { SwapHistory } from "@/components/trade/SwapHistory";
-import { ToggleSection } from "@/components/trade/ToggleSection";
+import { SwapCardDex } from "@/components/trade/SwapCardDex";
+import { AddLiquidityCard } from "@/components/trade/AddLiquidityCard";
+import { MintTokensCard } from "@/components/trade/MintTokensCard";
+import { SelectedPoolInfo } from "@/components/trade/SelectedPoolInfo";
 import { CryptoLogoCursor } from "@/components/trade/CryptoLogoCursor";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const MOCK_HISTORY = [
-    {
-        id: "1",
-        time: "about 1 month ago",
-        from: "ALGO",
-        fromAmount: 1,
-        to: "USDC",
-        toAmount: "~13.659219 USDC",
-        route: "tinyman",
-        slippage: "0.5%",
-        status: "confirmed" as const,
-        txHash: "abc123",
-    },
-];
-
-export default function Index() {
-    const [showChart, setShowChart] = useState(false);
-    const [showHistory, setShowHistory] = useState(false);
+export default function TradePage() {
     const [cryptoLogos, setCryptoLogos] = useState<string[]>([]);
+    const [activeTab, setActiveTab] = useState("swap");
 
     // Fetch crypto logos from backend
     useEffect(() => {
@@ -80,54 +64,30 @@ export default function Index() {
                         )}
                     </div>
 
-                    {/* Center Column - Swap Card */}
-                    <div className="flex flex-col items-center gap-6 lg:w-[420px] flex-shrink-0">
-                        <SwapCard />
+                    {/* Right - Full Width Trading Interface */}
+                    <div className="lg:col-span-8 order-1 lg:order-2">
+                        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                            <TabsList className="grid w-full grid-cols-3 mb-6">
+                                <TabsTrigger value="swap">Swap</TabsTrigger>
+                                <TabsTrigger value="liquidity">Liquidity</TabsTrigger>
+                                <TabsTrigger value="mint">Mint Tokens</TabsTrigger>
+                            </TabsList>
 
-                        {/* Toggle Buttons */}
-                        <div className="flex items-center gap-3">
-                            <ToggleSection
-                                label="Chart"
-                                isVisible={showChart}
-                                onToggle={() => setShowChart(!showChart)}
-                            />
-                            <ToggleSection
-                                label="History"
-                                isVisible={showHistory}
-                                onToggle={() => setShowHistory(!showHistory)}
-                            />
-                        </div>
+                            <TabsContent value="swap" className="mt-0">
+                                <SwapCardDex />
+                            </TabsContent>
 
-                        {/* Token Mini Charts */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-                            <TokenMiniChart
-                                symbol="AL"
-                                name="ALGO"
-                                price="1.799483 USDC"
-                                reserve={19.39}
-                                variant="algo"
-                            />
-                            <TokenMiniChart
-                                symbol="US"
-                                name="USDC"
-                                price="0.555715 ALGO"
-                                reserve={10.78}
-                                variant="usdc"
-                            />
-                        </div>
+                            <TabsContent value="liquidity" className="mt-0">
+                                <AddLiquidityCard />
+                            </TabsContent>
+
+                            <TabsContent value="mint" className="mt-0">
+                                <MintTokensCard />
+                            </TabsContent>
+                        </Tabs>
                     </div>
-
-                    {/* Right Column - Spacer for balance */}
-                    <div className="hidden lg:block lg:flex-1 lg:max-w-md" />
                 </div>
-
-                {/* Collapsible History Section */}
-                {showHistory && (
-                    <div className="mt-8 animate-fade-in">
-                        <SwapHistory records={MOCK_HISTORY} onRefresh={() => { }} />
-                    </div>
-                )}
-            </main>
+            </div>
         </div>
     );
 }

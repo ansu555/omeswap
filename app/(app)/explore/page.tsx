@@ -10,6 +10,7 @@ import { PoolsTable, PoolRow } from "@/components/explore/PoolsTable";
 import { TransactionsTable, TransactionRow } from "@/components/explore/TransactionsTable";
 import { SearchBar } from "@/components/explore/SearchBar";
 import { TableFilters } from "@/components/explore/TableFilters";
+import { useDexPools } from "@/hooks/use-dex-pools";
 
 // Mock data for transactions only
 const mockTransactions: TransactionRow[] = [
@@ -85,6 +86,9 @@ export default function Explorer() {
     const [trending, setTrending] = useState<any[]>([]);
     const [metrics, setMetrics] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    
+    // Fetch DEX pools from smart contracts
+    const { pools: dexPools } = useDexPools();
 
     // Fetch cryptocurrency data from our API
     useEffect(() => {
@@ -100,7 +104,11 @@ export default function Explorer() {
 
                 const data = await response.json();
                 setTokens(data.tokens || []);
-                setPools(data.pools || []);
+                
+                // Combine API pools with DEX pools
+                const apiPools = data.pools || [];
+                setPools(apiPools);
+                
                 setGainers(data.gainers || []);
                 setLosers(data.losers || []);
                 setTrending(data.trending || []);
@@ -122,6 +130,49 @@ export default function Explorer() {
                 token.id === id ? { ...token, isFavorite: !token.isFavorite } : token
             )
         );
+    };
+
+    // Convert token name/symbol to Kryll-compatible slug
+    const getTokenSlug = (token: TokenRow): string => {
+        const slugMap: Record<string, string> = {
+            'Bitcoin': 'bitcoin',
+            'BTC': 'bitcoin',
+            'Ethereum': 'ethereum',
+            'ETH': 'ethereum',
+            'Tether': 'tether',
+            'USDT': 'tether',
+            'BNB': 'binancecoin',
+            'Binance Coin': 'binancecoin',
+            'Solana': 'solana',
+            'SOL': 'solana',
+            'XRP': 'ripple',
+            'Ripple': 'ripple',
+            'USD Coin': 'usd-coin',
+            'USDC': 'usd-coin',
+            'Dogecoin': 'dogecoin',
+            'DOGE': 'dogecoin',
+            'Cardano': 'cardano',
+            'ADA': 'cardano',
+            'Avalanche': 'avalanche-2',
+            'AVAX': 'avalanche-2',
+            'TRON': 'tron',
+            'TRX': 'tron',
+            'Polkadot': 'polkadot',
+            'DOT': 'polkadot',
+            'Toncoin': 'toncoin',
+            'TON': 'toncoin',
+            'Polygon': 'polygon',
+            'MATIC': 'polygon',
+            'Uniswap': 'uniswap',
+            'UNI': 'uniswap',
+        };
+
+        // Try exact matches first
+        if (slugMap[token.name]) return slugMap[token.name];
+        if (slugMap[token.symbol]) return slugMap[token.symbol];
+        
+        // Fallback: convert name to lowercase slug
+        return token.name.toLowerCase().replace(/\s+/g, '-');
     };
 
     const filteredTokens = useMemo(() => {
@@ -157,14 +208,36 @@ export default function Explorer() {
     }, [tokens, searchQuery, activeFilter]);
 
     const filteredPools = useMemo(() => {
-        if (!searchQuery) return pools;
+        // Convert DEX pools to PoolRow format
+        const dexPoolRows: PoolRow[] = dexPools.map((pool) => ({
+            id: String(pool.poolId), // Use poolId directly as string
+            rank: pool.poolId + 1,
+            token0: {
+                name: pool.token0.name,
+                symbol: pool.token0.symbol,
+            },
+            token1: {
+                name: pool.token1.name,
+                symbol: pool.token1.symbol,
+            },
+            fee: 0.3, // 0.3% fee
+            tvl: pool.tvl,
+            volume24h: pool.volume24h,
+            volume7d: pool.volume7d,
+            apr: pool.apr,
+        }));
+
+        // Combine API pools with DEX pools
+        const allPools = [...dexPoolRows, ...pools];
+
+        if (!searchQuery) return allPools;
         const query = searchQuery.toLowerCase();
-        return pools.filter(
+        return allPools.filter(
             (pool) =>
                 pool.token0.symbol.toLowerCase().includes(query) ||
                 pool.token1.symbol.toLowerCase().includes(query)
         );
-    }, [searchQuery, pools]);
+    }, [searchQuery, pools, dexPools]);
 
     return (
         <div className="min-h-screen">
@@ -214,14 +287,18 @@ export default function Explorer() {
                             <TokensTable
                                 tokens={filteredTokens}
                                 onToggleFavorite={handleToggleFavorite}
-                                onRowClick={(token) => router.push(`/token/${token.id}`)}
+                                onRowClick={(token) => router.push(`/token/${getTokenSlug(token)}`)}
                                 isLoading={isLoading}
                             />
                         )}
                         {activeTab === "pools" && (
                             <PoolsTable
                                 pools={filteredPools}
-                                onRowClick={(pool) => console.log("Pool clicked:", pool)}
+                                onRowClick={(pool) => {
+                                    console.log('Pool clicked:', pool);
+                                    // Use pool.id directly (it's already the pool ID number)
+                                    router.push(`/pool/${pool.id}`);
+                                }}
                             />
                         )}
                         {activeTab === "transactions" && (
