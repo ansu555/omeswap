@@ -4,11 +4,31 @@ import { useState, useEffect } from "react";
 import { SwapCardDex } from "@/components/trade/SwapCardDex";
 import { AddLiquidityCard } from "@/components/trade/AddLiquidityCard";
 import { MintTokensCard } from "@/components/trade/MintTokensCard";
-import { SelectedPoolInfo } from "@/components/trade/SelectedPoolInfo";
+import { PoolLiquidity } from "@/components/trade/PoolLiquidity";
+import { TokenMiniChart } from "@/components/trade/TokenMiniChart";
+import { SwapHistory } from "@/components/trade/SwapHistory";
+import { ToggleSection } from "@/components/trade/ToggleSection";
 import { CryptoLogoCursor } from "@/components/trade/CryptoLogoCursor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+const MOCK_HISTORY = [
+    {
+        id: "1",
+        time: "about 1 month ago",
+        from: "MNT",
+        fromAmount: 1,
+        to: "tUSDC",
+        toAmount: "~13.659219 tUSDC",
+        route: "pool",
+        slippage: "0.5%",
+        status: "confirmed" as const,
+        txHash: "abc123",
+    },
+];
+
 export default function TradePage() {
+    const [showChart, setShowChart] = useState(true);
+    const [showHistory, setShowHistory] = useState(false);
     const [cryptoLogos, setCryptoLogos] = useState<string[]>([]);
     const [activeTab, setActiveTab] = useState("swap");
 
@@ -46,39 +66,67 @@ export default function TradePage() {
                 />
             )}
 
-            <div className="container mx-auto px-4 pt-24 pb-12 max-w-7xl">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    {/* Left - Pool Info (shows tUSDC/tUSDT pool by default) */}
-                    <div className="lg:col-span-4 order-2 lg:order-1">
-                        <SelectedPoolInfo 
-                            token0Symbol="tUSDC" 
-                            token1Symbol="tUSDT" 
-                        />
+            {/* Header is handled by layout.tsx */}
+
+            <div className="container mx-auto px-4 py-6 pt-32">
+                <div className="flex flex-col lg:flex-row gap-6 justify-center">
+                    {/* Left Column - Pool Liquidity (only when chart toggled) */}
+                    <div className="hidden lg:block lg:flex-1 lg:max-w-md">
+                        {showChart && (
+                            <div className="animate-fade-in">
+                                <PoolLiquidity />
+                            </div>
+                        )}
                     </div>
 
-                    {/* Right - Full Width Trading Interface */}
-                    <div className="lg:col-span-8 order-1 lg:order-2">
-                        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                            <TabsList className="grid w-full grid-cols-3 mb-6">
-                                <TabsTrigger value="swap">Swap</TabsTrigger>
-                                <TabsTrigger value="liquidity">Liquidity</TabsTrigger>
-                                <TabsTrigger value="mint">Mint Tokens</TabsTrigger>
-                            </TabsList>
+                    {/* Center Column - Trading Interface */}
+                    <div className="flex flex-col items-center gap-6 lg:w-[420px] flex-shrink-0">
+                        
+                        <SwapCardDex />
 
-                            <TabsContent value="swap" className="mt-0">
-                                <SwapCardDex />
-                            </TabsContent>
+                        {/* Toggle Buttons */}
+                        <div className="flex items-center gap-3">
+                            <ToggleSection
+                                label="Pool Stats"
+                                isVisible={showChart}
+                                onToggle={() => setShowChart(!showChart)}
+                            />
+                            <ToggleSection
+                                label="History"
+                                isVisible={showHistory}
+                                onToggle={() => setShowHistory(!showHistory)}
+                            />
+                        </div>
 
-                            <TabsContent value="liquidity" className="mt-0">
-                                <AddLiquidityCard />
-                            </TabsContent>
-
-                            <TabsContent value="mint" className="mt-0">
-                                <MintTokensCard />
-                            </TabsContent>
-                        </Tabs>
+                        {/* Token Mini Charts */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full animate-fade-in">
+                            <TokenMiniChart
+                                symbol="MNT"
+                                name="Mantle"
+                                price="1.80 USDC"
+                                reserve={19.39}
+                                variant="algo"
+                            />
+                            <TokenMiniChart
+                                symbol="tUSDC"
+                                name="USD Coin"
+                                price="0.55 MNT"
+                                reserve={10.78}
+                                variant="usdc"
+                            />
+                        </div>
                     </div>
+
+                    {/* Right Column - Spacer for balance */}
+                    <div className="hidden lg:block lg:flex-1 lg:max-w-md" />
                 </div>
+
+                {/* Collapsible History Section */}
+                {showHistory && (
+                    <div className="mt-8 animate-fade-in max-w-4xl mx-auto">
+                        <SwapHistory records={MOCK_HISTORY} onRefresh={() => { }} />
+                    </div>
+                )}
             </div>
         </div>
     );
