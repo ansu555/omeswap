@@ -127,7 +127,7 @@ export default function TradePage() {
                         <SwapHistory records={MOCK_HISTORY} onRefresh={() => { }} />
                     </div>
                 )}
-            </div>
+            </main>
         </div>
     );
 }
