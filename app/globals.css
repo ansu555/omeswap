@@ -133,6 +133,72 @@
 }
 
 @layer components {
+  /* Dashboard components for token detail page */
+  .dashboard-card {
+    @apply glass-card rounded-3xl p-5 shadow-xl;
+  }
+
+  .dashboard-card-header {
+    @apply flex items-center justify-between mb-4;
+  }
+
+  .dashboard-card-title {
+    @apply text-lg font-semibold text-foreground;
+  }
+
+  .metric-value {
+    @apply text-2xl font-bold font-mono text-foreground tracking-tight;
+  }
+
+  .metric-label {
+    @apply text-sm text-muted-foreground font-medium;
+  }
+
+  .metric-change-positive {
+    @apply text-success font-mono text-sm font-medium;
+  }
+
+  .metric-change-negative {
+    @apply text-destructive font-mono text-sm font-medium;
+  }
+
+  .badge-status {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md;
+  }
+
+  .badge-success {
+    @apply bg-success/15 text-success border border-success/30;
+  }
+
+  .badge-warning {
+    @apply bg-warning/15 text-warning border border-warning/30;
+  }
+
+  .badge-danger {
+    @apply bg-destructive/15 text-destructive border border-destructive/30;
+  }
+
+  .badge-neutral {
+    @apply bg-muted text-muted-foreground border border-border;
+  }
+
+  .gradient-bar {
+    @apply h-2 rounded-full;
+    background: linear-gradient(90deg, hsl(var(--destructive)) 0%, hsl(38 92% 50%) 25%, hsl(var(--success)) 75%, hsl(var(--primary)) 100%);
+  }
+
+  .progress-track {
+    @apply h-1.5 bg-muted rounded-full overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-500;
+  }
+
+  .token-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 bg-secondary rounded-lg text-sm font-medium;
+  }
+
   .swap-card {
     @apply glass-card rounded-3xl shadow-xl;
   }
@@ -280,5 +346,34 @@
 
   .animate-heartbeat-glow {
     animation: heartbeat-glow 2.5s ease-in-out infinite;
+  }
+
+  /* React Flow Custom Styles */
+  .react-flow__node {
+    @apply cursor-pointer;
+  }
+
+  .react-flow__edge-path {
+    @apply stroke-2;
+  }
+
+  .react-flow__handle {
+    @apply border-2 border-white cursor-crosshair;
+  }
+
+  .react-flow__handle-connecting {
+    @apply bg-primary;
+  }
+
+  .react-flow__minimap {
+    @apply rounded-lg overflow-hidden;
+  }
+
+  .react-flow__controls {
+    @apply gap-2;
+  }
+
+  .react-flow__controls-button {
+    @apply bg-card border-border hover:bg-accent;
   }
 }

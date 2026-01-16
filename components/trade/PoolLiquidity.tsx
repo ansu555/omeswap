@@ -1,24 +1,42 @@
 "use client";
 
-import { Droplet, TrendingUp, Clock, DollarSign } from "lucide-react";
+import { Droplet, Clock, DollarSign } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useReadContract } from "wagmi";
+import { CONTRACT_ADDRESSES, TOKENS } from "@/contracts/config";
+import { MultiTokenLiquidityPoolsABI } from "@/contracts/abis";
+import { mantleTestnet } from "@/lib/chains/mantle";
+import { formatEther, Address } from "viem";
 
-interface PoolLiquidityProps {
-  algoReserve: number;
-  usdcReserve: number;
-  totalLiquidity: string;
-  lastUpdated: string;
-}
+export function PoolLiquidity() {
+  // Get pool info for tUSDC/tUSDT pool
+  const { data: poolId } = useReadContract({
+    address: CONTRACT_ADDRESSES.POOLS as Address,
+    abi: MultiTokenLiquidityPoolsABI,
+    functionName: 'getPoolId',
+    args: [TOKENS.tUSDC.address as Address, TOKENS.tUSDT.address as Address],
+    chainId: mantleTestnet.id,
+  });
 
-export function PoolLiquidity({
-  algoReserve,
-  usdcReserve,
-  totalLiquidity,
-  lastUpdated,
-}: PoolLiquidityProps) {
-  const total = algoReserve + usdcReserve;
-  const algoPercent = (algoReserve / total) * 100;
-  const usdcPercent = (usdcReserve / total) * 100;
+  const { data: poolInfo } = useReadContract({
+    address: CONTRACT_ADDRESSES.POOLS as Address,
+    abi: MultiTokenLiquidityPoolsABI,
+    functionName: 'getPoolInfo',
+    args: [poolId as bigint],
+    chainId: mantleTestnet.id,
+    query: {
+      enabled: !!poolId,
+    },
+  });
+
+  // Extract pool data with fallbacks
+  const token0Reserve = poolInfo ? parseFloat(formatEther((poolInfo as any)[2] || BigInt(0))) : 0;
+  const token1Reserve = poolInfo ? parseFloat(formatEther((poolInfo as any)[3] || BigInt(0))) : 0;
+  const totalSupply = poolInfo ? formatEther((poolInfo as any)[4] || BigInt(0)) : '0';
+
+  const total = token0Reserve + token1Reserve || 1; // Prevent division by zero
+  const token0Percent = (token0Reserve / total) * 100;
+  const token1Percent = (token1Reserve / total) * 100;
 
   return (
     <div className="glass-card rounded-2xl border border-border p-6 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group">
@@ -31,13 +49,13 @@ export function PoolLiquidity({
           <div>
             <h3 className="font-semibold text-lg">Pool Liquidity</h3>
             <Badge variant="outline" className="text-xs mt-1">
-              TINYMAN
+              tUSDC/tUSDT
             </Badge>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 text-sm text-success">
-          <TrendingUp className="w-4 h-4" />
-          <span className="font-medium">+2.4%</span>
+        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Droplet className="w-4 h-4" />
+          <span className="font-medium">Live</span>
         </div>
       </div>
 
@@ -47,14 +65,14 @@ export function PoolLiquidity({
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-gradient-to-r from-primary to-primary/60" />
-              <span className="font-medium">ALGO</span>
+              <span className="font-medium">tUSDC</span>
             </div>
-            <span className="text-muted-foreground">{algoPercent.toFixed(1)}%</span>
+            <span className="text-muted-foreground">{token0Percent.toFixed(1)}%</span>
           </div>
           <div className="relative h-3 rounded-full bg-muted/50 overflow-hidden">
             <div
               className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-primary/60 rounded-full transition-all duration-500 ease-out group-hover:from-primary group-hover:to-primary"
-              style={{ width: `${algoPercent}%` }}
+              style={{ width: `${token0Percent}%` }}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
             </div>
@@ -65,14 +83,14 @@ export function PoolLiquidity({
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-gradient-to-r from-success to-success/60" />
-              <span className="font-medium">USDC</span>
+              <span className="font-medium">tUSDT</span>
             </div>
-            <span className="text-muted-foreground">{usdcPercent.toFixed(1)}%</span>
+            <span className="text-muted-foreground">{token1Percent.toFixed(1)}%</span>
           </div>
           <div className="relative h-3 rounded-full bg-muted/50 overflow-hidden">
             <div
               className="absolute inset-y-0 left-0 bg-gradient-to-r from-success to-success/60 rounded-full transition-all duration-500 ease-out group-hover:from-success group-hover:to-success"
-              style={{ width: `${usdcPercent}%` }}
+              style={{ width: `${token1Percent}%` }}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
             </div>
@@ -88,10 +106,10 @@ export function PoolLiquidity({
               <DollarSign className="w-4 h-4 text-primary" />
             </div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              ALGO
+              tUSDC
             </p>
           </div>
-          <p className="text-2xl font-bold mb-1">{algoReserve.toFixed(2)}</p>
+          <p className="text-2xl font-bold mb-1">{token0Reserve.toFixed(2)}</p>
           <p className="text-xs text-muted-foreground">Reserve Balance</p>
         </div>
 
@@ -101,10 +119,10 @@ export function PoolLiquidity({
               <DollarSign className="w-4 h-4 text-success" />
             </div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              USDC
+              tUSDT
             </p>
           </div>
-          <p className="text-2xl font-bold mb-1">{usdcReserve.toFixed(2)}</p>
+          <p className="text-2xl font-bold mb-1">{token1Reserve.toFixed(2)}</p>
           <p className="text-xs text-muted-foreground">Reserve Balance</p>
         </div>
 
@@ -112,22 +130,22 @@ export function PoolLiquidity({
           <div className="flex items-center gap-2 mb-2">
             <Droplet className="w-4 h-4 text-primary" />
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Total Liquidity
+              Total LP Tokens
             </p>
           </div>
-          <p className="text-xl font-bold mb-1">{totalLiquidity}</p>
-          <p className="text-xs text-muted-foreground">Pool Units</p>
+          <p className="text-xl font-bold mb-1">{parseFloat(totalSupply).toFixed(2)}</p>
+          <p className="text-xs text-muted-foreground">Pool Supply</p>
         </div>
 
         <div className="bg-gradient-to-br from-muted/50 to-muted/20 rounded-xl p-4 border border-border hover:border-primary/20 transition-all">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-primary" />
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Updated
+              Status
             </p>
           </div>
-          <p className="text-xl font-bold mb-1">{lastUpdated}</p>
-          <p className="text-xs text-muted-foreground">Last Snapshot</p>
+          <p className="text-xl font-bold mb-1">{poolInfo ? "Active" : "Loading..."}</p>
+          <p className="text-xs text-muted-foreground">Pool Status</p>
         </div>
       </div>
     </div>
