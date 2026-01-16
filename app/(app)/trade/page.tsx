@@ -36,12 +36,7 @@ export default function Index() {
                     <div className="hidden lg:block lg:flex-1 lg:max-w-md">
                         {showChart && (
                             <div className="animate-fade-in">
-                                <PoolLiquidity
-                                    algoReserve={19.3905}
-                                    usdcReserve={10.7756}
-                                    totalLiquidity="13.93M"
-                                    lastUpdated="12/01/2026, 15:06:55"
-                                />
+                                <PoolLiquidity />
                             </div>
                         )}
                     </div>
