@@ -10,7 +10,6 @@ import { PoolsTable, PoolRow } from "@/components/explore/PoolsTable";
 import { TransactionsTable, TransactionRow } from "@/components/explore/TransactionsTable";
 import { SearchBar } from "@/components/explore/SearchBar";
 import { TableFilters } from "@/components/explore/TableFilters";
-import { useDexPools } from "@/hooks/use-dex-pools";
 
 // Mock data for transactions only
 const mockTransactions: TransactionRow[] = [
@@ -86,9 +85,6 @@ export default function Explorer() {
     const [trending, setTrending] = useState<any[]>([]);
     const [metrics, setMetrics] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    
-    // Fetch DEX pools from smart contracts
-    const { pools: dexPools } = useDexPools();
 
     // Fetch cryptocurrency data from our API
     useEffect(() => {
@@ -104,11 +100,7 @@ export default function Explorer() {
 
                 const data = await response.json();
                 setTokens(data.tokens || []);
-                
-                // Combine API pools with DEX pools
-                const apiPools = data.pools || [];
-                setPools(apiPools);
-                
+                setPools(data.pools || []);
                 setGainers(data.gainers || []);
                 setLosers(data.losers || []);
                 setTrending(data.trending || []);
@@ -165,40 +157,18 @@ export default function Explorer() {
     }, [tokens, searchQuery, activeFilter]);
 
     const filteredPools = useMemo(() => {
-        // Convert DEX pools to PoolRow format
-        const dexPoolRows: PoolRow[] = dexPools.map((pool) => ({
-            id: String(pool.poolId), // Use poolId directly as string
-            rank: pool.poolId + 1,
-            token0: {
-                name: pool.token0.name,
-                symbol: pool.token0.symbol,
-            },
-            token1: {
-                name: pool.token1.name,
-                symbol: pool.token1.symbol,
-            },
-            fee: 0.3, // 0.3% fee
-            tvl: pool.tvl,
-            volume24h: pool.volume24h,
-            volume7d: pool.volume7d,
-            apr: pool.apr,
-        }));
-
-        // Combine API pools with DEX pools
-        const allPools = [...dexPoolRows, ...pools];
-
-        if (!searchQuery) return allPools;
+        if (!searchQuery) return pools;
         const query = searchQuery.toLowerCase();
-        return allPools.filter(
+        return pools.filter(
             (pool) =>
                 pool.token0.symbol.toLowerCase().includes(query) ||
                 pool.token1.symbol.toLowerCase().includes(query)
         );
-    }, [searchQuery, pools, dexPools]);
+    }, [searchQuery, pools]);
 
     return (
         <div className="min-h-screen">
-            <div className="max-w-[1600px] mx-auto px-4 md:px-6 pt-6 pb-6 space-y-6">
+            <div className="max-w-[1600px] mx-auto px-4 md:px-6 pt-32 pb-6 space-y-6">
                 {/* Stats Widgets */}
                 <StatsWidgetsGrid metrics={metrics} />
 
@@ -251,11 +221,7 @@ export default function Explorer() {
                         {activeTab === "pools" && (
                             <PoolsTable
                                 pools={filteredPools}
-                                onRowClick={(pool) => {
-                                    console.log('Pool clicked:', pool);
-                                    // Use pool.id directly (it's already the pool ID number)
-                                    router.push(`/pool/${pool.id}`);
-                                }}
+                                onRowClick={(pool) => console.log("Pool clicked:", pool)}
                             />
                         )}
                         {activeTab === "transactions" && (

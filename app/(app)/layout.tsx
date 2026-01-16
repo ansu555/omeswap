@@ -24,9 +24,9 @@ export default function AppLayout({
             {/* Header - full width at top */}
             <Header />
             {/* Content area - flex row with main content and chat */}
-            <div className="flex flex-1 overflow-hidden min-h-0 pt-20">
+            <div className="flex flex-1 overflow-hidden">
               {/* Main content area - shrinks when chat opens */}
-              <main className="flex-1 overflow-auto transition-all duration-300 min-h-0">
+              <main className="flex-1 overflow-y-auto transition-all duration-300">
                 {children}
               </main>
               {/* Chat panel - stays fixed, doesn't scroll */}

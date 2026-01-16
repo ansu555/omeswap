@@ -95,7 +95,7 @@ export function Footer() {
         </h2>
 
         <div className="space-y-0">
-          {exploreLinks.map((link) => (
+          {exploreLinks.map((link, index) => (
             <Link
               key={link.title}
               href={link.href}
