@@ -1,22 +1,5 @@
 import { NextResponse } from 'next/server';
-import type { CMCCryptocurrency, CMCQuote } from '../../crypto/types';
-
-// DeFi Llama Historical Data Types
-interface DefiLlamaPricePoint {
-    timestamp: number;
-    price: number;
-}
-
-interface DefiLlamaResponse {
-    coins: {
-        [key: string]: {
-            price: number;
-            timestamp: number;
-            symbol: string;
-            confidence: number;
-        };
-    };
-}
+import type { CMCCryptocurrency } from '../../crypto/types';
 
 // Token Detail Response Type
 export interface TokenDetailResponse {
@@ -144,7 +127,7 @@ async function fetchTokenFromCMC(apiKey: string, tokenId: string): Promise<CMCCr
 }
 
 // Fetch historical data from DeFi Llama
-async function fetchHistoricalDataFromDefiLlama(symbol: string, days: number = 365): Promise<Array<{ timestamp: number; price: number }>> {
+async function fetchHistoricalDataFromDefiLlama(_symbol: string, _days: number = 365): Promise<Array<{ timestamp: number; price: number }>> {
     try {
         // DeFi Llama uses coingecko IDs, so we'll use a different approach
         // For now, we'll generate synthetic data based on current price
@@ -162,7 +145,7 @@ async function fetchHistoricalDataFromDefiLlama(symbol: string, days: number = 3
 // Generate synthetic historical data based on current metrics
 function generateHistoricalData(
     currentPrice: number,
-    priceChange24h: number,
+    _priceChange24h: number,
     priceChange7d: number,
     days: number = 365
 ): Array<{ timestamp: number; price: number }> {
@@ -194,10 +177,11 @@ function generateHistoricalData(
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const tokenId = params.id;
+        const { id } = await params;
+        const tokenId = id;
         const { searchParams } = new URL(request.url);
         const days = parseInt(searchParams.get('days') || '365', 10);
 

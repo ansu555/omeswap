@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { RefreshCw, Share2, TrendingUp, Droplet, DollarSign, BarChart3, ExternalLink } from "lucide-react";
 import { SwapCardDex } from "@/components/trade/SwapCardDex";
 import { useReadContract } from "wagmi";
@@ -38,7 +38,8 @@ const POOL_PAIRS: { [key: string]: { token0: string; token1: string } } = {
   "9": { token0: "tWBTC", token1: "tUSDC" },
 };
 
-export default function PoolPage({ params }: { params: { id: string } }) {
+export default function PoolPage() {
+  const params = useParams();
   const poolId = Number(params.id);
   const router = useRouter();
   const { address, isConnected } = useMantleWallet();

@@ -82,7 +82,6 @@ export function SwapCardDex() {
     hasLiquidity &&
     poolExists &&
     parseFloat(estimatedOutput) > 0;
-  const canApprove = hasValidAmount && hasSufficientBalance;
   const isWrongNetwork = isConnected && chain?.id !== mantleTestnet.id;
 
   const TokenSelectorModal = ({

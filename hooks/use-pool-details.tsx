@@ -17,14 +17,13 @@ export interface PoolTransaction {
   timestamp: number;
 }
 
-export function usePoolDetails(poolId: number, token0Symbol: string, token1Symbol: string) {
+export function usePoolDetails(poolId: number, token0Symbol: string, _token1Symbol: string) {
   const [transactions, setTransactions] = useState<PoolTransaction[]>([]);
   const [isLoadingTxs, setIsLoadingTxs] = useState(false);
   const publicClient = usePublicClient({ chainId: mantleTestnet.id });
   const { data: currentBlock } = useBlockNumber({ chainId: mantleTestnet.id });
 
   const token0 = TOKENS[token0Symbol];
-  const token1 = TOKENS[token1Symbol];
 
   // Get pool info
   const { data: poolInfo, refetch } = useReadContract({

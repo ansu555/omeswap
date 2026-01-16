@@ -13,7 +13,7 @@ interface TechnicalAnalysisProps {
     };
 }
 
-export const TechnicalAnalysis = ({ analysis, priceChange24h, auditScores }: TechnicalAnalysisProps) => {
+export const TechnicalAnalysis = ({ analysis, priceChange24h, auditScores: _auditScores }: TechnicalAnalysisProps) => {
     const [showFullAnalysis, setShowFullAnalysis] = useState(false);
 
     // Determine trend from price change

@@ -88,7 +88,7 @@ export default function Explorer() {
     const [isLoading, setIsLoading] = useState(true);
     
     // Fetch DEX pools from smart contracts
-    const { pools: dexPools, poolCount } = useDexPools();
+    const { pools: dexPools } = useDexPools();
 
     // Fetch cryptocurrency data from our API
     useEffect(() => {

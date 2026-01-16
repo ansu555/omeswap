@@ -5,7 +5,7 @@ import { formatEther, Address } from "viem";
 import { CONTRACT_ADDRESSES, TOKENS } from "@/contracts/config";
 import { MultiTokenLiquidityPoolsABI } from "@/contracts/abis";
 import { mantleTestnet } from "@/lib/chains/mantle";
-import { Droplet, TrendingUp, DollarSign } from "lucide-react";
+import { Droplet, DollarSign } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 interface SelectedPoolInfoProps {
@@ -121,7 +121,7 @@ export function SelectedPoolInfo({ token0Symbol, token1Symbol }: SelectedPoolInf
       <div className="pt-4 border-t border-border space-y-3">
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Pool ID</span>
-          <span className="font-mono font-medium">#{poolId !== undefined ? poolId.toString() : '-'}</span>
+          <span className="font-mono font-medium">#{poolId != null ? poolId.toString() : '-'}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">LP Tokens</span>

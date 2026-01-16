@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Plus, Settings, ExternalLink, Info } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useLiquidity } from "@/hooks/use-liquidity";
 import { useMantleWallet } from "@/hooks/use-mantle-wallet";
 import { TOKENS } from "@/contracts/config";

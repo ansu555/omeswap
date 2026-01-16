@@ -193,10 +193,9 @@ export default function TokenDetailPage() {
 
         {/* Price Chart & Swap */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6">
-          <PriceChart 
-            basePrice={tokenData.price} 
+          <PriceChart
+            basePrice={tokenData.price}
             priceChange24h={tokenData.priceChange24h}
-            historicalData={tokenData.historicalData}
           />
           <SwapCard />
         </div>

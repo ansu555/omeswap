@@ -1,6 +1,6 @@
 "use client";
 
-import { Droplet, TrendingUp, Clock, DollarSign } from "lucide-react";
+import { Droplet, Clock, DollarSign } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useReadContract } from "wagmi";
 import { CONTRACT_ADDRESSES, TOKENS } from "@/contracts/config";

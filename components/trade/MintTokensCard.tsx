@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Coins, ExternalLink, RefreshCw } from "lucide-react";
-import { useAccount } from "wagmi";
 import { useTokenMint } from "@/hooks/use-token-mint";
 import { useMantleWallet } from "@/hooks/use-mantle-wallet";
 import { TOKENS, TOKEN_LIST } from "@/contracts/config";
@@ -11,8 +10,6 @@ import { mantleTestnet } from "@/lib/chains/mantle";
 
 export function MintTokensCard() {
   const { isConnected, chain } = useMantleWallet();
-  const [selectedToken, setSelectedToken] = useState('tUSDC');
-  const [mintAmount, setMintAmount] = useState('1000');
   const [minting, setMinting] = useState<{ [key: string]: boolean }>({});
   const [lastMinted, setLastMinted] = useState<{ [key: string]: string }>({});
 
