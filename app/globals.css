@@ -133,6 +133,7 @@
 }
 
 @layer components {
+
   /* Dashboard components for token detail page */
   .dashboard-card {
     @apply glass-card rounded-3xl p-5 shadow-xl;
@@ -325,6 +326,7 @@
     0% {
       transform: translateX(-100%);
     }
+
     100% {
       transform: translateX(100%);
     }
@@ -335,12 +337,15 @@
   }
 
   @keyframes heartbeat-glow {
-    0%, 100% {
+
+    0%,
+    100% {
       box-shadow: 0 0 4px hsl(var(--primary) / 0.2);
     }
+
     50% {
       box-shadow: 0 0 8px hsl(var(--primary) / 0.4),
-                  0 0 12px hsl(var(--primary) / 0.2);
+        0 0 12px hsl(var(--primary) / 0.2);
     }
   }
 
@@ -381,12 +386,14 @@
 /* React Flow v12 overrides (agent-builder canvas) */
 .react-flow__controls button {
   background: #1f2937 !important;
-  border-color: rgba(255,255,255,0.1) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
   color: white !important;
 }
+
 .react-flow__controls button:hover {
   background: #374151 !important;
 }
+
 .react-flow__edge-path {
   stroke-width: 1.5px;
 }
