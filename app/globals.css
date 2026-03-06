@@ -377,3 +377,16 @@
     @apply bg-card border-border hover:bg-accent;
   }
 }
+
+/* React Flow v12 overrides (agent-builder canvas) */
+.react-flow__controls button {
+  background: #1f2937 !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: white !important;
+}
+.react-flow__controls button:hover {
+  background: #374151 !important;
+}
+.react-flow__edge-path {
+  stroke-width: 1.5px;
+}
