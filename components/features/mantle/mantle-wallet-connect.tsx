@@ -165,9 +165,7 @@ export default function MantleWalletConnect({ className }: MantleWalletConnectPr
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => {
-                          const explorerUrl = chain.id === 5000
-                            ? 'https://explorer.mantle.xyz'
-                            : 'https://explorer.sepolia.mantle.xyz';
+                          const explorerUrl = 'https://snowtrace.io';
                           if (account.address) {
                             window.open(`${explorerUrl}/address/${account.address}`, '_blank');
                           }

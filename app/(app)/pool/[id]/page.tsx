@@ -8,7 +8,7 @@ import { useReadContract } from "wagmi";
 import { formatEther, Address } from "viem";
 import { CONTRACT_ADDRESSES, TOKENS } from "@/contracts/config";
 import { MultiTokenLiquidityPoolsABI } from "@/contracts/abis";
-import { mantleTestnet } from "@/lib/chains/mantle";
+import { avalanche } from '@/lib/chains/avalanche';
 import { useMantleWallet } from "@/hooks/use-mantle-wallet";
 import { usePoolDetails } from "@/hooks/use-pool-details";
 import { Button } from "@/components/ui/button";
@@ -26,16 +26,16 @@ import { cn } from "@/lib/utils";
 
 // Map pool IDs to token pairs (based on deployment)
 const POOL_PAIRS: { [key: string]: { token0: string; token1: string } } = {
-  "0": { token0: "tUSDC", token1: "tUSDT" },
-  "1": { token0: "tWETH", token1: "tUSDC" },
-  "2": { token0: "tWBTC", token1: "tWETH" },
-  "3": { token0: "tDAI", token1: "tUSDC" },
-  "4": { token0: "tLINK", token1: "tWETH" },
-  "5": { token0: "tUNI", token1: "tWETH" },
-  "6": { token0: "tAAVE", token1: "tWETH" },
-  "7": { token0: "tCRV", token1: "tDAI" },
-  "8": { token0: "tMKR", token1: "tDAI" },
-  "9": { token0: "tWBTC", token1: "tUSDC" },
+  "0": { token0: "USDC",  token1: "USDTe" },
+  "1": { token0: "WETHe", token1: "USDC"  },
+  "2": { token0: "WBTCe", token1: "WETHe" },
+  "3": { token0: "DAIe",  token1: "USDC"  },
+  "4": { token0: "LINKe", token1: "WETHe" },
+  "5": { token0: "JOE",   token1: "WETHe" },
+  "6": { token0: "AAVEe", token1: "WETHe" },
+  "7": { token0: "PNG",   token1: "DAIe"  },
+  "8": { token0: "WBTCe", token1: "USDC"  },
+  "9": { token0: "WAVAX", token1: "USDC"  },
 };
 
 export default function PoolPage() {
@@ -63,7 +63,7 @@ export default function PoolPage() {
     abi: MultiTokenLiquidityPoolsABI,
     functionName: 'getUserPosition',
     args: [BigInt(poolId), address as Address],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
     query: {
       enabled: !!address,
     },
@@ -294,7 +294,7 @@ export default function PoolPage() {
                           </TableCell>
                           <TableCell className="text-right">
                             <a
-                              href={`${mantleTestnet.blockExplorers.default.url}/address/${tx.wallet}`}
+                              href={`${'https://snowtrace.io'}/address/${tx.wallet}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-primary hover:underline font-mono text-xs"
@@ -304,7 +304,7 @@ export default function PoolPage() {
                           </TableCell>
                           <TableCell className="text-right">
                             <a
-                              href={`${mantleTestnet.blockExplorers.default.url}/tx/${tx.txHash}`}
+                              href={`${'https://snowtrace.io'}/tx/${tx.txHash}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-muted-foreground hover:text-primary"
@@ -527,7 +527,7 @@ export default function PoolPage() {
                 <div>
                   <div className="text-muted-foreground mb-1">Contract</div>
                   <a
-                    href={`${mantleTestnet.blockExplorers.default.url}/address/${CONTRACT_ADDRESSES.POOLS}`}
+                    href={`${'https://snowtrace.io'}/address/${CONTRACT_ADDRESSES.POOLS}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline font-mono text-xs"

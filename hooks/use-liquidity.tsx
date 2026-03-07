@@ -5,7 +5,7 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { parseEther, formatEther, Address } from 'viem';
 import { CONTRACT_ADDRESSES, TOKENS } from '@/contracts/config';
 import { MultiTokenLiquidityPoolsABI, ERC20ABI } from '@/contracts/abis';
-import { mantleTestnet } from '@/lib/chains/mantle';
+import { avalanche } from '@/lib/chains/avalanche';
 
 export function useLiquidity(token0Symbol: string, token1Symbol: string) {
   const { address } = useAccount();
@@ -33,7 +33,7 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
     abi: MultiTokenLiquidityPoolsABI,
     functionName: 'getPoolId',
     args: [token0Addr, token1Addr],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
   });
 
   // Get pool info
@@ -42,7 +42,7 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
     abi: MultiTokenLiquidityPoolsABI,
     functionName: 'getPoolInfo',
     args: [poolId as bigint],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
     query: {
       enabled: !!poolId,
     },
@@ -54,7 +54,7 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
     abi: MultiTokenLiquidityPoolsABI,
     functionName: 'getUserPosition',
     args: [poolId as bigint, address as Address],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
     query: {
       enabled: !!poolId && !!address,
     },
@@ -66,7 +66,7 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
     abi: ERC20ABI,
     functionName: 'allowance',
     args: [address as Address, CONTRACT_ADDRESSES.POOLS as Address],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
     query: {
       enabled: !!address,
     },
@@ -78,7 +78,7 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
     abi: ERC20ABI,
     functionName: 'allowance',
     args: [address as Address, CONTRACT_ADDRESSES.POOLS as Address],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
     query: {
       enabled: !!address,
     },
@@ -90,7 +90,7 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
     abi: ERC20ABI,
     functionName: 'balanceOf',
     args: [address as Address],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
     query: {
       enabled: !!address,
     },
@@ -101,7 +101,7 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
     abi: ERC20ABI,
     functionName: 'balanceOf',
     args: [address as Address],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
     query: {
       enabled: !!address,
     },
@@ -116,7 +116,7 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
       abi: ERC20ABI,
       functionName: 'approve',
       args: [CONTRACT_ADDRESSES.POOLS as Address, parseEther(amount0)],
-      chainId: mantleTestnet.id,
+      chainId: avalanche.id,
     });
   };
 
@@ -129,7 +129,7 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
       abi: ERC20ABI,
       functionName: 'approve',
       args: [CONTRACT_ADDRESSES.POOLS as Address, parseEther(amount1)],
-      chainId: mantleTestnet.id,
+      chainId: avalanche.id,
     });
   };
 
@@ -170,7 +170,7 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
           BigInt(0), // min amount0
           BigInt(0), // min amount1
         ],
-        chainId: mantleTestnet.id,
+        chainId: avalanche.id,
       });
     } catch (error: any) {
       console.error('Error in addLiquidity:', error);
@@ -191,7 +191,7 @@ export function useLiquidity(token0Symbol: string, token1Symbol: string) {
         BigInt(0), // min amount0
         BigInt(0), // min amount1
       ],
-      chainId: mantleTestnet.id,
+      chainId: avalanche.id,
     });
   };
 
