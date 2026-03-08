@@ -12,19 +12,19 @@ import {
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { cn } from '@/lib/utils';
 
-interface MantleWalletConnectProps {
+interface AvalancheWalletConnectProps {
   variant?: 'default' | 'outline' | 'ghost';
   className?: string;
 }
 
 // Lamp-style button component
-function LampButton({ 
-  children, 
-  onClick, 
+function LampButton({
+  children,
+  onClick,
   className,
-}: { 
-  children: React.ReactNode; 
-  onClick?: () => void; 
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
   className?: string;
 }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -74,7 +74,7 @@ function LampButton({
   );
 }
 
-export default function MantleWalletConnect({ className }: MantleWalletConnectProps) {
+export default function AvalancheWalletConnect({ className }: AvalancheWalletConnectProps) {
   return (
     <ConnectButton.Custom>
       {({

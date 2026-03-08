@@ -1,1 +1,1 @@
-export { avalanche, avalancheFuji } from 'viem/chains';
+    export { avalanche, avalancheFuji } from 'viem/chains';

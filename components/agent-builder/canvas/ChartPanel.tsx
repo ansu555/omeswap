@@ -84,12 +84,12 @@ export default function ChartPanel({ onClose }: Props) {
 
     const chart = createChart(chartContainerRef.current, {
       width: size.w,
-      height: size.h - 40, // header height
-      layout: { background: { color: '#0d1117' }, textColor: '#9ca3af' },
-      grid: { vertLines: { color: '#1f2937' }, horzLines: { color: '#1f2937' } },
+      height: size.h - 40,
+      layout: { background: { color: '#0d0d1a' }, textColor: '#9ca3af' },
+      grid: { vertLines: { color: '#5227FF15' }, horzLines: { color: '#5227FF15' } },
       crosshair: { mode: 1 },
-      rightPriceScale: { borderColor: '#1f2937' },
-      timeScale: { borderColor: '#1f2937', timeVisible: true },
+      rightPriceScale: { borderColor: '#5227FF20' },
+      timeScale: { borderColor: '#5227FF20', timeVisible: true },
     })
 
     const series = chart.addSeries(CandlestickSeries, {
@@ -127,7 +127,6 @@ export default function ChartPanel({ onClose }: Props) {
     if (!seriesRef.current) return
     let cancelled = false
 
-    // Close any existing WebSocket
     if (wsRef.current) {
       wsRef.current.close()
       wsRef.current = null
@@ -138,7 +137,6 @@ export default function ChartPanel({ onClose }: Props) {
     setError(null)
 
     if (backtestMode) {
-      // ── Backtest: load historical range matching the backtest config ─────
       const { symbol: btSymbol, interval: btInterval, startDate, endDate } = backtestConfig
       const startMs = new Date(startDate).getTime()
       const endMs = new Date(endDate).getTime() + 86_400_000
@@ -156,7 +154,6 @@ export default function ChartPanel({ onClose }: Props) {
           if (!cancelled) { setError(e.message); setLoading(false) }
         })
     } else {
-      // ── Live: last 200 candles + WebSocket stream ────────────────────────
       fetch(
         `https://api.binance.com/api/v3/klines?symbol=${symbol.binance}&interval=${interval.value}&limit=200`
       )
@@ -219,7 +216,6 @@ export default function ChartPanel({ onClose }: Props) {
       shape: m.shape,
       text: m.label,
     }))
-    // Sort by time ascending (required by lightweight-charts)
     markers.sort((a, b) => (a.time as number) - (b.time as number))
     markersPluginRef.current.setMarkers(markers)
   }, [chartMarkers])
@@ -227,12 +223,13 @@ export default function ChartPanel({ onClose }: Props) {
   return (
     <div
       ref={panelRef}
-      className="fixed z-40 flex flex-col rounded-xl border border-white/15 shadow-2xl bg-[#0d1117] overflow-hidden"
-      style={{ left: pos.x, top: pos.y, width: size.w, height: minimized ? 'auto' : size.h }}
+      className="fixed z-40 flex flex-col rounded-2xl border border-purple-500/20 shadow-2xl shadow-purple-500/10 overflow-hidden backdrop-blur-xl"
+      style={{ left: pos.x, top: pos.y, width: size.w, height: minimized ? 'auto' : size.h, background: 'rgba(26, 26, 46, 0.96)' }}
     >
       {/* Title bar */}
       <div
-        className="flex items-center gap-2 px-3 py-2 bg-gray-900 border-b border-white/10 cursor-grab active:cursor-grabbing select-none shrink-0"
+        className="flex items-center gap-2 px-3 py-2 border-b border-purple-500/20 cursor-grab active:cursor-grabbing select-none shrink-0"
+        style={{ background: 'rgba(26, 26, 46, 0.8)' }}
         onMouseDown={onMouseDown}
       >
         <GripHorizontal size={13} className="text-white/30" />
@@ -253,14 +250,12 @@ export default function ChartPanel({ onClose }: Props) {
         )}
         {error && <span className="text-[10px] text-red-400">{error}</span>}
 
-        {/* Marker count badge */}
         {chartMarkers.length > 0 && (
-          <span className="text-[10px] bg-purple-700/60 text-purple-200 px-1.5 py-0.5 rounded">
+          <span className="text-[10px] bg-purple-700/40 border border-purple-500/30 text-purple-300 px-1.5 py-0.5 rounded-lg">
             {chartMarkers.length} marker{chartMarkers.length !== 1 ? 's' : ''}
           </span>
         )}
 
-        {/* Symbol selector — hidden in backtest (driven by backtest config) */}
         {backtestMode ? (
           <span className="text-[11px] text-amber-400/70 font-mono">
             {backtestConfig.symbol} · {backtestConfig.interval}
@@ -271,7 +266,7 @@ export default function ChartPanel({ onClose }: Props) {
               value={symbol.binance}
               onChange={(e) => setSymbol(SYMBOLS.find(s => s.binance === e.target.value) ?? SYMBOLS[0])}
               onMouseDown={(e) => e.stopPropagation()}
-              className="bg-black/40 border border-white/15 rounded px-2 py-0.5 text-[11px] text-white focus:outline-none"
+              className="bg-black/50 border border-purple-500/15 rounded-lg px-2 py-0.5 text-[11px] text-white focus:outline-none"
             >
               {SYMBOLS.map((s) => <option key={s.binance} value={s.binance}>{s.label}</option>)}
             </select>
@@ -282,9 +277,9 @@ export default function ChartPanel({ onClose }: Props) {
                   key={iv.value}
                   onClick={() => setInterval(iv)}
                   className={clsx(
-                    'px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors',
+                    'px-1.5 py-0.5 rounded-lg text-[10px] font-medium transition-colors',
                     interval.value === iv.value
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-purple-600/60 border border-purple-500/40 text-white'
                       : 'text-white/40 hover:text-white hover:bg-white/10'
                   )}
                 >
@@ -332,7 +327,7 @@ export default function ChartPanel({ onClose }: Props) {
             window.addEventListener('mouseup', onUp)
           }}
         >
-          <svg viewBox="0 0 10 10" className="w-3 h-3 absolute bottom-1 right-1 text-white/20">
+          <svg viewBox="0 0 10 10" className="w-3 h-3 absolute bottom-1 right-1 text-purple-500/30">
             <path d="M0 10 L10 0 M5 10 L10 5" stroke="currentColor" strokeWidth="1.5" />
           </svg>
         </div>

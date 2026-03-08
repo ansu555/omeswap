@@ -4,10 +4,10 @@ import { useState } from "react";
 import { ArrowUpDown, ChevronDown, Settings, Check, Wallet, Search, ExternalLink, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDexAggregator, DexSource } from "@/hooks/use-dex-aggregator";
-import { useMantleWallet } from "@/hooks/use-mantle-wallet";
+import { useAvalancheWallet } from "@/hooks/use-avalanche-wallet";
 import { TOKEN_LIST, TOKEN_ADDRESSES } from "@/contracts/config";
 import { useTokenBalances } from "@/hooks/use-token-balances";
-import MantleWalletConnect from "@/components/features/mantle/mantle-wallet-connect";
+import AvalancheWalletConnect from "@/components/features/avalanche/avalanche-wallet-connect";
 import {
   Dialog,
   DialogContent,
@@ -24,13 +24,13 @@ import { avalanche } from '@/lib/chains/avalanche';
 type SwapMode = "swap" | "limit" | "buy" | "sell";
 
 const DEX_LABELS: Record<DexSource, { name: string; color: string }> = {
-  traderjoe_v2: { name: 'Trader Joe',    color: 'text-orange-400' },
-  traderjoe:    { name: 'Trader Joe V1', color: 'text-orange-300' },
-  pangolin:     { name: 'Pangolin',      color: 'text-pink-400' },
+  traderjoe_v2: { name: 'Trader Joe', color: 'text-orange-400' },
+  traderjoe: { name: 'Trader Joe V1', color: 'text-orange-300' },
+  pangolin: { name: 'Pangolin', color: 'text-pink-400' },
 };
 
 export function SwapCardDex() {
-  const { isConnected, chain, address } = useMantleWallet();
+  const { isConnected, chain, address } = useAvalancheWallet();
 
   const [mode, setMode] = useState<SwapMode>("swap");
   const [tokenIn, setTokenIn] = useState<string>('WAVAX');
@@ -162,7 +162,7 @@ export function SwapCardDex() {
         <p className="text-muted-foreground mb-6">
           Connect your wallet to swap tokens on Avalanche
         </p>
-        <MantleWalletConnect variant="default" />
+        <AvalancheWalletConnect variant="default" />
       </div>
     );
   }

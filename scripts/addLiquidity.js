@@ -11,9 +11,9 @@ async function main() {
   
   // Token addresses
   const tokens = {
-    tUSDC: "0x6D13968b1Fe787ed0237D3645D094161CC165E4c",
-    tUSDT: "0x0828b7774ea41Db0fCbf13ADe31b5F61624A1364",
-    tWETH: "0x95829976c0cd4a58fBaA4802410d10BDe15E3CA0",
+    USDC: "0x6D13968b1Fe787ed0237D3645D094161CC165E4c",
+    USDTe: "0x0828b7774ea41Db0fCbf13ADe31b5F61624A1364",
+    WETHe: "0x95829976c0cd4a58fBaA4802410d10BDe15E3CA0",
     tWBTC: "0xD781bf79d86112215F7bF141277f5782640cad5D",
   };
 
@@ -23,16 +23,16 @@ async function main() {
   // Define liquidity pairs
   const liquidityPairs = [
     {
-      token0: { symbol: "tUSDC", address: tokens.tUSDC, amount: "5000" },
-      token1: { symbol: "tUSDT", address: tokens.tUSDT, amount: "5000" },
+      token0: { symbol: "USDC", address: tokens.USDC, amount: "5000" },
+      token1: { symbol: "USDTe", address: tokens.USDTe, amount: "5000" },
     },
     {
-      token0: { symbol: "tWETH", address: tokens.tWETH, amount: "10" },
-      token1: { symbol: "tUSDC", address: tokens.tUSDC, amount: "25000" },
+      token0: { symbol: "WETHe", address: tokens.WETHe, amount: "10" },
+      token1: { symbol: "USDC", address: tokens.USDC, amount: "25000" },
     },
     {
       token0: { symbol: "tWBTC", address: tokens.tWBTC, amount: "0.5" },
-      token1: { symbol: "tWETH", address: tokens.tWETH, amount: "10" },
+      token1: { symbol: "WETHe", address: tokens.WETHe, amount: "10" },
     },
   ];
 

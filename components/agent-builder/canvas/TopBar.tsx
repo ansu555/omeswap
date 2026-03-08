@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '@/store/agent-builder'
 import { connectMetaMask } from '@/lib/agent-builder/avalanche/provider'
 import { runBot } from '@/lib/agent-builder/engine/BotRunner'
@@ -8,11 +9,18 @@ import { fetchBinanceHistory } from '@/lib/agent-builder/backtest/fetchHistory'
 import { runBacktest } from '@/lib/agent-builder/backtest/BacktestRunner'
 import { ScheduleTriggerNode } from '@/lib/agent-builder/nodes/flow/ScheduleTriggerNode'
 import { ethers } from 'ethers'
-import { Wallet, Play, Square, ChevronDown, ChevronUp, Trash2, Clock, LineChart, FolderOpen, Bot, Timer } from 'lucide-react'
+import Image from 'next/image'
+import {
+  Wallet, Play, Square, ChevronDown, ChevronUp, Trash2, Clock,
+  LineChart, FolderOpen, Bot, Timer, Download, AlertCircle, Info, AlertTriangle,
+} from 'lucide-react'
 import clsx from 'clsx'
 import WorkflowManager from './WorkflowManager'
 import BacktestConfigStrip from './BacktestConfigStrip'
 import BacktestSummaryModal from './BacktestSummaryModal'
+import type { LogEntry } from '@/types/agent-builder-canvas'
+
+type LogFilter = 'all' | 'info' | 'warn' | 'error'
 
 export default function TopBar() {
   const {
@@ -26,10 +34,12 @@ export default function TopBar() {
     backtestMode, setBacktestMode,
     backtestConfig,
     setBacktestSummary, setBacktestProgress,
+    workflowsOpen, setWorkflowsOpen,
+    selectNode,
   } = useStore()
 
   const [showLogs, setShowLogs] = useState(false)
-  const [showWorkflows, setShowWorkflows] = useState(false)
+  const [logFilter, setLogFilter] = useState<LogFilter>('all')
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null)
   const [signer, setSigner] = useState<ethers.Signer | null>(null)
   const stopRequestedRef = useRef(false)
@@ -99,7 +109,7 @@ export default function TopBar() {
         await executeOnce(context)
         if (stopRequestedRef.current) break
         const intervalMs = scheduleNode.getInterval() * 1000
-        addLog('', 'Scheduler', `Next run in ${scheduleNode.getInterval()}s...`)
+        addLog('', 'Scheduler', `Next run in ${scheduleNode.getInterval()}s…`)
         await new Promise<void>((resolve) => {
           const id = setTimeout(resolve, intervalMs)
           const poll = setInterval(() => {
@@ -140,19 +150,18 @@ export default function TopBar() {
     setBacktestProgress(null)
     setBacktestSummary(null)
 
-    // Auto-open chart so user can watch markers appear
     if (!chartOpen) setChartOpen(true)
     clearChartMarkers()
 
     try {
-      addToast(`Fetching ${symbol} ${interval} history...`, 'info')
+      addToast(`Fetching ${symbol} ${interval} history…`, 'info')
       const candles = await fetchBinanceHistory(
         symbol,
         interval,
         new Date(startDate).getTime(),
-        new Date(endDate).getTime() + 86_400_000 // include end day
+        new Date(endDate).getTime() + 86_400_000
       )
-      addToast(`Loaded ${candles.length.toLocaleString()} candles — running backtest...`, 'info')
+      addToast(`Loaded ${candles.length.toLocaleString()} candles — running backtest…`, 'info')
 
       const summary = await runBacktest(
         candles,
@@ -179,6 +188,19 @@ export default function TopBar() {
     }
   }
 
+  const handleExportLogs = useCallback(() => {
+    const text = logs
+      .map((l) => `[${l.timestamp.toLocaleTimeString()}] ${l.level.toUpperCase()} ${l.nodeLabel ? `[${l.nodeLabel}] ` : ''}${l.message}`)
+      .join('\n')
+    navigator.clipboard.writeText(text).then(() => addToast('Logs copied to clipboard', 'info'))
+  }, [logs, addToast])
+
+  const handleLogRowClick = useCallback((log: LogEntry) => {
+    if (log.nodeId) selectNode(log.nodeId)
+  }, [selectNode])
+
+  const filteredLogs = logFilter === 'all' ? logs : logs.filter((l) => l.level === logFilter)
+
   const shortAddr = walletAddress
     ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}`
     : null
@@ -186,111 +208,80 @@ export default function TopBar() {
   const schedNode = getScheduleNode()
   const isScheduled = !!schedNode
 
+  const LOG_FILTER_ICON: Record<LogFilter, React.ReactNode> = {
+    all: null,
+    info: <Info size={11} />,
+    warn: <AlertTriangle size={11} />,
+    error: <AlertCircle size={11} />,
+  }
+
   return (
     <>
-      {showWorkflows && <WorkflowManager onClose={() => setShowWorkflows(false)} />}
+      {workflowsOpen && <WorkflowManager onClose={() => setWorkflowsOpen(false)} />}
       <BacktestSummaryModal />
 
-      <div className="flex flex-col border-b border-white/10 bg-gray-900">
-        <div className="flex items-center gap-3 px-4 py-3">
-          {/* Logo */}
-          <div className="flex items-center gap-2 mr-2">
-            <div className="w-7 h-7 rounded-lg bg-red-500 flex items-center justify-center text-white font-bold text-sm">A</div>
-            <span className="text-white font-semibold text-sm">AVAX Bot Builder</span>
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className={clsx(
+          'flex flex-col border-b backdrop-blur-xl',
+          'bg-gradient-to-r from-[#1a1a2e]/90 to-[#16162a]/90',
+          backtestMode
+            ? 'border-b-amber-500/60 border-b-2 border-purple-500/20'
+            : 'border-b border-purple-500/20'
+        )}
+      >
+        {/* Main toolbar row */}
+        <div className="flex items-center gap-2 px-4 py-2.5">
+
+          {/* ── ZONE 1: Brand + Mode ── */}
+          <div className="flex items-center gap-2.5">
+            <Image
+              src="https://imgproxy-mainnet.routescan.io/naGNKvPom3Ah-x1tNtKXo9mfx8W_FosTjkTywwUjYe0/pr:thumb_32/aHR0cHM6Ly9jbXMtY2RuLmF2YXNjYW4uY29tL2NtczIvQXZhbGFuY2hlQXZheC40N2JlNjJlOGFiZmYuc3Zn"
+              alt="AVAX"
+              width={28}
+              height={28}
+              className="rounded-lg shrink-0"
+            />
+            <span className="text-white font-semibold text-sm tracking-tight whitespace-nowrap">AVAX Bot Builder</span>
+
+            {/* Mode toggle */}
+            <div className="flex rounded-full border border-purple-500/20 overflow-hidden ml-1">
+              <button
+                onClick={() => setBacktestMode(false)}
+                className={clsx(
+                  'px-3 py-1 text-[11px] font-medium transition-colors',
+                  !backtestMode ? 'bg-green-900/40 text-green-400' : 'text-white/35 hover:text-white/60'
+                )}
+              >
+                Live
+              </button>
+              <button
+                onClick={() => setBacktestMode(true)}
+                className={clsx(
+                  'px-3 py-1 text-[11px] font-medium transition-colors',
+                  backtestMode ? 'bg-amber-900/40 text-amber-400' : 'text-white/35 hover:text-white/60'
+                )}
+              >
+                Backtest
+              </button>
+            </div>
           </div>
 
-          {/* Live / Backtest toggle pill */}
-          <div className="flex rounded-lg border border-white/15 overflow-hidden">
-            <button
-              onClick={() => setBacktestMode(false)}
-              className={clsx(
-                'px-3 py-1 text-[11px] font-medium transition-colors',
-                !backtestMode ? 'bg-green-900/40 text-green-400' : 'text-white/35 hover:text-white/60'
-              )}
-            >
-              Live
-            </button>
-            <button
-              onClick={() => setBacktestMode(true)}
-              className={clsx(
-                'px-3 py-1 text-[11px] font-medium transition-colors',
-                backtestMode ? 'bg-amber-900/40 text-amber-400' : 'text-white/35 hover:text-white/60'
-              )}
-            >
-              Backtest
-            </button>
-          </div>
+          {/* Zone 1 / Zone 2 divider */}
+          <div className="w-px h-5 bg-purple-500/20 mx-1.5" />
 
-          <div className="flex-1" />
-
-          {/* Logs toggle */}
-          <button
-            onClick={() => setShowLogs((v) => !v)}
-            className="flex items-center gap-1 text-xs text-white/60 hover:text-white px-2 py-1 rounded border border-white/10 hover:border-white/30 transition-colors"
-          >
-            Logs ({logs.length})
-            {showLogs ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          </button>
-
-          {/* Chart toggle */}
-          <button
-            onClick={() => setChartOpen(!chartOpen)}
-            className={clsx(
-              'flex items-center gap-1.5 text-xs px-2 py-1 rounded border transition-colors',
-              chartOpen
-                ? 'bg-blue-900/40 border-blue-500/40 text-blue-400'
-                : 'text-white/60 hover:text-white border-white/10 hover:border-white/30'
-            )}
-          >
-            <LineChart size={13} />
-            Chart
-          </button>
-
-          {/* Workflow manager */}
-          <button
-            onClick={() => setShowWorkflows(true)}
-            className="flex items-center gap-1.5 text-xs px-2 py-1 rounded border border-white/10 hover:border-white/30 text-white/60 hover:text-white transition-colors"
-          >
-            <FolderOpen size={13} />
-            Workflows
-          </button>
-
-          {/* Agent toggle */}
-          <button
-            onClick={() => setAgentOpen(!agentOpen)}
-            className={clsx(
-              'flex items-center gap-1.5 text-xs px-2 py-1 rounded border transition-colors',
-              agentOpen
-                ? 'bg-purple-900/40 border-purple-500/40 text-purple-400'
-                : 'text-white/60 hover:text-white border-white/10 hover:border-white/30'
-            )}
-          >
-            <Bot size={13} />
-            Agent
-          </button>
-
-          {/* Wallet */}
-          <button
-            onClick={handleConnect}
-            className={clsx(
-              'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
-              isConnected
-                ? 'bg-green-900/40 border-green-500/40 text-green-400'
-                : 'bg-white/5 border-white/20 text-white hover:bg-white/10'
-            )}
-          >
-            <Wallet size={13} />
-            {isConnected ? shortAddr : 'Connect Wallet'}
-          </button>
-
-          {/* Run / Stop / Backtest */}
+          {/* ── ZONE 2: Execution ── */}
           {backtestMode ? (
             <button
               onClick={handleBacktest}
               disabled={nodes.length === 0}
               className={clsx(
-                'flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-40',
-                botRunning ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-amber-500 hover:bg-amber-600 text-white'
+                'flex items-center gap-2 px-5 py-1.5 rounded-full text-xs font-semibold transition-all disabled:opacity-40',
+                botRunning
+                  ? 'bg-red-600 hover:bg-red-700 text-white shadow-[0_0_10px_#dc262640]'
+                  : 'bg-amber-500 hover:bg-amber-400 text-white shadow-[0_0_10px_#f59e0b40] hover:shadow-[0_0_16px_#f59e0b50]'
               )}
             >
               {botRunning ? <><Square size={12} /> Stop</> : <><Timer size={12} /> Run Backtest</>}
@@ -300,12 +291,12 @@ export default function TopBar() {
               onClick={handleRun}
               disabled={nodes.length === 0}
               className={clsx(
-                'flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-40',
+                'flex items-center gap-2 px-5 py-1.5 rounded-full text-xs font-semibold transition-all disabled:opacity-40',
                 botRunning
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  ? 'bg-red-600 hover:bg-red-700 text-white shadow-[0_0_10px_#dc262640]'
                   : isScheduled
-                  ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                  : 'bg-red-500 hover:bg-red-600 text-white'
+                  ? 'bg-orange-500 hover:bg-orange-400 text-white shadow-[0_0_10px_#f9730040]'
+                  : 'bg-violet-600 hover:bg-violet-500 text-white shadow-[0_0_10px_#7c3aed40] hover:shadow-[0_0_18px_#7c3aed60]'
               )}
             >
               {botRunning
@@ -316,42 +307,197 @@ export default function TopBar() {
               }
             </button>
           )}
+
+          {/* Zone 2 / Zone 3 divider */}
+          <div className="w-px h-5 bg-purple-500/20 mx-1.5" />
+
+          {/* ── ZONE 3: Utilities ── */}
+          <div className="flex items-center gap-1.5 flex-1">
+            {/* Chart toggle */}
+            <button
+              onClick={() => setChartOpen(!chartOpen)}
+              className={clsx(
+                'flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all',
+                chartOpen
+                  ? 'bg-blue-900/40 border-blue-500/30 text-blue-400'
+                  : 'text-white/50 hover:text-white border-purple-500/20 hover:border-purple-500/40 hover:bg-purple-500/10'
+              )}
+            >
+              <LineChart size={12} />
+              Chart
+            </button>
+
+            {/* Logs toggle */}
+            <button
+              onClick={() => setShowLogs((v) => !v)}
+              className={clsx(
+                'flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all',
+                showLogs
+                  ? 'bg-purple-900/40 border-purple-500/30 text-purple-300'
+                  : 'text-white/50 hover:text-white border-purple-500/20 hover:border-purple-500/40 hover:bg-purple-500/10'
+              )}
+            >
+              Logs
+              {logs.length > 0 && (
+                <span className={clsx(
+                  'text-[9px] px-1 py-0.5 rounded-full min-w-[18px] text-center font-mono',
+                  logs.some((l) => l.level === 'error')
+                    ? 'bg-red-500/30 text-red-400'
+                    : logs.some((l) => l.level === 'warn')
+                    ? 'bg-yellow-500/30 text-yellow-400'
+                    : 'bg-white/10 text-white/40'
+                )}>
+                  {logs.length}
+                </span>
+              )}
+              {showLogs ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+            </button>
+
+            {/* Workflows */}
+            <button
+              onClick={() => setWorkflowsOpen(true)}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-purple-500/20 hover:border-purple-500/40 text-white/50 hover:text-white hover:bg-purple-500/10 transition-all"
+            >
+              <FolderOpen size={12} />
+              Workflows
+            </button>
+
+            {/* Agent toggle */}
+            <button
+              onClick={() => setAgentOpen(!agentOpen)}
+              className={clsx(
+                'flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all',
+                agentOpen
+                  ? 'bg-purple-900/40 border-purple-500/30 text-purple-400'
+                  : 'text-white/50 hover:text-white border-purple-500/20 hover:border-purple-500/40 hover:bg-purple-500/10'
+              )}
+            >
+              <Bot size={12} />
+              Agent
+            </button>
+
+            <div className="flex-1" />
+
+            {/* Wallet */}
+            <button
+              onClick={handleConnect}
+              className={clsx(
+                'flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium border transition-all',
+                isConnected
+                  ? 'bg-green-900/40 border-green-500/30 text-green-400'
+                  : 'bg-purple-600/20 border-purple-500/30 text-white hover:bg-purple-600/30 hover:border-purple-500/50'
+              )}
+            >
+              <Wallet size={12} />
+              {isConnected ? shortAddr : 'Connect Wallet'}
+            </button>
+          </div>
         </div>
 
         {/* Backtest config strip */}
         {backtestMode && <BacktestConfigStrip />}
 
         {/* Log drawer */}
-        {showLogs && (
-          <div className="border-t border-white/10 bg-black/40 max-h-48 overflow-y-auto">
-            <div className="flex items-center justify-between px-4 py-1.5 sticky top-0 bg-black/60">
-              <span className="text-[10px] text-white/40 font-mono uppercase tracking-wider">Execution Log</span>
-              <button onClick={clearLogs} className="text-white/30 hover:text-white/60 transition-colors">
-                <Trash2 size={11} />
-              </button>
-            </div>
-            {logs.length === 0 ? (
-              <p className="px-4 py-3 text-[11px] text-white/30 font-mono">No logs yet</p>
-            ) : (
-              <div className="px-4 pb-2 space-y-0.5 font-mono text-[11px]">
-                {logs.map((log) => (
-                  <div
-                    key={log.id}
-                    className={clsx(
-                      log.level === 'error' ? 'text-red-400' :
-                      log.level === 'warn' ? 'text-yellow-400' :
-                      'text-white/60'
-                    )}
-                  >
-                    <span className="text-white/30">{log.timestamp.toLocaleTimeString()} </span>
-                    {log.message}
-                  </div>
-                ))}
+        <AnimatePresence>
+          {showLogs && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="overflow-hidden border-t border-purple-500/20 bg-gradient-to-b from-[#1a1a2e]/70 to-[#0d0d1a]/70"
+            >
+              {/* Log toolbar */}
+              <div className="flex items-center gap-2 px-4 py-1.5 sticky top-0 bg-[#1a1a2e]/85 backdrop-blur border-b border-purple-500/10">
+                <span className="text-[10px] text-white/40 font-mono uppercase tracking-wider flex-1">
+                  Execution Log
+                </span>
+
+                {/* Filter tabs */}
+                <div className="flex items-center gap-0.5">
+                  {(['all', 'info', 'warn', 'error'] as LogFilter[]).map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setLogFilter(f)}
+                      className={clsx(
+                        'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] transition-colors',
+                        logFilter === f
+                          ? f === 'error' ? 'bg-red-900/40 text-red-400'
+                            : f === 'warn' ? 'bg-yellow-900/40 text-yellow-400'
+                            : 'bg-purple-900/40 text-purple-300'
+                          : 'text-white/30 hover:text-white/60'
+                      )}
+                    >
+                      {LOG_FILTER_ICON[f]}
+                      <span className="capitalize">{f}</span>
+                      {f !== 'all' && (
+                        <span className="text-[9px] opacity-60">
+                          ({logs.filter((l) => l.level === f).length})
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="w-px h-3.5 bg-purple-500/20" />
+
+                {/* Export */}
+                <button
+                  onClick={handleExportLogs}
+                  disabled={logs.length === 0}
+                  title="Copy logs to clipboard"
+                  className="text-white/30 hover:text-white/60 transition-colors disabled:opacity-30"
+                >
+                  <Download size={11} />
+                </button>
+
+                {/* Clear */}
+                <button
+                  onClick={clearLogs}
+                  title="Clear logs"
+                  className="text-white/30 hover:text-red-400 transition-colors"
+                >
+                  <Trash2 size={11} />
+                </button>
               </div>
-            )}
-          </div>
-        )}
-      </div>
+
+              {/* Log entries */}
+              <div className="max-h-44 overflow-y-auto">
+                {filteredLogs.length === 0 ? (
+                  <p className="px-4 py-3 text-[11px] text-white/30 font-mono">
+                    {logFilter === 'all' ? 'No logs yet' : `No ${logFilter} logs`}
+                  </p>
+                ) : (
+                  <div className="px-1 pb-1.5 space-y-px font-mono text-[11px]">
+                    {filteredLogs.map((log) => (
+                      <button
+                        key={log.id}
+                        onClick={() => handleLogRowClick(log)}
+                        className={clsx(
+                          'w-full text-left flex items-start gap-2.5 px-3 py-1 rounded transition-colors',
+                          'hover:bg-white/5',
+                          log.nodeId ? 'cursor-pointer' : 'cursor-default',
+                          log.level === 'error' ? 'text-red-400' :
+                          log.level === 'warn' ? 'text-yellow-400' :
+                          'text-white/55'
+                        )}
+                      >
+                        <span className="text-white/25 shrink-0 tabular-nums">
+                          {log.timestamp.toLocaleTimeString()}
+                        </span>
+                        {log.nodeLabel && (
+                          <span className="text-white/35 shrink-0">[{log.nodeLabel}]</span>
+                        )}
+                        <span className="truncate">{log.message}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </>
   )
 }

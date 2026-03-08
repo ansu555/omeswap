@@ -1,5 +1,5 @@
 {
-  "name": "mantle-dex",
+  "name": "avalanche-dex",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,13 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "hardhat:compile": "cd ../Mantel_contract && npx hardhat compile",
-    "hardhat:test": "cd ../Mantel_contract && npx hardhat test",
-    "hardhat:mint": "cd ../Mantel_contract && npx hardhat run scripts/mintTokens.js --network mantleSepolia",
-    "hardhat:liquidity": "cd ../Mantel_contract && npx hardhat run scripts/addLiquidity.js --network mantleSepolia",
-    "hardhat:swap": "cd ../Mantel_contract && npx hardhat run scripts/swap.js --network mantleSepolia",
-    "hardhat:multihop": "cd ../Mantel_contract && npx hardhat run scripts/multiHopSwap.js --network mantleSepolia",
-    "hardhat:quickstart": "cd ../Mantel_contract && npx hardhat run scripts/quickStart.js --network mantleSepolia"
+    "hardhat:compile": "cd ../Avalanche_contract && npx hardhat compile",
+    "hardhat:test": "cd ../Avalanche_contract && npx hardhat test",
+    "hardhat:mint": "cd ../Avalanche_contract && npx hardhat run scripts/mintTokens.js --network avalanche",
+    "hardhat:liquidity": "cd ../Avalanche_contract && npx hardhat run scripts/addLiquidity.js --network avalanche",
+    "hardhat:swap": "cd ../Avalanche_contract && npx hardhat run scripts/swap.js --network avalanche",
+    "hardhat:multihop": "cd ../Avalanche_contract && npx hardhat run scripts/multiHopSwap.js --network avalanche",
+    "hardhat:quickstart": "cd ../Avalanche_contract && npx hardhat run scripts/quickStart.js --network avalanche"
   },
   "dependencies": {
     "@coingecko/coingecko-typescript": "^2.5.0",

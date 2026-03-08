@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   useStore,
   listWorkflows,
@@ -87,11 +88,18 @@ export default function WorkflowManager({ onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-gray-900 border border-white/15 rounded-2xl shadow-2xl w-[520px] max-h-[85vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 8 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className="border border-purple-500/20 rounded-2xl shadow-2xl shadow-purple-500/10 w-[520px] max-h-[85vh] flex flex-col backdrop-blur-2xl"
+        style={{ background: 'rgba(26, 26, 46, 0.97)' }}
+      >
         {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-white/10">
-          <FolderOpen size={16} className="text-white/60" />
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-purple-500/20">
+          <FolderOpen size={16} className="text-purple-400/70" />
           <span className="text-sm font-semibold text-white">Workflows</span>
           <button
             onClick={onClose}
@@ -102,7 +110,7 @@ export default function WorkflowManager({ onClose }: Props) {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-white/10 px-5">
+        <div className="flex border-b border-purple-500/20 px-5">
           {(
             [
               ["templates", "Templates", <Sparkles size={12} />],
@@ -115,7 +123,7 @@ export default function WorkflowManager({ onClose }: Props) {
               className={clsx(
                 "flex items-center gap-1.5 text-xs px-3 py-2.5 border-b-2 transition-colors -mb-px",
                 tab === id
-                  ? "border-red-400 text-white"
+                  ? "border-purple-500 text-white"
                   : "border-transparent text-white/40 hover:text-white/70",
               )}
             >
@@ -131,7 +139,7 @@ export default function WorkflowManager({ onClose }: Props) {
             {WORKFLOW_TEMPLATES.map((tpl) => (
               <div
                 key={tpl.id}
-                className="rounded-xl border border-white/10 bg-white/5 hover:border-white/20 transition-colors"
+                className="rounded-xl border border-purple-500/10 bg-purple-500/5 hover:border-purple-500/20 hover:bg-purple-500/8 transition-all"
               >
                 <div className="px-4 py-3">
                   <div className="flex items-start justify-between gap-3 mb-1.5">
@@ -140,7 +148,7 @@ export default function WorkflowManager({ onClose }: Props) {
                     </p>
                     <button
                       onClick={() => handleLoadTemplate(tpl.id)}
-                      className="shrink-0 text-[10px] px-2.5 py-1 rounded-lg bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 transition-colors"
+                      className="shrink-0 text-[10px] px-2.5 py-1 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-400 hover:bg-purple-500/30 transition-colors"
                     >
                       Use Template
                     </button>
@@ -175,7 +183,7 @@ export default function WorkflowManager({ onClose }: Props) {
         {tab === "mine" && (
           <>
             {/* Save current */}
-            <div className="px-5 py-4 border-b border-white/10">
+            <div className="px-5 py-4 border-b border-purple-500/10">
               <p className="text-[10px] text-white/40 uppercase tracking-wider mb-2">
                 Save current canvas ({nodes.length} nodes)
               </p>
@@ -186,12 +194,12 @@ export default function WorkflowManager({ onClose }: Props) {
                   onChange={(e) => setSaveName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSave()}
                   placeholder="Workflow name…"
-                  className="flex-1 bg-black/40 border border-white/15 rounded-lg px-3 py-2 text-xs text-white placeholder-white/25 focus:outline-none focus:border-white/40"
+                  className="flex-1 bg-[#1a1a2e]/60 border border-purple-500/20 rounded-xl px-3 py-2 text-xs text-white placeholder-white/35 focus:outline-none focus:border-purple-500/50"
                 />
                 <button
                   onClick={handleSave}
                   disabled={!saveName.trim() || nodes.length === 0}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-30 text-white text-xs font-medium rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-30 text-white text-xs font-medium rounded-xl transition-colors"
                 >
                   <Save size={12} />
                   Save
@@ -223,7 +231,7 @@ export default function WorkflowManager({ onClose }: Props) {
                 workflows.map((wf) => (
                   <div
                     key={wf.id}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/5 border border-white/8 hover:border-white/15 transition-colors group"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-purple-500/5 border border-purple-500/10 hover:border-purple-500/20 transition-all group"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-white truncate">
@@ -269,7 +277,7 @@ export default function WorkflowManager({ onClose }: Props) {
             </div>
 
             {/* Footer */}
-            <div className="px-5 py-3 border-t border-white/10">
+            <div className="px-5 py-3 border-t border-purple-500/20">
               {confirmClear ? (
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-white/50 flex-1">
@@ -277,13 +285,13 @@ export default function WorkflowManager({ onClose }: Props) {
                   </p>
                   <button
                     onClick={handleClear}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 transition-colors"
+                    className="text-xs px-3 py-1.5 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 transition-colors"
                   >
                     Clear
                   </button>
                   <button
                     onClick={() => setConfirmClear(false)}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/40 hover:text-white/70 transition-colors"
+                    className="text-xs px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white/40 hover:text-white/70 transition-colors"
                   >
                     Cancel
                   </button>
@@ -300,7 +308,7 @@ export default function WorkflowManager({ onClose }: Props) {
             </div>
           </>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

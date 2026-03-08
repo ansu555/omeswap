@@ -30,7 +30,7 @@ export default function TokenDetailPage() {
                                 Status: <span className="text-success">Active</span>
                             </div>
                             <div className="px-6 py-3 rounded-full bg-muted/50 border border-border/50 text-sm font-medium backdrop-blur-sm">
-                                Protocol: <span className="text-primary">Mantle</span>
+                                Protocol: <span className="text-primary">Avalanche</span>
                             </div>
                         </div>
                     </div>

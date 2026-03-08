@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useMantleWallet } from './use-mantle-wallet';
+import { useAvalancheWallet } from './use-avalanche-wallet';
 import { analyzeWallet, defaultAnalysisConfig } from '@/lib/api/wallet-analysis';
 import type { WalletAnalysisData, WalletAnalysisRequest } from '@/types';
 
@@ -23,13 +23,13 @@ interface UseWalletAnalysisReturn {
 export function useWalletAnalysis(
   options: UseWalletAnalysisOptions = {}
 ): UseWalletAnalysisReturn {
-  const { address, isConnected } = useMantleWallet();
+  const { address, isConnected } = useAvalancheWallet();
   const [data, setData] = useState<WalletAnalysisData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [cacheHit, setCacheHit] = useState(false);
   const [analysisTimeMs, setAnalysisTimeMs] = useState(0);
-  
+
   // Track if we've already fetched for this address to prevent duplicates
   const fetchedAddressRef = useRef<string | null>(null);
   const isFetchingRef = useRef(false);

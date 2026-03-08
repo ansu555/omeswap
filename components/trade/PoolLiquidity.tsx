@@ -5,17 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { useReadContract } from "wagmi";
 import { CONTRACT_ADDRESSES, TOKENS } from "@/contracts/config";
 import { MultiTokenLiquidityPoolsABI } from "@/contracts/abis";
-import { mantleTestnet } from "@/lib/chains/mantle";
+import { avalanche } from '@/lib/chains/avalanche';
 import { formatEther, Address } from "viem";
 
 export function PoolLiquidity() {
-  // Get pool info for tUSDC/tUSDT pool
+  // Get pool info for USDC/USDTe pool
   const { data: poolId } = useReadContract({
     address: CONTRACT_ADDRESSES.POOLS as Address,
     abi: MultiTokenLiquidityPoolsABI,
     functionName: 'getPoolId',
-    args: [TOKENS.tUSDC.address as Address, TOKENS.tUSDT.address as Address],
-    chainId: mantleTestnet.id,
+    args: [TOKENS.USDC.address as Address, TOKENS.USDTe.address as Address],
+    chainId: avalanche.id,
   });
 
   const { data: poolInfo } = useReadContract({
@@ -23,7 +23,7 @@ export function PoolLiquidity() {
     abi: MultiTokenLiquidityPoolsABI,
     functionName: 'getPoolInfo',
     args: [poolId as bigint],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
     query: {
       enabled: !!poolId,
     },
@@ -49,7 +49,7 @@ export function PoolLiquidity() {
           <div>
             <h3 className="font-semibold text-lg">Pool Liquidity</h3>
             <Badge variant="outline" className="text-xs mt-1">
-              tUSDC/tUSDT
+              USDC/USDTe
             </Badge>
           </div>
         </div>
@@ -65,7 +65,7 @@ export function PoolLiquidity() {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-gradient-to-r from-primary to-primary/60" />
-              <span className="font-medium">tUSDC</span>
+              <span className="font-medium">USDC</span>
             </div>
             <span className="text-muted-foreground">{token0Percent.toFixed(1)}%</span>
           </div>
@@ -83,7 +83,7 @@ export function PoolLiquidity() {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-gradient-to-r from-success to-success/60" />
-              <span className="font-medium">tUSDT</span>
+              <span className="font-medium">USDTe</span>
             </div>
             <span className="text-muted-foreground">{token1Percent.toFixed(1)}%</span>
           </div>
@@ -106,7 +106,7 @@ export function PoolLiquidity() {
               <DollarSign className="w-4 h-4 text-primary" />
             </div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              tUSDC
+              USDC
             </p>
           </div>
           <p className="text-2xl font-bold mb-1">{token0Reserve.toFixed(2)}</p>
@@ -119,7 +119,7 @@ export function PoolLiquidity() {
               <DollarSign className="w-4 h-4 text-success" />
             </div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              tUSDT
+              USDTe
             </p>
           </div>
           <p className="text-2xl font-bold mb-1">{token1Reserve.toFixed(2)}</p>

@@ -11,8 +11,8 @@ async function main() {
   
   // Token addresses
   const tDAI = "0x907fF6a35a3E030c11a02e937527402F0d3333ee";
-  const tUSDC = "0x6D13968b1Fe787ed0237D3645D094161CC165E4c";
-  const tWETH = "0x95829976c0cd4a58fBaA4802410d10BDe15E3CA0";
+  const USDC = "0x6D13968b1Fe787ed0237D3645D094161CC165E4c";
+  const WETHe = "0x95829976c0cd4a58fBaA4802410d10BDe15E3CA0";
   const tWBTC = "0xD781bf79d86112215F7bF141277f5782640cad5D";
   
   // Get contracts
@@ -32,15 +32,15 @@ async function main() {
   // Swap parameters (DAI → USDC → WETH → WBTC)
   const swapAmount = hre.ethers.parseEther("1000");
   
-  console.log("🛣️  Route: tDAI → tUSDC → tWETH → tWBTC (3-hop swap)");
+  console.log("🛣️  Route: tDAI → USDC → WETHe → tWBTC (3-hop swap)");
   console.log("");
   
   // Get estimated output for 3-hop
   const estimatedOutput = await router.getAmountOutThreeHop(
     swapAmount,
     tDAI,
-    tUSDC,
-    tWETH,
+    USDC,
+    WETHe,
     tWBTC
   );
   console.log(`💡 Estimated output: ${hre.ethers.formatEther(estimatedOutput)} tWBTC`);
@@ -70,8 +70,8 @@ async function main() {
   console.log("🔀 Executing 3-hop swap...");
   const swapTx = await router.threeHopSwap(
     tDAI,
-    tUSDC,
-    tWETH,
+    USDC,
+    WETHe,
     tWBTC,
     swapAmount,
     minAmountOut

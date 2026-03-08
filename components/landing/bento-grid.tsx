@@ -353,7 +353,7 @@ function UnichainCard() {
   return (
     <BentoCard
       className="bg-gradient-to-br from-[#2a0a2a] to-[#1a081a] border border-pink-500/10 h-full"
-      href="/mantle"
+      href="/explore"
     >
       <div
         ref={contentRef}
@@ -395,7 +395,7 @@ function UnichainCard() {
         {/* Header badge */}
         <div className="flex items-center gap-2 mb-6 relative z-10">
           <Sparkles className="w-5 h-5 text-pink-400" />
-          <span className="text-pink-400 text-base font-medium">Mantle</span>
+          <span className="text-pink-400 text-base font-medium">Avalanche</span>
         </div>
 
         {/* Content */}

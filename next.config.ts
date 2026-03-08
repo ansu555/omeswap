@@ -14,6 +14,11 @@ const config: NextConfig = {
         hostname: 's2.coinmarketcap.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'imgproxy-mainnet.routescan.io',
+        pathname: '/**',
+      },
     ],
   },
   webpack: (cfg) => {

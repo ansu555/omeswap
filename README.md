@@ -1,8 +1,8 @@
-# 🌊 Mantle DEX
+# 🌊 Avalanche DEX
 
-A fully functional decentralized exchange (DEX) built on Mantle Network with multi-hop routing capabilities.
+A fully functional decentralized exchange (DEX) built on Avalanche Network with multi-hop routing capabilities.
 
-![Mantle DEX](https://img.shields.io/badge/Mantle-DEX-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Next.js](https://img.shields.io/badge/Next.js-15-black) ![React](https://img.shields.io/badge/React-19-blue)
+![Avalanche DEX](https://img.shields.io/badge/Avalanche-DEX-red) ![License](https://img.shields.io/badge/license-MIT-green) ![Next.js](https://img.shields.io/badge/Next.js-15-black) ![React](https://img.shields.io/badge/React-19-blue)
 
 ## ✨ Features
 
@@ -10,7 +10,7 @@ A fully functional decentralized exchange (DEX) built on Mantle Network with mul
 - 🛣️ **Multi-Hop Routing** - Route through multiple pools in a single transaction
 - 💧 **Liquidity Provision** - Add/remove liquidity and earn 0.3% fees
 - 🪙 **Test Token Minting** - Mint test tokens for experimentation
-- 💰 **Low Gas Fees** - Built on Mantle L2 for 100x cheaper transactions
+- 💰 **Low Gas Fees** - Built on Avalanche for 100x cheaper transactions
 - 🎨 **Modern UI** - Beautiful, responsive interface with shadcn/ui
 - 🔐 **Wallet Integration** - Connect with MetaMask, WalletConnect, and more
 
@@ -43,8 +43,8 @@ Visit: **http://localhost:3000**
 ### 4. Connect & Trade
 
 1. **Connect Wallet** (top right corner)
-2. **Switch to Mantle Sepolia Testnet**
-3. **Get testnet MNT** from https://faucet.sepolia.mantle.xyz
+2. **Switch to Avalanche Mainnet**
+3. **Get AVAX** for gas fees
 4. **Mint test tokens** (Mint Tokens tab)
 5. **Add liquidity** or **start swapping**!
 
@@ -52,7 +52,7 @@ Visit: **http://localhost:3000**
 
 - Node.js 18+
 - MetaMask or compatible wallet
-- Testnet MNT (for gas fees)
+- AVAX (for gas fees)
 
 ## 🏗️ Tech Stack
 
@@ -66,19 +66,19 @@ Visit: **http://localhost:3000**
 ### Smart Contracts
 - **Language:** Solidity 0.8.20
 - **Framework:** Hardhat
-- **Network:** Mantle Sepolia Testnet
+- **Network:** Avalanche Mainnet
 - **Testing:** Chai + Ethers.js
 
 ## 📝 Smart Contracts
 
-### Deployed on Mantle Sepolia
+### Deployed on Avalanche
 
 | Contract | Address |
 |----------|---------|
 | **Liquidity Pools** | `0xe63514C2B0842B58A16Ced0C63668BAA91B033Af` |
 | **Swap Router** | `0xFe2108798dC74481d5cCE1588cBD00801758dD6d` |
 
-[View on Explorer →](https://explorer.sepolia.mantle.xyz)
+[View on Explorer →](https://snowtrace.io)
 
 ## 🎯 Use Cases
 
@@ -110,7 +110,7 @@ npm run dev
 
 ### Smart Contract Testing
 ```bash
-cd ../Mantel_contract
+cd ../Avalanche_contract
 npx hardhat test
 ```
 
@@ -134,7 +134,7 @@ npm run hardhat:quickstart
 
 ## 🔒 Security
 
-⚠️ **Testnet Only**: This DEX is deployed on Mantle Sepolia Testnet. All tokens are for testing purposes and have **no real value**.
+⚠️ **Mainnet**: This DEX is deployed on Avalanche Mainnet.
 
 For production use:
 - Professional security audit required
@@ -147,7 +147,7 @@ For production use:
 ### Project Structure
 
 ```
-Mantle_Dex/
+Avalanche_Dex/
 ├── app/                  # Next.js pages
 ├── components/           # React components
 │   ├── trade/           # DEX trading components
@@ -171,12 +171,11 @@ npm run hardhat:*       # Hardhat operations
 
 ## 🌐 Network Configuration
 
-### Mantle Sepolia Testnet
+### Avalanche Mainnet
 
-- **Chain ID:** 5003
-- **RPC URL:** https://rpc.sepolia.mantle.xyz
-- **Explorer:** https://explorer.sepolia.mantle.xyz
-- **Faucet:** https://faucet.sepolia.mantle.xyz
+- **Chain ID:** 43114
+- **RPC URL:** https://api.avax.network/ext/bc/C/rpc
+- **Explorer:** https://snowtrace.io
 
 Add to MetaMask:
 1. Networks → Add Network → Add Manually
@@ -220,7 +219,7 @@ MIT License - see [LICENSE](./LICENSE) file
 ## 🙏 Acknowledgments
 
 - Uniswap V2 for the AMM design
-- Mantle Network for L2 infrastructure
+- Avalanche Network for L2 infrastructure
 - shadcn/ui for beautiful components
 - wagmi & viem for Web3 integration
 
@@ -228,7 +227,7 @@ MIT License - see [LICENSE](./LICENSE) file
 
 - **Issues:** GitHub Issues
 - **Docs:** [Integration Guide](./DEX_INTEGRATION_GUIDE.md)
-- **Explorer:** https://explorer.sepolia.mantle.xyz
+- **Explorer:** https://snowtrace.io
 
 ## 🎉 Getting Started
 
@@ -243,6 +242,6 @@ Then visit **http://localhost:3000/trade** and start trading!
 
 ---
 
-**Built with ❤️ on Mantle Network**
+**Built with ❤️ on Avalanche Network**
 
 ⭐ Star this repo if you found it helpful!

@@ -18,12 +18,12 @@ const config = getDefaultConfig({
   ssr: true,
 });
 
-interface MantleWalletProviderProps {
+interface AvalancheWalletProviderProps {
   children: ReactNode;
   initialState?: any;
 }
 
-export function MantleWalletProvider({ children, initialState }: MantleWalletProviderProps) {
+export function AvalancheWalletProvider({ children, initialState }: AvalancheWalletProviderProps) {
   return (
     <WagmiProvider config={config} initialState={initialState}>
       <QueryClientProvider client={queryClient}>

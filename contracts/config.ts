@@ -25,8 +25,8 @@ export const WAVAX_ADDRESS = '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7' as Add
 // USDC native is listed separately but may lack V1 AMM pools
 export const TOKEN_ADDRESSES: { [key: string]: { address: Address; name: string; symbol: string; decimals: number; } } = {
   WAVAX: { address: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7' as Address, name: 'Wrapped AVAX', symbol: 'WAVAX', decimals: 18 },
-  USDC: { address: '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664' as Address, name: 'USD Coin.e', symbol: 'USDC.e', decimals: 6 }, // USDC.e — best V1 liquidity
-  nUSDC: { address: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6' as Address, name: 'USD Coin', symbol: 'USDC', decimals: 6 }, // Native USDC (Circle)
+  USDC: { address: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6' as Address, name: 'USD Coin', symbol: 'USDC', decimals: 6 }, // Native USDC (Circle)
+  "USDC.e": { address: '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664' as Address, name: 'USD Coin.e', symbol: 'USDC.e', decimals: 6 }, // USDC.e — best V1 liquidity
   USDTe: { address: '0xc7198437980c041c805A1EDcbA50c1Ce5db95118' as Address, name: 'Tether USD.e', symbol: 'USDT.e', decimals: 6 },
   DAIe: { address: '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70' as Address, name: 'Dai Stablecoin', symbol: 'DAI.e', decimals: 18 },
   WETHe: { address: '0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB' as Address, name: 'Wrapped Ether', symbol: 'WETH.e', decimals: 18 },
@@ -35,6 +35,9 @@ export const TOKEN_ADDRESSES: { [key: string]: { address: Address; name: string;
   JOE: { address: '0x6e84a6216eA6daCC71eE8E6b0a5B7322EEbC0fDd' as Address, name: 'JoeToken', symbol: 'JOE', decimals: 18 },
   PNG: { address: '0x60781C2586D68229fde47564546784ab3fACA982' as Address, name: 'Pangolin', symbol: 'PNG', decimals: 18 },
   AAVEe: { address: '0x63a72806098Bd3D9520cC43356dD78afe5D386D9' as Address, name: 'Aave Token', symbol: 'AAVE.e', decimals: 18 },
+  // Legacy Aliases for backward compatibility
+  tUSDC: { address: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E' as Address, name: 'USD Coin', symbol: 'USDC', decimals: 6 },
+  tUSDT: { address: '0xc7198437980c041c805A1EDcbA50c1Ce5db95118' as Address, name: 'Tether USD.e', symbol: 'USDT.e', decimals: 6 },
 };
 
 export const TOKENS = TOKEN_ADDRESSES;

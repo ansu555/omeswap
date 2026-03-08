@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useStore } from "@/store/agent-builder";
 import { CheckCircle, X, AlertTriangle } from "lucide-react";
 
@@ -12,12 +13,12 @@ export default function BacktestSummaryModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div
-        className="w-96 rounded-2xl p-6 flex flex-col gap-4"
-        style={{
-          background: "#111118",
-          border: "1px solid rgba(255,255,255,0.12)",
-        }}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className="w-96 rounded-2xl p-6 flex flex-col gap-4 border border-purple-500/20 shadow-2xl shadow-purple-500/10 backdrop-blur-2xl"
+        style={{ background: 'rgba(26, 26, 46, 0.97)' }}
       >
         {/* Header */}
         <div className="flex items-center gap-3">
@@ -49,8 +50,7 @@ export default function BacktestSummaryModal() {
 
         {/* Stats */}
         <div
-          className="rounded-xl divide-y divide-white/[0.06]"
-          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+          className="rounded-xl divide-y divide-purple-500/[0.08] border border-purple-500/10"
         >
           {[
             { label: "Candles processed", value: totalTicks.toLocaleString() },
@@ -105,15 +105,11 @@ export default function BacktestSummaryModal() {
         {/* Close */}
         <button
           onClick={() => setBacktestSummary(null)}
-          className="w-full py-2 rounded-xl text-xs font-medium text-white/60 hover:text-white transition-colors"
-          style={{
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.1)",
-          }}
+          className="w-full py-2 rounded-full text-xs font-medium text-white/60 hover:text-white transition-colors border border-purple-500/20 hover:border-purple-500/40 hover:bg-purple-500/10"
         >
           Close
         </button>
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -3,19 +3,20 @@
 import { useState } from "react";
 import { Coins, ExternalLink, RefreshCw } from "lucide-react";
 import { useTokenMint } from "@/hooks/use-token-mint";
-import { useMantleWallet } from "@/hooks/use-mantle-wallet";
+import { useAvalancheWallet } from "@/hooks/use-avalanche-wallet";
 import { TOKENS, TOKEN_LIST } from "@/contracts/config";
-import MantleWalletConnect from "@/components/features/mantle/mantle-wallet-connect";
-import { mantleTestnet } from "@/lib/chains/mantle";
+import AvalancheWalletConnect from "@/components/features/avalanche/avalanche-wallet-connect";
+import { avalanche } from '@/lib/chains/avalanche';
 
 export function MintTokensCard() {
-  const { isConnected, chain } = useMantleWallet();
+  const { isConnected, chain } = useAvalancheWallet();
   const [minting, setMinting] = useState<{ [key: string]: boolean }>({});
   const [lastMinted, setLastMinted] = useState<{ [key: string]: string }>({});
 
   const TokenMintRow = ({ tokenSymbol }: { tokenSymbol: string }) => {
     const { balance, mint, isLoading, isSuccess, hash, refetchBalance } = useTokenMint(tokenSymbol);
     const token = TOKENS[tokenSymbol];
+    if (!token) return null;
 
     const handleMint = async (amount: string) => {
       setMinting({ ...minting, [tokenSymbol]: true });
@@ -29,7 +30,7 @@ export function MintTokensCard() {
       <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/20 hover:bg-secondary/30 transition-colors">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
-            {token.symbol.substring(1, 2)}
+            {token.symbol.substring(0, 1)}
           </div>
           <div>
             <div className="font-semibold">{token.symbol}</div>
@@ -38,11 +39,11 @@ export function MintTokensCard() {
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {isSuccess && lastMinted[tokenSymbol] && (
             <a
-              href={`${mantleTestnet.blockExplorers.default.url}/tx/${lastMinted[tokenSymbol]}`}
+              href={`${'https://snowtrace.io'}/tx/${lastMinted[tokenSymbol]}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-success hover:underline flex items-center gap-1"
@@ -81,17 +82,17 @@ export function MintTokensCard() {
         <p className="text-muted-foreground mb-6">
           Connect your wallet to mint test tokens for the DEX
         </p>
-        <MantleWalletConnect variant="default" />
+        <AvalancheWalletConnect variant="default" />
       </div>
     );
   }
 
-  if (chain?.id !== mantleTestnet.id) {
+  if (chain?.id !== avalanche.id) {
     return (
       <div className="swap-card w-full max-w-2xl p-8 text-center">
         <h3 className="text-xl font-semibold mb-4 text-destructive">Wrong Network</h3>
         <p className="text-muted-foreground">
-          Please switch to Mantle Sepolia Testnet
+          Please switch to Avalanche Mainnet
         </p>
       </div>
     );
@@ -116,14 +117,14 @@ export function MintTokensCard() {
           <div className="flex gap-2">
             <div className="text-blue-500 text-2xl">ℹ️</div>
             <div className="text-sm text-blue-500">
-              <strong>Test Tokens Only:</strong> These tokens have no real value and are only for testing purposes on Mantle Sepolia Testnet. You can mint as many as you need!
+              <strong>Test Tokens Only:</strong> These tokens have no real value and are only for testing purposes on Avalanche Mainnet. You can mint as many as you need!
             </div>
           </div>
         </div>
 
         <div className="space-y-2">
-          {TOKEN_LIST.map((token) => (
-            <TokenMintRow key={token.symbol} tokenSymbol={token.symbol} />
+          {Object.keys(TOKENS).map((key) => (
+            <TokenMintRow key={key} tokenSymbol={key} />
           ))}
         </div>
 
