@@ -13,8 +13,8 @@ import { MAINNET_TOKENS, DEX_ROUTERS, WAVAX_ADDRESS, TOKEN_ADDRESSES, TRADER_JOE
 import { ERC20ABI } from '@/contracts/abis';
 import { avalanche } from '@/lib/chains/avalanche';
 
-// USDC.e — used as intermediate hop when direct path has no liquidity
-const USDCE_ADDRESS = TOKEN_ADDRESSES.USDC.address;
+// USDC.e (bridged) — used as intermediate hop when direct path has no liquidity
+const USDCE_ADDRESS = TOKEN_ADDRESSES['USDC.e'].address;
 
 // UniswapV2-compatible router ABI (TraderJoe V1, Pangolin)
 const V1_ROUTER_ABI = [
