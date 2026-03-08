@@ -6,6 +6,7 @@ const ACTIVE_AGENT_KEY = 'omeswap_active_agent';
 export class AgentStorageManager {
   // Save all agents
   static saveAgents(agents: Agent[]): void {
+    if (typeof window === 'undefined') return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(agents));
     } catch (error) {
@@ -15,6 +16,7 @@ export class AgentStorageManager {
 
   // Load all agents
   static loadAgents(): Agent[] {
+    if (typeof window === 'undefined') return [];
     try {
       const data = localStorage.getItem(STORAGE_KEY);
       return data ? JSON.parse(data) : [];
@@ -53,16 +55,19 @@ export class AgentStorageManager {
 
   // Set active agent
   static setActiveAgent(id: string): void {
+    if (typeof window === 'undefined') return;
     localStorage.setItem(ACTIVE_AGENT_KEY, id);
   }
 
   // Get active agent
   static getActiveAgentId(): string | null {
+    if (typeof window === 'undefined') return null;
     return localStorage.getItem(ACTIVE_AGENT_KEY);
   }
 
   // Clear all agents
   static clearAll(): void {
+    if (typeof window === 'undefined') return;
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(ACTIVE_AGENT_KEY);
   }

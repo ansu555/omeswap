@@ -162,7 +162,7 @@ export function ChatbotPanel() {
             stiffness: 400,
             damping: 40,
           }}
-          className="h-full pt-6 pr-6 pb-6 flex-shrink-0"
+          className="pt-20 pr-6 pb-6 flex-shrink-0"
         >
       <div className="h-full glass-card rounded-xl flex flex-col overflow-hidden border border-border/50">
         {/* Header */}

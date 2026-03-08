@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import {
   TokenHeader,
@@ -12,7 +13,7 @@ import {
   SecurityAnalysis,
   RelatedTokens,
 } from "@/components/token-detail";
-import { SwapCard } from "@/components/trade/SwapCard";
+import { SwapCardDex } from "@/components/trade/SwapCardDex";
 
 interface TokenData {
   id: string;
@@ -248,7 +249,7 @@ export default function TokenDetailPage() {
             priceChange24h={tokenData.priceChange24h}
             historicalData={tokenData.historicalData}
           />
-          <SwapCard />
+          <SwapCardDex />
         </div>
 
         {/* Stats, Score Cards & About */}

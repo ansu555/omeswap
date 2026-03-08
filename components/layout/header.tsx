@@ -3,7 +3,7 @@
 import React, { useRef, useEffect } from "react";
 import Link from "next/link";
 import { Logo } from "./logo";
-import { Compass, ArrowLeftRight, Wallet, Coins, Receipt, Bot } from "lucide-react";
+import { Compass, ArrowLeftRight, Wallet, Receipt, Bot } from "lucide-react";
 import { gsap } from "gsap";
 import { AvalancheWalletConnect } from "@/components/features/avalanche";
 import { NavBar } from "@/components/ui/nav-bar";
@@ -13,7 +13,6 @@ const navItems = [
   { name: "Trade", url: "/trade", icon: ArrowLeftRight },
   { name: "Portfolio", url: "/portfolio", icon: Wallet },
   { name: "Agent", url: "/agent-builder", icon: Bot },
-  { name: "Tokens", url: "/cryptocurrencies", icon: Coins },
   { name: "Txns", url: "/transactions", icon: Receipt },
 ];
 
@@ -25,7 +24,11 @@ export const Header = () => {
     const logo = logoRef.current;
 
     if (logo) {
-      gsap.fromTo(logo, { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" });
+      gsap.fromTo(
+        logo,
+        { opacity: 0, x: -20 },
+        { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" },
+      );
     }
   }, []);
 

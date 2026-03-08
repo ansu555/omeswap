@@ -36,12 +36,14 @@ export type SavedWorkflow = {
 const WORKFLOWS_KEY = 'avax-agent-workflows'
 
 export function listWorkflows(): SavedWorkflow[] {
+  if (typeof window === 'undefined') return []
   try {
     return JSON.parse(localStorage.getItem(WORKFLOWS_KEY) ?? '[]') as SavedWorkflow[]
   } catch { return [] }
 }
 
 function persistWorkflows(list: SavedWorkflow[]) {
+  if (typeof window === 'undefined') return
   try { localStorage.setItem(WORKFLOWS_KEY, JSON.stringify(list)) } catch {}
 }
 
@@ -56,6 +58,7 @@ interface BotStore {
   // Node instances (type-safe execution layer)
   nodeInstances: Map<string, BaseNode>
   addNodeToCanvas: (type: string, position: { x: number; y: number }) => string
+  appendEdges: (edges: Edge[]) => void
   removeNode: (id: string) => void
   updateNodeConfig: (id: string, config: Record<string, unknown>) => void
 
@@ -128,6 +131,7 @@ let nodeCounter = 0
 const SESSION_KEY = 'avax-agent-workflow'
 
 function saveToSession(nodes: Node[], edges: Edge[], nodeInstances: Map<string, BaseNode>) {
+  if (typeof window === 'undefined') return
   try {
     const configs: Record<string, Record<string, unknown>> = {}
     nodeInstances.forEach((inst, id) => { configs[id] = inst.config })
@@ -136,6 +140,7 @@ function saveToSession(nodes: Node[], edges: Edge[], nodeInstances: Map<string, 
 }
 
 function loadFromSession(): { nodes: Node[]; edges: Edge[]; nodeInstances: Map<string, BaseNode>; counter: number } | null {
+  if (typeof window === 'undefined') return null
   try {
     const raw = sessionStorage.getItem(SESSION_KEY)
     if (!raw) return null
@@ -241,6 +246,13 @@ export const useStore = create<BotStore>((set, get) => ({
     })
     return id
   },
+
+  appendEdges: (newEdges) =>
+    set((s) => {
+      const edges = [...s.edges, ...newEdges]
+      saveToSession(s.nodes, edges, s.nodeInstances)
+      return { edges }
+    }),
 
   removeNode: (id) => {
     const instances = new Map(get().nodeInstances)

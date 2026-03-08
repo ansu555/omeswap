@@ -1,44 +1,50 @@
-'use client'
+"use client";
 
-import { useStore } from '@/store/agent-builder'
-import clsx from 'clsx'
+import { useStore } from "@/store/agent-builder";
+import clsx from "clsx";
 
-const SYMBOLS = ['AVAXUSDT', 'BTCUSDT', 'ETHUSDT', 'JOEUSDT']
-const INTERVALS = ['1h', '4h', '1d']
+const SYMBOLS = ["AVAXUSDT", "BTCUSDT", "ETHUSDT", "JOEUSDT"];
+const INTERVALS = ["1h", "4h", "1d"];
 
 export default function BacktestConfigStrip() {
-  const { backtestConfig, setBacktestConfig, backtestProgress } = useStore()
+  const { backtestConfig, setBacktestConfig, backtestProgress } = useStore();
 
   return (
-    <div className="border-t border-purple-500/20 bg-gradient-to-r from-[#1a1a2e]/70 to-[#16162a]/70 backdrop-blur px-4 py-2.5">
+    <div className="border-t border-purple-500/20 bg-gradient-to-r from-[#1a1a2e]/40 to-[#16162a]/40 backdrop-blur px-4 py-2.5">
       <div className="flex items-center gap-4 flex-wrap">
         {/* Symbol */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-white/40 uppercase tracking-wider">Symbol</span>
+          <span className="text-[10px] text-white/40 uppercase tracking-wider">
+            Symbol
+          </span>
           <select
             value={backtestConfig.symbol}
             onChange={(e) => setBacktestConfig({ symbol: e.target.value })}
             className="bg-[#1a1a2e]/60 border border-purple-500/20 rounded-lg px-2 py-0.5 text-[11px] text-white focus:outline-none focus:border-amber-500/50"
           >
             {SYMBOLS.map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>
+                {s}
+              </option>
             ))}
           </select>
         </div>
 
         {/* Interval */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-white/40 uppercase tracking-wider">Interval</span>
+          <span className="text-[10px] text-white/40 uppercase tracking-wider">
+            Interval
+          </span>
           <div className="flex rounded-full border border-purple-500/20 overflow-hidden">
             {INTERVALS.map((iv) => (
               <button
                 key={iv}
                 onClick={() => setBacktestConfig({ interval: iv })}
                 className={clsx(
-                  'px-2.5 py-0.5 text-[11px] transition-colors',
+                  "px-2.5 py-0.5 text-[11px] transition-colors",
                   backtestConfig.interval === iv
-                    ? 'bg-amber-900/40 text-amber-400'
-                    : 'text-white/40 hover:text-white/70'
+                    ? "bg-amber-900/40 text-amber-400"
+                    : "text-white/40 hover:text-white/70",
                 )}
               >
                 {iv}
@@ -49,7 +55,9 @@ export default function BacktestConfigStrip() {
 
         {/* Date range */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-white/40 uppercase tracking-wider">From</span>
+          <span className="text-[10px] text-white/40 uppercase tracking-wider">
+            From
+          </span>
           <input
             type="date"
             value={backtestConfig.startDate}
@@ -58,7 +66,9 @@ export default function BacktestConfigStrip() {
           />
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-white/40 uppercase tracking-wider">To</span>
+          <span className="text-[10px] text-white/40 uppercase tracking-wider">
+            To
+          </span>
           <input
             type="date"
             value={backtestConfig.endDate}
@@ -82,10 +92,12 @@ export default function BacktestConfigStrip() {
         <div className="mt-2 w-full h-0.5 bg-purple-500/10 rounded-full overflow-hidden">
           <div
             className="h-full bg-amber-400/70 rounded-full transition-all duration-100"
-            style={{ width: `${(backtestProgress.tick / backtestProgress.total) * 100}%` }}
+            style={{
+              width: `${(backtestProgress.tick / backtestProgress.total) * 100}%`,
+            }}
           />
         </div>
       )}
     </div>
-  )
+  );
 }

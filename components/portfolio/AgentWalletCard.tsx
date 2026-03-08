@@ -12,7 +12,6 @@ interface AgentWalletCardProps {
 }
 
 export function AgentWalletCard({
-
   balanceUsd,
   walletAddress,
   onRecharge,
@@ -62,7 +61,7 @@ export function AgentWalletCard({
           <span className="text-2xl font-bold text-foreground">
             {balanceUsd.toFixed(4)}
           </span>
-          <span className="text-muted-foreground">ALGO</span>
+          <span className="text-muted-foreground">AVAX</span>
         </div>
         <div className="flex justify-between text-xs text-muted-foreground mt-2">
           <span>Min: 0.100</span>
