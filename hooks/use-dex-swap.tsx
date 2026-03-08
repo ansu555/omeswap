@@ -5,13 +5,13 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { parseEther, formatEther, Address } from 'viem';
 import { CONTRACT_ADDRESSES, TOKENS } from '@/contracts/config';
 import { MultiTokenLiquidityPoolsABI, ERC20ABI } from '@/contracts/abis';
-import { mantleTestnet } from '@/lib/chains/mantle';
+import { avalanche } from '@/lib/chains/avalanche';
 
 export function useDexSwap() {
   const { address } = useAccount();
-  const publicClient = usePublicClient({ chainId: mantleTestnet.id });
-  const [tokenIn, setTokenIn] = useState<string>('tUSDC');
-  const [tokenOut, setTokenOut] = useState<string>('tUSDT');
+  const publicClient = usePublicClient({ chainId: avalanche.id });
+  const [tokenIn, setTokenIn] = useState<string>('WAVAX');
+  const [tokenOut, setTokenOut] = useState<string>('USDC');
   const [amountIn, setAmountIn] = useState<string>('');
   const [slippage, setSlippage] = useState<number>(0.5); // 0.5%
   const [estimatedOutput, setEstimatedOutput] = useState<string>('0');
@@ -44,7 +44,7 @@ export function useDexSwap() {
     abi: MultiTokenLiquidityPoolsABI,
     functionName: 'getPoolId',
     args: [token0Addr, token1Addr],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
   });
 
   const { data: poolInfo } = useReadContract({
@@ -52,7 +52,7 @@ export function useDexSwap() {
     abi: MultiTokenLiquidityPoolsABI,
     functionName: 'getPoolInfo',
     args: [poolId as bigint],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
     query: {
       enabled: poolId !== undefined,
     },
@@ -113,7 +113,7 @@ export function useDexSwap() {
     abi: ERC20ABI,
     functionName: 'allowance',
     args: [address as Address, CONTRACT_ADDRESSES.POOLS as Address],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
     query: {
       enabled: !!address,
     },
@@ -125,7 +125,7 @@ export function useDexSwap() {
     abi: ERC20ABI,
     functionName: 'balanceOf',
     args: [address as Address],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
     query: {
       enabled: !!address,
     },
@@ -172,7 +172,7 @@ export function useDexSwap() {
               parseEther(amountIn),
               minAmountOut,
             ],
-            chainId: mantleTestnet.id,
+            chainId: avalanche.id,
           });
         } else {
           console.log('Swap conditions not met after approval:', {
@@ -224,7 +224,7 @@ export function useDexSwap() {
           abi: ERC20ABI,
           functionName: 'approve',
           args: [CONTRACT_ADDRESSES.POOLS as Address, parseEther(amountIn)],
-          chainId: mantleTestnet.id,
+          chainId: avalanche.id,
         });
       } else {
         console.log('No approval needed, executing swap directly...');
@@ -249,7 +249,7 @@ export function useDexSwap() {
             parseEther(amountIn),
             minAmountOut,
           ],
-          chainId: mantleTestnet.id,
+          chainId: avalanche.id,
         });
       }
     } catch (error: any) {

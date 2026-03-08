@@ -1,4 +1,4 @@
-// Global type definitions for Mantle Dex
+// Global type definitions for Omeswap
 
 export interface Token {
   id: string;

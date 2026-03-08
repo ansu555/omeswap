@@ -4,7 +4,7 @@ import { useReadContract } from "wagmi";
 import { formatEther, Address } from "viem";
 import { CONTRACT_ADDRESSES, TOKENS } from "@/contracts/config";
 import { MultiTokenLiquidityPoolsABI } from "@/contracts/abis";
-import { mantleTestnet } from "@/lib/chains/mantle";
+import { avalanche } from '@/lib/chains/avalanche';
 import { Droplet, DollarSign } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
@@ -30,7 +30,7 @@ export function SelectedPoolInfo({ token0Symbol, token1Symbol }: SelectedPoolInf
     abi: MultiTokenLiquidityPoolsABI,
     functionName: 'getPoolId',
     args: [token0Addr, token1Addr],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
   });
 
   const { data: poolInfo } = useReadContract({
@@ -38,7 +38,7 @@ export function SelectedPoolInfo({ token0Symbol, token1Symbol }: SelectedPoolInf
     abi: MultiTokenLiquidityPoolsABI,
     functionName: 'getPoolInfo',
     args: [poolId as bigint],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
     query: {
       enabled: poolId !== undefined,
     },

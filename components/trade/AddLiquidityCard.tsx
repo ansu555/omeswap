@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Plus, Settings, ExternalLink, Info } from "lucide-react";
 import { useLiquidity } from "@/hooks/use-liquidity";
-import { useMantleWallet } from "@/hooks/use-mantle-wallet";
+import { useAvalancheWallet } from "@/hooks/use-avalanche-wallet";
 import { TOKENS } from "@/contracts/config";
-import MantleWalletConnect from "@/components/features/mantle/mantle-wallet-connect";
-import { mantleTestnet } from "@/lib/chains/mantle";
+import AvalancheWalletConnect from "@/components/features/avalanche/avalanche-wallet-connect";
+import { avalanche } from '@/lib/chains/avalanche';
 import {
   Select,
   SelectContent,
@@ -16,9 +16,9 @@ import {
 } from "@/components/ui/select";
 
 export function AddLiquidityCard() {
-  const { isConnected, chain } = useMantleWallet();
-  const [token0Symbol, setToken0Symbol] = useState<string>('tUSDC');
-  const [token1Symbol, setToken1Symbol] = useState<string>('tUSDT');
+  const { isConnected, chain } = useAvalancheWallet();
+  const [token0Symbol, setToken0Symbol] = useState<string>('USDC');
+  const [token1Symbol, setToken1Symbol] = useState<string>('USDTe');
 
   const {
     amount0,
@@ -60,15 +60,15 @@ export function AddLiquidityCard() {
     }
   };
 
-  const isValidLiquidity = 
-    amount0 && 
-    amount1 && 
-    parseFloat(amount0) > 0 && 
+  const isValidLiquidity =
+    amount0 &&
+    amount1 &&
+    parseFloat(amount0) > 0 &&
     parseFloat(amount1) > 0 &&
     parseFloat(balance0) >= parseFloat(amount0) &&
     parseFloat(balance1) >= parseFloat(amount1);
 
-  const isWrongNetwork = isConnected && chain?.id !== mantleTestnet.id;
+  const isWrongNetwork = isConnected && chain?.id !== avalanche.id;
 
   if (!isConnected) {
     return (
@@ -77,7 +77,7 @@ export function AddLiquidityCard() {
         <p className="text-muted-foreground mb-6">
           Connect your wallet to provide liquidity
         </p>
-        <MantleWalletConnect variant="default" />
+        <AvalancheWalletConnect variant="default" />
       </div>
     );
   }
@@ -87,7 +87,7 @@ export function AddLiquidityCard() {
       <div className="swap-card w-full max-w-md p-8 text-center">
         <h3 className="text-xl font-semibold mb-4 text-destructive">Wrong Network</h3>
         <p className="text-muted-foreground mb-6">
-          Please switch to Mantle Sepolia Testnet
+          Please switch to Avalanche Mainnet
         </p>
       </div>
     );
@@ -234,7 +234,7 @@ export function AddLiquidityCard() {
               {isLoading ? "Approving..." : `Approve ${token0.symbol}`}
             </button>
           )}
-          
+
           {needsApproval1 && (
             <button
               onClick={approveToken1}
@@ -244,7 +244,7 @@ export function AddLiquidityCard() {
               {isLoading ? "Approving..." : `Approve ${token1.symbol}`}
             </button>
           )}
-          
+
           {!needsApproval0 && !needsApproval1 && (
             <button
               onClick={(e) => {
@@ -276,7 +276,7 @@ export function AddLiquidityCard() {
             <div className="flex items-center justify-between">
               <span className="text-sm text-success font-medium">✅ Liquidity Added!</span>
               <a
-                href={`${mantleTestnet.blockExplorers.default.url}/tx/${hash}`}
+                href={`${'https://snowtrace.io'}/tx/${hash}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-primary hover:underline flex items-center gap-1"

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { useStore } from '@/store/agent-builder'
 import { X, Trash2, ArrowRight, ArrowLeft } from 'lucide-react'
 import clsx from 'clsx'
@@ -33,11 +34,16 @@ export default function ConfigPanel() {
 
   if (!instance || !selectedNodeId) {
     return (
-      <aside className="w-64 shrink-0 bg-gray-900 border-l border-white/10 flex items-center justify-center">
+      <motion.aside
+        initial={{ opacity: 0, x: 16 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.35, ease: 'easeOut', delay: 0.1 }}
+        className="w-64 shrink-0 bg-gradient-to-b from-[#1a1a2e]/80 to-[#0d0d1a]/80 backdrop-blur-xl border-l border-purple-500/20 flex items-center justify-center"
+      >
         <p className="text-[11px] text-white/20 text-center px-4">
           Click a node on the canvas to configure it
         </p>
-      </aside>
+      </motion.aside>
     )
   }
 
@@ -48,9 +54,14 @@ export default function ConfigPanel() {
   }
 
   return (
-    <aside className="w-64 shrink-0 bg-gray-900 border-l border-white/10 overflow-y-auto flex flex-col">
+    <motion.aside
+      initial={{ opacity: 0, x: 16 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.35, ease: 'easeOut', delay: 0.1 }}
+      className="w-64 shrink-0 bg-gradient-to-b from-[#1a1a2e]/80 to-[#0d0d1a]/80 backdrop-blur-xl border-l border-purple-500/20 overflow-y-auto flex flex-col"
+    >
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-3 border-b border-white/10">
+      <div className="flex items-center gap-2 px-3 py-3 border-b border-purple-500/20">
         <div className={clsx('w-2 h-2 rounded-full', instance.color.replace('border-', 'bg-'))} />
         <span className="text-sm font-semibold text-white flex-1 truncate">{instance.label}</span>
         <button
@@ -69,7 +80,7 @@ export default function ConfigPanel() {
       </div>
 
       {/* Description */}
-      <p className="px-3 py-2 text-[11px] text-white/40 border-b border-white/5">{instance.description}</p>
+      <p className="px-3 py-2 text-[11px] text-gray-400 border-b border-purple-500/10">{instance.description}</p>
 
       {/* Config fields */}
       <div className="flex-1 px-3 py-3 space-y-4">
@@ -86,7 +97,7 @@ export default function ConfigPanel() {
                 <select
                   value={String(localConfig[field.key] ?? field.default ?? '')}
                   onChange={(e) => handleChange(field.key, e.target.value)}
-                  className="w-full bg-black/40 border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
+                  className="w-full bg-[#1a1a2e]/60 border border-purple-500/20 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500/50 transition-colors"
                 >
                   {field.options?.map((opt) => (
                     <option key={opt} value={opt}>{opt}</option>
@@ -97,7 +108,7 @@ export default function ConfigPanel() {
                   type="number"
                   value={String(localConfig[field.key] ?? field.default ?? 0)}
                   onChange={(e) => handleChange(field.key, parseFloat(e.target.value))}
-                  className="w-full bg-black/40 border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
+                  className="w-full bg-[#1a1a2e]/60 border border-purple-500/20 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500/50 transition-colors"
                   placeholder={field.placeholder}
                 />
               ) : field.type === 'toggle' ? (
@@ -105,7 +116,7 @@ export default function ConfigPanel() {
                   onClick={() => handleChange(field.key, !localConfig[field.key])}
                   className={clsx(
                     'w-10 h-5 rounded-full transition-colors relative',
-                    localConfig[field.key] ? 'bg-green-500' : 'bg-white/20'
+                    localConfig[field.key] ? 'bg-purple-600' : 'bg-white/15'
                   )}
                 >
                   <span
@@ -120,7 +131,7 @@ export default function ConfigPanel() {
                   type="text"
                   value={String(localConfig[field.key] ?? field.default ?? '')}
                   onChange={(e) => handleChange(field.key, e.target.value)}
-                  className="w-full bg-black/40 border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white/40 transition-colors"
+                  className="w-full bg-[#1a1a2e]/60 border border-purple-500/20 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500/50 transition-colors"
                   placeholder={field.placeholder}
                 />
               )}
@@ -130,7 +141,7 @@ export default function ConfigPanel() {
       </div>
 
       {/* Handles (ports) */}
-      <div className="px-3 py-3 border-t border-white/5">
+      <div className="px-3 py-3 border-t border-purple-500/5">
         <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-2">Ports</p>
         <div className="space-y-1">
           {instance.handles.map((h) => (
@@ -157,7 +168,7 @@ export default function ConfigPanel() {
         const hasInputs = Object.keys(inputs).length > 0
         const hasOutputs = Object.keys(outputs).length > 0
         return (
-          <div className="px-3 py-3 border-t border-white/5">
+          <div className="px-3 py-3 border-t border-purple-500/5">
             <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-2">Last Run</p>
             {hasInputs && (
               <div className="mb-2">
@@ -193,9 +204,9 @@ export default function ConfigPanel() {
       })()}
 
       {/* Node ID footer */}
-      <div className="px-3 py-2 border-t border-white/5">
+      <div className="px-3 py-2 border-t border-purple-500/5">
         <p className="text-[9px] text-white/20 font-mono">{selectedNodeId}</p>
       </div>
-    </aside>
+    </motion.aside>
   )
 }

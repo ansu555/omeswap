@@ -47,7 +47,7 @@
 
 #### `SwapCardDex.tsx`
 - ✅ Full wallet integration check
-- ✅ Network validation (Mantle Sepolia)
+- ✅ Network validation (Avalanche Mainnet)
 - ✅ Token selector modals
 - ✅ Real-time balance display
 - ✅ Swap direction toggle
@@ -101,7 +101,7 @@
 - ✅ `swap.js` - Execute single-hop swap
 - ✅ `multiHopSwap.js` - Execute 3-hop swap
 - ✅ `quickStart.js` - Complete setup automation
-- ✅ `hardhat.config.js` - Mantle network configuration
+- ✅ `hardhat.config.js` - Avalanche network configuration
 
 #### NPM Scripts Added
 ```json
@@ -160,15 +160,15 @@
 │  • use-dex-swap      → Swap logic + state               │
 │  • use-liquidity     → Pool operations                  │
 │  • use-token-mint    → Minting logic                    │
-│  • use-mantle-wallet → Wallet connection                │
+│  • use-avalanche-wallet → Wallet connection                │
 └────────────┬────────────────────────────────────────────┘
              │
              │ JSON-RPC over HTTPS
-             │ https://rpc.sepolia.mantle.xyz
+             │ https://api.avax.network/ext/bc/C/rpc
              ▼
 ┌─────────────────────────────────────────────────────────┐
-│              MANTLE SEPOLIA TESTNET (L2)                │
-│              Chain ID: 5003                             │
+│                AVALANCHE MAINNET                        │
+│                Chain ID: 43114                          │
 ├─────────────────────────────────────────────────────────┤
 │  Smart Contracts:                                       │
 │  • MultiTokenLiquidityPools (0xe635...3Af)              │
@@ -182,7 +182,7 @@
 │    - Swap execution                                     │
 │                                                         │
 │  • 10 Test ERC20 Tokens                                 │
-│    - tUSDC, tUSDT, tDAI, tWETH, tWBTC, etc.            │
+│    - USDC, USDTe, tDAI, WETHe, tWBTC, etc.            │
 │    - Mintable for testing                               │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -204,7 +204,7 @@
 3. **Connect wallet:**
    - Click "Connect Wallet" button
    - Choose MetaMask or WalletConnect
-   - Switch to Mantle Sepolia Testnet
+   - Switch to Avalanche Mainnet
 
 4. **Get test tokens:**
    - Click "Mint Tokens" tab
@@ -224,14 +224,14 @@
 
 1. **Setup Hardhat (if you have the contracts repo):**
    ```bash
-   cd ../Mantel_contract
+   cd ../Avalanche_contract
    npm install
    ```
 
 2. **Configure .env:**
    ```bash
    PRIVATE_KEY=your_private_key
-   MANTLE_RPC_URL=https://rpc.sepolia.mantle.xyz
+   AVALANCHE_RPC_URL=https://api.avax.network/ext/bc/C/rpc
    ```
 
 3. **Run scripts:**
@@ -248,11 +248,11 @@
 ## 📊 Key Features Breakdown
 
 ### Swap Functionality
-- **Single-hop:** Direct pool swaps (tUSDC → tUSDT)
-- **Multi-hop:** Route through intermediaries (tDAI → tUSDC → tWETH → tWBTC)
+- **Single-hop:** Direct pool swaps (USDC → USDTe)
+- **Multi-hop:** Route through intermediaries (tDAI → USDC → WETHe → tWBTC)
 - **Slippage:** Configurable (0.1%, 0.5%, 1.0%)
 - **Fee:** 0.3% per hop
-- **Gas:** ~$0.15-0.50 on Mantle L2
+- **Gas:** ~$0.15-0.50 on Avalanche
 
 ### Liquidity Management
 - **Add:** Provide tokens to pools, get LP tokens
@@ -261,7 +261,7 @@
 - **Proportional:** Auto-calculate token ratios
 
 ### Token Minting (Testing)
-- **10 Tokens:** tUSDC, tUSDT, tDAI, tWETH, tWBTC, tLINK, tUNI, tAAVE, tCRV, tMKR
+- **10 Tokens:** USDC, USDTe, tDAI, WETHe, tWBTC, tLINK, tUNI, tAAVE, tCRV, tMKR
 - **Amounts:** 1,000 or 10,000 per mint
 - **Instant:** No faucet needed
 - **Free:** Only pay gas
@@ -289,7 +289,7 @@
 
 ## 📈 Performance Metrics
 
-### Gas Costs (Mantle Sepolia L2)
+### Gas Costs (Avalanche)
 | Operation | Gas Used | USD Cost (approx) |
 |-----------|----------|-------------------|
 | Mint Token | ~50,000 | $0.10 |
@@ -303,7 +303,7 @@
 ### Transaction Speed
 - **Confirmation:** ~2-3 seconds
 - **Finality:** ~10-15 seconds
-- **Network:** Mantle L2 (fast & cheap)
+- **Network:** Avalanche L2 (fast & cheap)
 
 ---
 
@@ -312,11 +312,11 @@
 ### Manual Testing Scenarios
 
 - [x] Connect MetaMask wallet
-- [x] Switch to Mantle Sepolia
-- [x] Mint tUSDC tokens
-- [x] Mint tUSDT tokens
-- [x] Approve tUSDC for swap
-- [x] Swap tUSDC → tUSDT
+- [x] Switch to Avalanche
+- [x] Mint USDC tokens
+- [x] Mint USDTe tokens
+- [x] Approve USDC for swap
+- [x] Swap USDC → USDTe
 - [x] Check balance update
 - [x] View transaction on explorer
 - [x] Approve tokens for liquidity
@@ -342,7 +342,7 @@ npx hardhat test
 ## 🐛 Known Issues & Limitations
 
 ### Current Limitations
-1. **Network:** Only Mantle Sepolia (testnet)
+1. **Network:** Only Avalanche Mainnet
 2. **Tokens:** Only 10 test tokens
 3. **Routing:** Max 3-hop paths
 4. **Price Oracle:** Not implemented (no TWAP)
@@ -368,14 +368,14 @@ npx hardhat test
 - [README](./README.md)
 
 ### External Resources
-- [Mantle Docs](https://docs.mantle.xyz/)
+- [Avalanche Docs](https://docs.avax.network/)
 - [wagmi Docs](https://wagmi.sh/)
 - [viem Docs](https://viem.sh/)
 - [Uniswap V2 Whitepaper](https://uniswap.org/whitepaper.pdf)
 
 ### Explorers & Faucets
-- **Explorer:** https://explorer.sepolia.mantle.xyz
-- **Faucet:** https://faucet.sepolia.mantle.xyz
+- **Explorer:** https://snowtrace.io
+- **Faucet:** https://faucet.avax.network
 
 ---
 
@@ -453,7 +453,7 @@ You've successfully integrated a complete DEX with:
 - ✅ Comprehensive testing tools
 - ✅ Excellent documentation
 
-**Happy Trading on Mantle! 🚀**
+**Happy Trading on Avalanche! 🚀**
 
 ---
 

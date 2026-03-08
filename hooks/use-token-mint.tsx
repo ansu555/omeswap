@@ -4,7 +4,7 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadCont
 import { parseEther, formatEther, Address } from 'viem';
 import { TOKENS } from '@/contracts/config';
 import { ERC20ABI } from '@/contracts/abis';
-import { mantleTestnet } from '@/lib/chains/mantle';
+import { avalanche } from '@/lib/chains/avalanche';
 
 export function useTokenMint(tokenSymbol: string) {
   const { address } = useAccount();
@@ -19,7 +19,7 @@ export function useTokenMint(tokenSymbol: string) {
     abi: ERC20ABI,
     functionName: 'balanceOf',
     args: [address as Address],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
     query: {
       enabled: !!address,
     },
@@ -34,7 +34,7 @@ export function useTokenMint(tokenSymbol: string) {
       abi: ERC20ABI,
       functionName: 'mint',
       args: [address, parseEther(amount)],
-      chainId: mantleTestnet.id,
+      chainId: avalanche.id,
     });
   };
 
@@ -64,7 +64,7 @@ export function useBatchMint() {
       abi: ERC20ABI,
       functionName: 'mint',
       args: [address, parseEther(amount)],
-      chainId: mantleTestnet.id,
+      chainId: avalanche.id,
     });
   };
 

@@ -90,6 +90,10 @@ interface BotStore {
   agentOpen: boolean
   setAgentOpen: (open: boolean) => void
 
+  // Workflow manager modal
+  workflowsOpen: boolean
+  setWorkflowsOpen: (open: boolean) => void
+
   // Chart markers (injected by AddChartMarkerNode)
   chartMarkers: ChartMarker[]
   addChartMarker: (marker: ChartMarker) => void
@@ -175,6 +179,7 @@ export const useStore = create<BotStore>((set, get) => ({
   toasts: [],
   chartOpen: false,
   agentOpen: false,
+  workflowsOpen: false,
   chartMarkers: [],
   logs: [],
   backtestMode: false,
@@ -295,6 +300,7 @@ export const useStore = create<BotStore>((set, get) => ({
   setChartOpen: (open) => set({ chartOpen: open }),
 
   setAgentOpen: (open) => set({ agentOpen: open }),
+  setWorkflowsOpen: (open) => set({ workflowsOpen: open }),
 
   addChartMarker: (marker) =>
     set((s) => ({ chartMarkers: [...s.chartMarkers, marker] })),

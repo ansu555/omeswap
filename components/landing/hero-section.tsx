@@ -80,10 +80,10 @@ function HeroContent() {
   return (
     <div className="text-left text-white pt-16 sm:pt-24 md:pt-32 px-4 max-w-3xl">
       <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 leading-tight tracking-wide">
-        Trade smarter <br className="sm:hidden" />on Mantle<br className="sm:hidden" /> with Omeswap.
+        Trade smarter <br className="sm:hidden" />on Avalanche<br className="sm:hidden" /> with Omeswap.
       </h1>
       <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 opacity-80 max-w-xl">
-        The next-generation decentralized exchange on Mantle Network. Swap tokens instantly with minimal fees, deep liquidity, and a seamless trading experience.
+        The next-generation decentralized exchange on Avalanche. Swap tokens instantly with minimal fees, deep liquidity, and a seamless trading experience.
       </p>
       <div className="flex pointer-events-auto flex-col sm:flex-row items-start space-y-3 sm:space-y-0 sm:space-x-3">
         <Link

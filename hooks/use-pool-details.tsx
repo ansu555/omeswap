@@ -5,7 +5,7 @@ import { useReadContract, usePublicClient, useBlockNumber } from 'wagmi';
 import { formatEther, Address, parseAbiItem } from 'viem';
 import { CONTRACT_ADDRESSES, TOKENS } from '@/contracts/config';
 import { MultiTokenLiquidityPoolsABI } from '@/contracts/abis';
-import { mantleTestnet } from '@/lib/chains/mantle';
+import { avalanche } from '@/lib/chains/avalanche';
 
 export interface PoolTransaction {
   time: string;
@@ -20,8 +20,8 @@ export interface PoolTransaction {
 export function usePoolDetails(poolId: number, token0Symbol: string, _token1Symbol: string) {
   const [transactions, setTransactions] = useState<PoolTransaction[]>([]);
   const [isLoadingTxs, setIsLoadingTxs] = useState(false);
-  const publicClient = usePublicClient({ chainId: mantleTestnet.id });
-  const { data: currentBlock } = useBlockNumber({ chainId: mantleTestnet.id });
+  const publicClient = usePublicClient({ chainId: avalanche.id });
+  const { data: currentBlock } = useBlockNumber({ chainId: avalanche.id });
 
   const token0 = TOKENS[token0Symbol];
 
@@ -31,7 +31,7 @@ export function usePoolDetails(poolId: number, token0Symbol: string, _token1Symb
     abi: MultiTokenLiquidityPoolsABI,
     functionName: 'getPoolInfo',
     args: [BigInt(poolId)],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
   });
 
   // Parse pool data

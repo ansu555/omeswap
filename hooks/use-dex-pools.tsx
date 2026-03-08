@@ -5,7 +5,7 @@ import { useReadContract, usePublicClient } from 'wagmi';
 import { formatEther, Address } from 'viem';
 import { CONTRACT_ADDRESSES, TOKENS } from '@/contracts/config';
 import { MultiTokenLiquidityPoolsABI } from '@/contracts/abis';
-import { mantleTestnet } from '@/lib/chains/mantle';
+import { avalanche } from '@/lib/chains/avalanche';
 
 export interface DexPool {
   id: string;
@@ -31,29 +31,29 @@ export interface DexPool {
 
 // Define all known pool pairs from deployment
 const POOL_PAIRS = [
-  { token0: 'tUSDC', token1: 'tUSDT' },
-  { token0: 'tWETH', token1: 'tUSDC' },
-  { token0: 'tWBTC', token1: 'tWETH' },
-  { token0: 'tDAI', token1: 'tUSDC' },
-  { token0: 'tLINK', token1: 'tWETH' },
-  { token0: 'tUNI', token1: 'tWETH' },
-  { token0: 'tAAVE', token1: 'tWETH' },
-  { token0: 'tCRV', token1: 'tDAI' },
-  { token0: 'tMKR', token1: 'tDAI' },
-  { token0: 'tWBTC', token1: 'tUSDC' },
+  { token0: 'USDC',  token1: 'USDTe' },
+  { token0: 'WETHe', token1: 'USDC'  },
+  { token0: 'WBTCe', token1: 'WETHe' },
+  { token0: 'DAIe',  token1: 'USDC'  },
+  { token0: 'LINKe', token1: 'WETHe' },
+  { token0: 'JOE',   token1: 'WETHe' },
+  { token0: 'AAVEe', token1: 'WETHe' },
+  { token0: 'PNG',   token1: 'DAIe'  },
+  { token0: 'WBTCe', token1: 'USDC'  },
+  { token0: 'WAVAX', token1: 'USDC'  },
 ];
 
 export function useDexPools() {
   const [pools, setPools] = useState<DexPool[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const publicClient = usePublicClient({ chainId: mantleTestnet.id });
+  const publicClient = usePublicClient({ chainId: avalanche.id });
 
   // Get pool count
   const { data: poolCount } = useReadContract({
     address: CONTRACT_ADDRESSES.POOLS as Address,
     abi: MultiTokenLiquidityPoolsABI,
     functionName: 'poolCount',
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
   });
 
   useEffect(() => {

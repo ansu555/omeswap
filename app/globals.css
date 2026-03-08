@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap');
 
 /* Basel font family for landing page */
 :root {
@@ -396,4 +396,65 @@
 
 .react-flow__edge-path {
   stroke-width: 1.5px;
+}
+
+/* ── Agent Builder micro-interactions ── */
+
+/* Canvas background pulse while bot is running */
+@keyframes canvas-bg-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+.canvas-pulse {
+  animation: canvas-bg-pulse 2s ease-in-out infinite;
+}
+
+/* Node drop bounce */
+@keyframes node-drop-bounce {
+  0%   { transform: scale(0.93); opacity: 0.7; }
+  55%  { transform: scale(1.04); opacity: 1; }
+  80%  { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+.node-drop-bounce {
+  animation: node-drop-bounce 0.22s ease-out;
+}
+
+/* Node delete shake */
+@keyframes node-shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-3px); }
+  40%       { transform: translateX(3px); }
+  60%       { transform: translateX(-2px); }
+  80%       { transform: translateX(2px); }
+}
+.node-shake {
+  animation: node-shake 0.25s ease-in-out;
+}
+
+/* Status strip sweep (running → success) */
+@keyframes status-sweep {
+  from { clip-path: inset(100% 0 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+.status-sweep {
+  animation: status-sweep 0.3s ease-out;
+}
+
+/* Config panel Last Run fade+slide in */
+@keyframes last-run-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.last-run-in {
+  animation: last-run-in 0.25s ease-out;
+}
+
+/* Tooltip card appear */
+@keyframes tooltip-appear {
+  from { opacity: 0; transform: translateX(-4px) scale(0.97); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+.tooltip-appear {
+  animation: tooltip-appear 0.13s ease-out;
 }

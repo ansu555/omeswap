@@ -1,6 +1,6 @@
 import { Header } from "@/components/layout/header";
 import { BackgroundPaths } from "@/components/layout/background-paths";
-import { MantleWalletProvider } from "@/components/providers/mantle-wallet-provider";
+import { AvalancheWalletProvider } from "@/components/providers/avalanche-wallet-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ChatProvider } from "@/components/providers/chat-provider";
 import { ChatbotPanel, ChatToggleButton } from "@/components/ui/chatbot-panel";
@@ -17,7 +17,7 @@ export default function AppLayout({
       enableSystem
       disableTransitionOnChange
     >
-      <MantleWalletProvider>
+      <AvalancheWalletProvider>
         <ChatProvider>
           <BackgroundPaths />
           <div className="flex flex-col h-screen overflow-hidden">
@@ -35,7 +35,7 @@ export default function AppLayout({
           </div>
           <ChatToggleButton />
         </ChatProvider>
-      </MantleWalletProvider>
+      </AvalancheWalletProvider>
     </ThemeProvider>
   );
 }

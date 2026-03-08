@@ -23,7 +23,7 @@ export async function analyzeWallet(
 
 export const defaultAnalysisConfig: Partial<WalletAnalysisRequest> = {
   cache_ttl_minutes: 60,
-  chains: ['ethereum', 'polygon', 'mantle'],
+  chains: ['ethereum', 'polygon', 'avalanche'],
   include_nfts: true,
   include_transactions: true,
   transaction_limit: 100,

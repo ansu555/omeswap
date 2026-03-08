@@ -8,8 +8,8 @@ import { useReadContract } from "wagmi";
 import { formatEther, Address } from "viem";
 import { CONTRACT_ADDRESSES, TOKENS } from "@/contracts/config";
 import { MultiTokenLiquidityPoolsABI } from "@/contracts/abis";
-import { mantleTestnet } from "@/lib/chains/mantle";
-import { useMantleWallet } from "@/hooks/use-mantle-wallet";
+import { avalanche } from '@/lib/chains/avalanche';
+import { useAvalancheWallet } from "@/hooks/use-avalanche-wallet";
 import { usePoolDetails } from "@/hooks/use-pool-details";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,23 +26,23 @@ import { cn } from "@/lib/utils";
 
 // Map pool IDs to token pairs (based on deployment)
 const POOL_PAIRS: { [key: string]: { token0: string; token1: string } } = {
-  "0": { token0: "tUSDC", token1: "tUSDT" },
-  "1": { token0: "tWETH", token1: "tUSDC" },
-  "2": { token0: "tWBTC", token1: "tWETH" },
-  "3": { token0: "tDAI", token1: "tUSDC" },
-  "4": { token0: "tLINK", token1: "tWETH" },
-  "5": { token0: "tUNI", token1: "tWETH" },
-  "6": { token0: "tAAVE", token1: "tWETH" },
-  "7": { token0: "tCRV", token1: "tDAI" },
-  "8": { token0: "tMKR", token1: "tDAI" },
-  "9": { token0: "tWBTC", token1: "tUSDC" },
+  "0": { token0: "USDC", token1: "USDTe" },
+  "1": { token0: "WETHe", token1: "USDC" },
+  "2": { token0: "WBTCe", token1: "WETHe" },
+  "3": { token0: "DAIe", token1: "USDC" },
+  "4": { token0: "LINKe", token1: "WETHe" },
+  "5": { token0: "JOE", token1: "WETHe" },
+  "6": { token0: "AAVEe", token1: "WETHe" },
+  "7": { token0: "PNG", token1: "DAIe" },
+  "8": { token0: "WBTCe", token1: "USDC" },
+  "9": { token0: "WAVAX", token1: "USDC" },
 };
 
 export default function PoolPage() {
   const params = useParams();
   const poolId = Number(params.id);
   const router = useRouter();
-  const { address, isConnected } = useMantleWallet();
+  const { address, isConnected } = useAvalancheWallet();
   const [timeRange, setTimeRange] = useState("1D");
   const [showSwap, setShowSwap] = useState(false);
 
@@ -52,9 +52,9 @@ export default function PoolPage() {
 
   // Use the real pool details hook
   const { poolInfo, transactions, isLoadingTxs, refetch } = usePoolDetails(
-    poolId, 
-    poolPair?.token0 || 'tUSDC', 
-    poolPair?.token1 || 'tUSDT'
+    poolId,
+    poolPair?.token0 || 'USDC',
+    poolPair?.token1 || 'USDTe'
   );
 
   // Get user position
@@ -63,7 +63,7 @@ export default function PoolPage() {
     abi: MultiTokenLiquidityPoolsABI,
     functionName: 'getUserPosition',
     args: [BigInt(poolId), address as Address],
-    chainId: mantleTestnet.id,
+    chainId: avalanche.id,
     query: {
       enabled: !!address,
     },
@@ -84,7 +84,7 @@ export default function PoolPage() {
   const { reserve0, reserve1, totalSupply, tvl, volume24h, fees24h, baseAPR } = poolInfo;
   const volume24hToken0 = (poolInfo as any).volume24hToken0 || 0;
   const volume24hToken1 = (poolInfo as any).volume24hToken1 || 0;
-  
+
   // No reward APR for now (would need governance token implementation)
   const rewardAPR = 0;
   const totalAPR = baseAPR + rewardAPR;
@@ -133,7 +133,7 @@ export default function PoolPage() {
                         </Badge>
                       )}
                       <Badge variant="secondary" className="text-xs">
-                        Mantle DEX
+                        Avalanche DEX
                       </Badge>
                       <Badge variant="secondary" className="text-xs">
                         0.3% Fee
@@ -164,7 +164,7 @@ export default function PoolPage() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Enhanced Chart Visualization */}
                 {transactions.length > 0 ? (
                   <div className="space-y-4">
@@ -176,7 +176,7 @@ export default function PoolPage() {
                           const amount = parseFloat(tx.token0Amount) + parseFloat(tx.token1Amount);
                           const maxAmount = Math.max(...transactions.filter(t => t.type === 'Swap').slice(0, 50).map(t => parseFloat(t.token0Amount) + parseFloat(t.token1Amount)));
                           const height = maxAmount > 0 ? (amount / maxAmount) * 100 : 5;
-                          
+
                           return (
                             <div
                               key={i}
@@ -196,7 +196,7 @@ export default function PoolPage() {
                         <span>Recent</span>
                       </div>
                     </div>
-                    
+
                     {/* Volume Breakdown */}
                     <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
                       <div>
@@ -274,7 +274,7 @@ export default function PoolPage() {
                         <TableRow key={i}>
                           <TableCell className="text-muted-foreground text-sm">{tx.time}</TableCell>
                           <TableCell>
-                            <Badge 
+                            <Badge
                               variant="outline"
                               className={cn(
                                 "text-xs",
@@ -294,7 +294,7 @@ export default function PoolPage() {
                           </TableCell>
                           <TableCell className="text-right">
                             <a
-                              href={`${mantleTestnet.blockExplorers.default.url}/address/${tx.wallet}`}
+                              href={`${'https://snowtrace.io'}/address/${tx.wallet}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-primary hover:underline font-mono text-xs"
@@ -304,7 +304,7 @@ export default function PoolPage() {
                           </TableCell>
                           <TableCell className="text-right">
                             <a
-                              href={`${mantleTestnet.blockExplorers.default.url}/tx/${tx.txHash}`}
+                              href={`${'https://snowtrace.io'}/tx/${tx.txHash}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-muted-foreground hover:text-primary"
@@ -334,8 +334,8 @@ export default function PoolPage() {
               <Card className="p-0 overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-border">
                   <h3 className="font-semibold">Swap</h3>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
                     onClick={() => setShowSwap(false)}
                   >
@@ -348,14 +348,14 @@ export default function PoolPage() {
               </Card>
             ) : (
               <div className="flex gap-2">
-                <Button 
+                <Button
                   className="flex-1 bg-gradient-to-r from-primary to-primary/80"
                   onClick={() => setShowSwap(true)}
                 >
                   🔄 Swap
                 </Button>
-                <Button 
-                  className="flex-1" 
+                <Button
+                  className="flex-1"
                   variant="outline"
                   onClick={() => router.push('/trade')}
                 >
@@ -452,9 +452,9 @@ export default function PoolPage() {
                     </div>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden mt-2">
-                    <div 
-                      className="h-full bg-gradient-to-r from-primary to-success" 
-                      style={{ width: `${reserve0Num > 0 ? (reserve0Num / (reserve0Num + reserve1Num)) * 100 : 50}%` }} 
+                    <div
+                      className="h-full bg-gradient-to-r from-primary to-success"
+                      style={{ width: `${reserve0Num > 0 ? (reserve0Num / (reserve0Num + reserve1Num)) * 100 : 50}%` }}
                     />
                   </div>
                 </div>
@@ -527,7 +527,7 @@ export default function PoolPage() {
                 <div>
                   <div className="text-muted-foreground mb-1">Contract</div>
                   <a
-                    href={`${mantleTestnet.blockExplorers.default.url}/address/${CONTRACT_ADDRESSES.POOLS}`}
+                    href={`${'https://snowtrace.io'}/address/${CONTRACT_ADDRESSES.POOLS}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline font-mono text-xs"
@@ -537,7 +537,7 @@ export default function PoolPage() {
                 </div>
                 <div>
                   <div className="text-muted-foreground mb-1">Network</div>
-                  <div className="font-medium">Mantle Sepolia</div>
+                  <div className="font-medium">Avalanche Mainnet</div>
                 </div>
               </div>
             </Card>
@@ -549,32 +549,32 @@ export default function PoolPage() {
               <Card className="p-6">
                 <h3 className="font-semibold mb-4">Quick Actions</h3>
                 <div className="space-y-3">
-                  <Button 
-                    className="w-full justify-start" 
+                  <Button
+                    className="w-full justify-start"
                     variant="outline"
                     onClick={() => router.push('/trade')}
                   >
                     <Droplet className="w-4 h-4 mr-2" />
                     Add Liquidity
                   </Button>
-                  <Button 
-                    className="w-full justify-start" 
+                  <Button
+                    className="w-full justify-start"
                     variant="outline"
                     onClick={() => router.push('/trade')}
                   >
                     <RefreshCw className="w-4 h-4 mr-2" />
                     Swap Tokens
                   </Button>
-                  <Button 
-                    className="w-full justify-start" 
+                  <Button
+                    className="w-full justify-start"
                     variant="outline"
                     disabled={parseFloat(userLPTokens) === 0}
                   >
                     <DollarSign className="w-4 h-4 mr-2" />
                     Remove Liquidity
                   </Button>
-                  <Button 
-                    className="w-full justify-start" 
+                  <Button
+                    className="w-full justify-start"
                     variant="outline"
                     onClick={() => router.push('/explore')}
                   >

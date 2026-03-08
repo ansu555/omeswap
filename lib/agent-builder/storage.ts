@@ -1,7 +1,7 @@
 import { Agent, AgentBlock, AgentValidationResult } from '@/types/agent-builder';
 
-const STORAGE_KEY = 'mantle_dex_agents';
-const ACTIVE_AGENT_KEY = 'mantle_dex_active_agent';
+const STORAGE_KEY = 'omeswap_agents';
+const ACTIVE_AGENT_KEY = 'omeswap_active_agent';
 
 export class AgentStorageManager {
   // Save all agents

@@ -1,6 +1,6 @@
 import { useAccount, useBalance, useDisconnect, useSwitchChain } from 'wagmi';
 
-export function useMantleWallet() {
+export function useAvalancheWallet() {
   const { address, isConnected, isConnecting, isDisconnected, chain } = useAccount();
   const { disconnect } = useDisconnect();
   const { switchChain } = useSwitchChain();

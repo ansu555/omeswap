@@ -585,14 +585,14 @@ export default function AgentSidebar() {
     <aside
       className="w-[340px] shrink-0 flex flex-col"
       style={{
-        background: "linear-gradient(180deg, #0f0f14 0%, #0c0c12 100%)",
-        borderLeft: "1px solid rgba(255,255,255,0.07)",
+        background: "linear-gradient(180deg, #1a1a2e 0%, #0d0d1a 100%)",
+        borderLeft: "1px solid rgba(82,39,255,0.2)",
       }}
     >
       {/* Header */}
       <div
         className="flex items-center gap-2.5 px-4 py-3.5"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+        style={{ borderBottom: "1px solid rgba(82,39,255,0.2)" }}
       >
         <div
           className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0"
@@ -793,13 +793,13 @@ export default function AgentSidebar() {
       {/* Input */}
       <div
         className="px-3 pb-3 pt-2.5"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
+        style={{ borderTop: "1px solid rgba(82,39,255,0.2)" }}
       >
         <div
           className="flex gap-2 items-end rounded-2xl px-3 py-2"
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.1)",
+            background: "rgba(82,39,255,0.08)",
+            border: "1px solid rgba(82,39,255,0.25)",
           }}
         >
           <textarea

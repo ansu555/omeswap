@@ -14,37 +14,23 @@ module.exports = {
     },
   },
   networks: {
-    mantleSepolia: {
-      url: process.env.MANTLE_RPC_URL || "https://rpc.sepolia.mantle.xyz",
+    avalanche: {
+      url: process.env.AVALANCHE_RPC_URL || "https://api.avax.network/ext/bc/C/rpc",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 5003,
-    },
-    mantle: {
-      url: process.env.MANTLE_MAINNET_RPC_URL || "https://rpc.mantle.xyz",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 5000,
+      chainId: 43114,
     },
   },
   etherscan: {
     apiKey: {
-      mantleSepolia: process.env.MANTLESCAN_API_KEY || "",
-      mantle: process.env.MANTLESCAN_API_KEY || "",
+      avalanche: process.env.SNOWTRACE_API_KEY || "",
     },
     customChains: [
       {
-        network: "mantleSepolia",
-        chainId: 5003,
+        network: "avalanche",
+        chainId: 43114,
         urls: {
-          apiURL: "https://api-sepolia.mantlescan.xyz/api",
-          browserURL: "https://explorer.sepolia.mantle.xyz",
-        },
-      },
-      {
-        network: "mantle",
-        chainId: 5000,
-        urls: {
-          apiURL: "https://api.mantlescan.xyz/api",
-          browserURL: "https://explorer.mantle.xyz",
+          apiURL: "https://api.snowtrace.io/api",
+          browserURL: "https://snowtrace.io",
         },
       },
     ],

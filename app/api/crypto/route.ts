@@ -155,46 +155,46 @@ async function fetchFromCoinGecko(apiKey: string): Promise<CoinGeckoMarket[]> {
 
     const allCoins: CoinGeckoMarket[] = await response.json();
 
-    // Filter for specific Mantle ecosystem tokens
-    const mantleEcosystemTokens = [
-        'mantle',                    // Mantle (MNT)
+    // Filter for specific Avalanche ecosystem tokens
+    const avaxEcosystemTokens = [
+        
+        'avalanche-2',               // Avalanche (AVAX)
         'weth',                      // Wrapped Ether (WETH)
-        'wrapped-steth',             // Wrapped stETH (wstETH)
-        'ethena',                    // Ethena (ENA)
-        'fbtc',                      // Ignition FBTC (fBTC)
-        'solv-btc',                  // Solv BTC (solvBTC)
-        'meth',                      // mETH
-        'mantle-inu',                // Mantle Inu (MINU)
-        'stakestone-ether',          // StakeStone ETH (STONE)
-        'usdlr',                     // USDLR
-        'ktx-finance',               // KTX Finance (KTC)
-        'aperture-finance',          // Aperture Finance (APTR)
-        'lqdx',                      // Reddex (LQDX)
-        'bladeswap',                 // Blades (BLADE) - using bladeswap as potential ID
-        'davos-protocol',            // Davos USD (DUSD)
-        'vertex-protocol',           // Vertex (VRTX)
-        'tether',                    // USDT (Bridged)
-        'chainlink',                 // LINK (Bridged)
-        'usd-coin',                  // USDC/AXLUSDC
+        'joe',                       // Trader Joe (JOE)
+        'benqi',                     // BENQI (QI)
+        'pangolin',                  // Pangolin (PNG)
+        'wrapped-avax',              // Wrapped AVAX (WAVAX)
+        'usd-coin',                  // USDC
+        'tether',                    // USDT
+        'chainlink',                 // Chainlink (LINK)
+        'aave',                      // Aave (AAVE)
+        'curve-dao-token',           // Curve (CRV)
+        'bitcoin',                   // Bitcoin (BTC)
+        'ethereum',                  // Ethereum (ETH)
+        'uniswap',                   // Uniswap (UNI)
+        
+        
+        
+        
     ];
 
-    const mantleCoins = allCoins.filter(coin =>
-        mantleEcosystemTokens.includes(coin.id.toLowerCase()) ||
-        coin.name.toLowerCase().includes('mantle') ||
-        coin.symbol.toLowerCase() === 'musd' ||
-        coin.symbol.toLowerCase() === 'mi4' ||
-        coin.symbol.toLowerCase() === 'axlusdc'
+    const avaxCoins = allCoins.filter(coin =>
+        avaxEcosystemTokens.includes(coin.id.toLowerCase()) ||
+
+        coin.symbol.toLowerCase() === 'wavax' ||
+        
+        coin.symbol.toLowerCase() === 'savax'
     );
 
-    // Return filtered Mantle ecosystem coins
-    return mantleCoins;
+    // Return filtered Avalanche ecosystem coins
+    return avaxCoins;
 }
 
 // Fetch pools from GeckoTerminal
 async function fetchPoolsFromGeckoTerminal(): Promise<GeckoTerminalResponse> {
-    // Mantle network ID on GeckoTerminal is 'mantle'
+    // Avalanche network ID on GeckoTerminal is 'avax'
     const response = await fetch(
-        `https://api.geckoterminal.com/api/v2/networks/mantle/pools?page=1`,
+        `https://api.geckoterminal.com/api/v2/networks/avax/pools?page=1`,
         {
             method: 'GET',
             headers: {
