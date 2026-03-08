@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { ArrowUpDown, ChevronDown, Settings, Check, Wallet, Search, AlertTriangle, RefreshCw, Info } from "lucide-react";
+import { useState } from "react";
+import { ArrowUpDown, ChevronDown, Settings, Check, Wallet, Search, ExternalLink, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDexAggregator, DexSource } from "@/hooks/use-dex-aggregator";
+import { useAvalancheWallet } from "@/hooks/use-avalanche-wallet";
+import { TOKEN_LIST, TOKEN_ADDRESSES } from "@/contracts/config";
+import { useTokenBalances } from "@/hooks/use-token-balances";
+import AvalancheWalletConnect from "@/components/features/avalanche/avalanche-wallet-connect";
 import {
   Dialog,
   DialogContent,
@@ -14,243 +19,84 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useMantleWallet } from "@/hooks/use-mantle-wallet";
+import { avalanche } from '@/lib/chains/avalanche';
 
-interface Token {
-  symbol: string;
-  name: string;
-  color: string;
-  balance: number;
-  price: number;
-  decimals: number;
-}
+type SwapMode = "swap" | "limit" | "buy" | "sell";
 
-interface PriceData {
-  price: number;
-  change24h: number;
-  lastUpdated: Date;
-}
-
-const DEFAULT_TOKENS: Record<string, Token> = {
-  tUSDC: {
-    symbol: "tUSDC",
-    name: "Test USDC",
-    color: "#2775CA",
-    balance: 0,
-    price: 1.0,
-    decimals: 6,
-  },
-  tUSDT: {
-    symbol: "tUSDT",
-    name: "Test USDT",
-    color: "#26A17B",
-    balance: 0,
-    price: 1.0,
-    decimals: 6,
-  },
-  MNT: {
-    symbol: "MNT",
-    name: "Mantle",
-    color: "#000000",
-    balance: 0,
-    price: 0.75,
-    decimals: 18,
-  },
+const DEX_LABELS: Record<DexSource, { name: string; color: string }> = {
+  traderjoe_v2: { name: 'Trader Joe', color: 'text-orange-400' },
+  traderjoe: { name: 'Trader Joe V1', color: 'text-orange-300' },
+  pangolin: { name: 'Pangolin', color: 'text-pink-400' },
 };
 
-const SLIPPAGE_OPTIONS = ["0.1", "0.5", "1.0", "3.0"];
-
 export function SwapCardDex() {
-  const { address, isConnected } = useMantleWallet();
+  const { isConnected, chain, address } = useAvalancheWallet();
 
-  // Token states
-  const [tokens, setTokens] = useState<Record<string, Token>>(DEFAULT_TOKENS);
-  const [payToken, setPayToken] = useState("tUSDC");
-  const [receiveToken, setReceiveToken] = useState("tUSDT");
-  const [payAmount, setPayAmount] = useState("");
-  const [receiveAmount, setReceiveAmount] = useState("");
-
-  // Settings states
-  const [slippage, setSlippage] = useState("0.5");
-  const [customSlippage, setCustomSlippage] = useState("");
-
-  // Modal states
+  const [mode, setMode] = useState<SwapMode>("swap");
+  const [tokenIn, setTokenIn] = useState<string>('WAVAX');
+  const [tokenOut, setTokenOut] = useState<string>('USDC'); // USDC.e — best V1 liquidity
+  const [amountIn, setAmountIn] = useState<string>('');
+  const [slippage, setSlippage] = useState<number>(0.5);
   const [isPayTokenOpen, setIsPayTokenOpen] = useState(false);
   const [isReceiveTokenOpen, setIsReceiveTokenOpen] = useState(false);
 
-  // Real-time price states
-  const [prices, setPrices] = useState<Record<string, PriceData>>({});
-  const [isLoadingPrices, setIsLoadingPrices] = useState(false);
-  const [lastPriceUpdate, setLastPriceUpdate] = useState<Date | null>(null);
+  const { balances: walletBalances } = useTokenBalances(address);
 
-  // Price impact state
-  const [priceImpact, setPriceImpact] = useState<number>(0);
+  const {
+    quotes,
+    selectedDex,
+    setSelectedDex,
+    estimatedOutput,
+    balance,
+    needsApproval,
+    executeSwap,
+    isApproving,
+    isLoading,
+    isSuccess,
+    hash,
+    error,
+    isLoadingQuotes,
+  } = useDexAggregator(tokenIn, tokenOut, amountIn, slippage);
 
-  // Transaction states
-  const [isSwapping, setIsSwapping] = useState(false);
-
-  const payTokenData = tokens[payToken];
-  const receiveTokenData = tokens[receiveToken];
-
-  const effectiveSlippage = customSlippage || slippage;
-
-  // Fetch real-time prices
-  const fetchPrices = useCallback(async () => {
-    setIsLoadingPrices(true);
-    try {
-      // Simulate price fetch - in production, replace with actual API
-      const newPrices: Record<string, PriceData> = {};
-      Object.keys(tokens).forEach((symbol) => {
-        // Simulate small price fluctuations for demo
-        const basePrice = DEFAULT_TOKENS[symbol]?.price || 1;
-        const fluctuation = (Math.random() - 0.5) * 0.01; // +/- 0.5%
-        newPrices[symbol] = {
-          price: basePrice * (1 + fluctuation),
-          change24h: (Math.random() - 0.5) * 4, // +/- 2%
-          lastUpdated: new Date(),
-        };
-      });
-      setPrices(newPrices);
-      setLastPriceUpdate(new Date());
-
-      // Update token prices
-      setTokens(prev => {
-        const updated = { ...prev };
-        Object.keys(newPrices).forEach(symbol => {
-          if (updated[symbol]) {
-            updated[symbol] = { ...updated[symbol], price: newPrices[symbol].price };
-          }
-        });
-        return updated;
-      });
-    } catch (error) {
-      console.error("Failed to fetch prices:", error);
-    } finally {
-      setIsLoadingPrices(false);
-    }
-  }, [tokens]);
-
-  // Real-time price polling
-  useEffect(() => {
-    fetchPrices();
-    const interval = setInterval(fetchPrices, 10000); // Update every 10 seconds
-    return () => clearInterval(interval);
-  }, [fetchPrices]);
-
-  // Calculate price impact
-  const calculatePriceImpact = useCallback((inputAmount: string) => {
-    if (!inputAmount || parseFloat(inputAmount) <= 0) {
-      setPriceImpact(0);
-      return 0;
-    }
-
-    const amount = parseFloat(inputAmount);
-    // Simulate price impact based on amount (larger amounts = higher impact)
-    // In production, this would come from the actual pool reserves
-    const poolLiquidity = 100000; // Simulated pool liquidity
-    const impact = (amount / poolLiquidity) * 100;
-    setPriceImpact(impact);
-    return impact;
-  }, []);
-
-  const payUsdValue = payAmount ? parseFloat(payAmount) * (payTokenData?.price || 0) : 0;
-  const receiveUsdValue = receiveAmount ? parseFloat(receiveAmount) * (receiveTokenData?.price || 0) : 0;
+  // tokenIn/tokenOut are object KEYS (e.g. 'WAVAX', 'nUSDC'), not symbols
+  const payToken = TOKEN_ADDRESSES[tokenIn] ?? TOKEN_LIST[0];
+  const receiveToken = TOKEN_ADDRESSES[tokenOut] ?? TOKEN_LIST[1];
 
   const handleSwapDirection = () => {
-    setPayToken(receiveToken);
-    setReceiveToken(payToken);
-    setPayAmount(receiveAmount);
-    setReceiveAmount(payAmount);
+    setTokenIn(tokenOut);
+    setTokenOut(tokenIn);
+    setAmountIn('');
   };
 
-  const handlePayAmountChange = (value: string) => {
-    setPayAmount(value);
-    if (value && parseFloat(value) > 0) {
-      const payPrice = payTokenData?.price || 1;
-      const receivePrice = receiveTokenData?.price || 1;
-      const estimated = (parseFloat(value) * payPrice) / receivePrice;
-      setReceiveAmount(estimated.toFixed(6));
-      calculatePriceImpact(value);
-    } else {
-      setReceiveAmount("");
-      setPriceImpact(0);
-    }
-  };
-
-  const handleTokenSelect = (token: string, type: "pay" | "receive") => {
+  const handleTokenSelect = (symbol: string, type: "pay" | "receive") => {
     if (type === "pay") {
-      if (token === receiveToken) {
-        setReceiveToken(payToken);
-      }
-      setPayToken(token);
+      if (symbol === tokenOut) setTokenOut(tokenIn);
+      setTokenIn(symbol);
       setIsPayTokenOpen(false);
     } else {
-      if (token === payToken) {
-        setPayToken(receiveToken);
-      }
-      setReceiveToken(token);
+      if (symbol === tokenIn) setTokenIn(tokenOut);
+      setTokenOut(symbol);
       setIsReceiveTokenOpen(false);
     }
-    // Recalculate with new tokens
-    if (payAmount) {
-      handlePayAmountChange(payAmount);
-    }
+    setAmountIn('');
   };
 
-  const handleMaxClick = () => {
-    const maxAmount = payTokenData?.balance?.toString() || "0";
-    handlePayAmountChange(maxAmount);
-  };
+  const hasValidAmount = amountIn && parseFloat(amountIn) > 0;
+  const hasSufficientBalance = parseFloat(balance) >= parseFloat(amountIn || '0');
+  const hasQuote = quotes.length > 0 && parseFloat(estimatedOutput) > 0;
+  const isValidSwap = hasValidAmount && hasSufficientBalance && hasQuote;
+  const isWrongNetwork = isConnected && chain?.id !== avalanche.id;
 
-  const handleSwap = async () => {
-    if (!isConnected) return;
-
-    setIsSwapping(true);
-    try {
-      // Simulate swap transaction
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // In production, execute actual swap transaction here
-      console.log("Swap executed:", {
-        from: payToken,
-        to: receiveToken,
-        amount: payAmount,
-        slippage: effectiveSlippage,
-      });
-
-      // Clear inputs after successful swap
-      setPayAmount("");
-      setReceiveAmount("");
-      setPriceImpact(0);
-    } catch (error) {
-      console.error("Swap failed:", error);
-    } finally {
-      setIsSwapping(false);
-    }
-  };
-
-  const isValidSwap = payAmount && parseFloat(payAmount) > 0 && isConnected;
-  const isHighPriceImpact = priceImpact > 1;
-  const isVeryHighPriceImpact = priceImpact > 5;
-
-  // Get price impact color
-  const getPriceImpactColor = () => {
-    if (priceImpact <= 0.5) return "text-green-500";
-    if (priceImpact <= 1) return "text-yellow-500";
-    if (priceImpact <= 5) return "text-orange-500";
-    return "text-red-500";
-  };
+  const TokenIcon = ({ symbol }: { symbol: string }) => (
+    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
+      {symbol.charAt(0)}
+    </div>
+  );
 
   const TokenSelectorModal = ({
     open,
     onOpenChange,
-    type
+    type,
   }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -264,116 +110,125 @@ export function SwapCardDex() {
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
-            placeholder="Search by name or paste address"
+            placeholder="Search by name or symbol"
             className="w-full bg-secondary/50 border border-border rounded-xl py-3 pl-10 pr-4 outline-none focus:border-primary/50 transition-colors"
           />
         </div>
-        <div className="grid gap-2">
-          {Object.values(tokens).map((token) => (
-            <button
-              key={token.symbol}
-              onClick={() => handleTokenSelect(token.symbol, type)}
-              className="flex items-center justify-between p-3 rounded-xl hover:bg-secondary/50 transition-colors group"
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                  style={{ backgroundColor: token.color }}
+        <div className="grid gap-1 max-h-96 overflow-y-auto">
+          {Object.entries(TOKEN_ADDRESSES)
+            .sort(([keyA], [keyB]) => {
+              // Sort tokens with non-zero balance to the top
+              const balA = parseFloat(walletBalances[keyA] ?? '0');
+              const balB = parseFloat(walletBalances[keyB] ?? '0');
+              return balB - balA;
+            })
+            .map(([key, token]) => {
+              const bal = walletBalances[key];
+              const hasBalance = bal && parseFloat(bal) > 0;
+              const isSelected = (type === "pay" ? tokenIn : tokenOut) === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => handleTokenSelect(key, type)}
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-secondary/50 transition-colors group"
                 >
-                  {token.symbol.slice(0, 2)}
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold">{token.symbol}</div>
-                  <div className="text-xs text-muted-foreground group-hover:text-muted-foreground/80">
-                    {token.name}
+                  <div className="flex items-center gap-3">
+                    <TokenIcon symbol={token.symbol} />
+                    <div className="text-left">
+                      <div className="font-semibold">{token.symbol}</div>
+                      <div className="text-xs text-muted-foreground">{token.name}</div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="font-medium">{token.balance.toFixed(4)}</div>
-                <div className="text-xs text-muted-foreground">
-                  ${(token.balance * token.price).toFixed(2)}
-                </div>
-                {(type === "pay" ? payToken : receiveToken) === token.symbol && (
-                  <Check className="w-4 h-4 text-primary ml-auto mt-1" />
-                )}
-              </div>
-            </button>
-          ))}
+                  <div className="flex items-center gap-2">
+                    {hasBalance && (
+                      <span className="text-sm font-mono text-foreground">
+                        {parseFloat(bal!).toFixed(4)}
+                      </span>
+                    )}
+                    {isSelected && <Check className="w-4 h-4 text-primary" />}
+                  </div>
+                </button>
+              );
+            })}
         </div>
       </DialogContent>
     </Dialog>
   );
 
+  if (!isConnected) {
+    return (
+      <div className="swap-card w-full max-w-md p-8 text-center">
+        <h3 className="text-xl font-semibold mb-4">Connect Your Wallet</h3>
+        <p className="text-muted-foreground mb-6">
+          Connect your wallet to swap tokens on Avalanche
+        </p>
+        <AvalancheWalletConnect variant="default" />
+      </div>
+    );
+  }
+
+  if (isWrongNetwork) {
+    return (
+      <div className="swap-card w-full max-w-md p-8 text-center">
+        <h3 className="text-xl font-semibold mb-4 text-destructive">Wrong Network</h3>
+        <p className="text-muted-foreground mb-6">
+          Please switch to Avalanche Mainnet to use this DEX
+        </p>
+        <div className="text-sm text-muted-foreground">
+          Current: {chain?.name} (ID: {chain?.id})<br />
+          Required: Avalanche Mainnet (ID: {avalanche.id})
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="swap-card w-full max-w-md p-1 bg-card/80 backdrop-blur-xl rounded-2xl border border-border">
-      {/* Header with Settings */}
-      <div className="flex items-center justify-between p-5 pb-2">
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">Swap</h2>
-          {/* Real-time price indicator */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={fetchPrices}
-                  disabled={isLoadingPrices}
-                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <RefreshCw className={cn("w-3 h-3", isLoadingPrices && "animate-spin")} />
-                  <span className="hidden sm:inline">
-                    {lastPriceUpdate ? `${Math.floor((Date.now() - lastPriceUpdate.getTime()) / 1000)}s ago` : "Loading..."}
-                  </span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Prices update every 10 seconds. Click to refresh now.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+    <div className="swap-card w-full p-1">
+      {/* Mode Selector */}
+      <div className="flex items-center justify-between p-5 pb-2 gap-3">
+        <div className="flex items-center gap-1 bg-muted/50 rounded-xl p-1 overflow-x-auto scrollbar-hide">
+          {(["swap", "limit", "buy", "sell"] as SwapMode[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={cn(
+                "mode-tab capitalize whitespace-nowrap",
+                mode === m ? "mode-tab-active" : "mode-tab-inactive"
+              )}
+              disabled={m !== "swap"}
+            >
+              {m}
+              {m === "limit" && (
+                <span className="ml-1 text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded">
+                  Soon
+                </span>
+              )}
+            </button>
+          ))}
         </div>
 
-        {/* Settings Popover */}
         <Popover>
           <PopoverTrigger asChild>
-            <button className="p-2 rounded-lg hover:bg-secondary/50 transition-colors">
+            <button className="settings-btn mr-1 shrink-0">
               <Settings className="w-4 h-4" />
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-80 bg-card border-border backdrop-blur-xl" align="end">
             <div className="space-y-4">
               <h4 className="font-medium leading-none">Transaction Settings</h4>
-
-              {/* Slippage Tolerance */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Slippage Tolerance</span>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Info className="w-3 h-3 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
-                          <p>Your transaction will revert if the price changes unfavorably by more than this percentage.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <span className="text-sm font-medium text-primary">{effectiveSlippage}%</span>
+                  <span className="text-sm text-muted-foreground">Slippage Tolerance</span>
+                  <span className="text-sm font-medium text-primary">{slippage}%</span>
                 </div>
-
                 <div className="flex items-center gap-2">
-                  {SLIPPAGE_OPTIONS.map((val) => (
+                  {[0.1, 0.5, 1.0].map((val) => (
                     <button
                       key={val}
-                      onClick={() => {
-                        setSlippage(val);
-                        setCustomSlippage("");
-                      }}
+                      onClick={() => setSlippage(val)}
                       className={cn(
                         "px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors",
-                        slippage === val && !customSlippage
+                        slippage === val
                           ? "bg-primary/10 border-primary text-primary"
                           : "bg-secondary/50 border-transparent hover:bg-secondary text-muted-foreground"
                       )}
@@ -382,35 +237,6 @@ export function SwapCardDex() {
                     </button>
                   ))}
                 </div>
-
-                {/* Custom slippage input */}
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    placeholder="Custom"
-                    value={customSlippage}
-                    onChange={(e) => setCustomSlippage(e.target.value)}
-                    className="flex-1 bg-secondary/50 border border-border rounded-lg py-1.5 px-3 text-sm outline-none focus:border-primary/50 transition-colors"
-                    min="0.01"
-                    max="50"
-                    step="0.1"
-                  />
-                  <span className="text-sm text-muted-foreground">%</span>
-                </div>
-
-                {/* Slippage warnings */}
-                {parseFloat(effectiveSlippage) < 0.1 && (
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-yellow-500/10 text-yellow-500 text-xs">
-                    <AlertTriangle className="w-3 h-3" />
-                    <span>Your transaction may fail due to low slippage tolerance</span>
-                  </div>
-                )}
-                {parseFloat(effectiveSlippage) > 5 && (
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-orange-500/10 text-orange-500 text-xs">
-                    <AlertTriangle className="w-3 h-3" />
-                    <span>High slippage tolerance may result in unfavorable rates</span>
-                  </div>
-                )}
               </div>
             </div>
           </PopoverContent>
@@ -419,180 +245,188 @@ export function SwapCardDex() {
 
       <div className="p-4 pt-2 space-y-2">
         {/* Pay Section */}
-        <div className="bg-secondary/30 rounded-xl p-4 border border-border/50">
+        <div className="token-input-section">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-muted-foreground">You Pay</span>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Wallet className="w-3 h-3" />
-                <span>{payTokenData?.balance.toFixed(4) || "0"}</span>
-              </div>
-              {payTokenData?.balance > 0 && (
-                <button
-                  onClick={handleMaxClick}
-                  className="text-xs text-primary hover:text-primary/80 font-medium"
-                >
-                  MAX
-                </button>
-              )}
+            <span className="text-sm text-muted-foreground">Pay</span>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Wallet className="w-3 h-3" />
+              <span>{parseFloat(balance).toFixed(4)} {payToken.symbol}</span>
             </div>
           </div>
-
           <div className="flex items-center justify-between gap-4">
             <input
               type="number"
-              value={payAmount}
-              onChange={(e) => handlePayAmountChange(e.target.value)}
+              value={amountIn}
+              onChange={(e) => setAmountIn(e.target.value)}
               placeholder="0"
               className="flex-1 bg-transparent text-3xl font-medium outline-none placeholder:text-muted-foreground/50 w-full min-w-0"
             />
-
-            <button
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-              onClick={() => setIsPayTokenOpen(true)}
-            >
-              <div
-                className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                style={{ backgroundColor: payTokenData?.color || "#666" }}
-              >
-                {payToken.slice(0, 2)}
+            <button className="token-selector" onClick={() => setIsPayTokenOpen(true)}>
+              <TokenIcon symbol={payToken.symbol} />
+              <div className="text-left hidden sm:block">
+                <div className="font-semibold">{payToken.symbol}</div>
+                <div className="text-xs text-muted-foreground">{payToken.name}</div>
               </div>
-              <span className="font-semibold">{payToken}</span>
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              <div className="text-left sm:hidden font-semibold">{payToken.symbol}</div>
+              <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
             </button>
-          </div>
-
-          <div className="mt-2 text-sm text-muted-foreground">
-            ${payUsdValue.toFixed(2)}
           </div>
         </div>
 
         {/* Swap Direction Button */}
         <div className="flex justify-center -my-1 relative z-10">
-          <button
-            onClick={handleSwapDirection}
-            className="p-2 rounded-xl bg-secondary border border-border hover:bg-secondary/80 transition-colors"
-          >
+          <button onClick={handleSwapDirection} className="swap-direction-btn">
             <ArrowUpDown className="w-4 h-4" />
           </button>
         </div>
 
         {/* Receive Section */}
-        <div className="bg-secondary/30 rounded-xl p-4 border border-border/50">
+        <div className="token-input-section">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-muted-foreground">You Receive</span>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Wallet className="w-3 h-3" />
-              <span>{receiveTokenData?.balance.toFixed(4) || "0"}</span>
-            </div>
+            <span className="text-sm text-muted-foreground">Receive (estimated)</span>
           </div>
-
           <div className="flex items-center justify-between gap-4">
             <input
               type="number"
-              value={receiveAmount}
+              value={isLoadingQuotes ? '' : estimatedOutput}
               readOnly
-              placeholder="0"
+              placeholder={isLoadingQuotes ? 'Fetching...' : '0'}
               className="flex-1 bg-transparent text-3xl font-medium outline-none placeholder:text-muted-foreground/50 w-full min-w-0"
             />
-
-            <button
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-              onClick={() => setIsReceiveTokenOpen(true)}
-            >
-              <div
-                className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                style={{ backgroundColor: receiveTokenData?.color || "#666" }}
-              >
-                {receiveToken.slice(0, 2)}
+            <button className="token-selector" onClick={() => setIsReceiveTokenOpen(true)}>
+              <TokenIcon symbol={receiveToken.symbol} />
+              <div className="text-left hidden sm:block">
+                <div className="font-semibold">{receiveToken.symbol}</div>
+                <div className="text-xs text-muted-foreground">{receiveToken.name}</div>
               </div>
-              <span className="font-semibold">{receiveToken}</span>
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              <div className="text-left sm:hidden font-semibold">{receiveToken.symbol}</div>
+              <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
             </button>
           </div>
-
-          <div className="mt-2 text-sm text-muted-foreground">
-            ${receiveUsdValue.toFixed(2)}
-          </div>
         </div>
 
-        {/* Price Impact Warning */}
-        {priceImpact > 0 && (
-          <div className={cn(
-            "flex items-center justify-between p-3 rounded-xl border",
-            isVeryHighPriceImpact
-              ? "bg-red-500/10 border-red-500/30"
-              : isHighPriceImpact
-                ? "bg-orange-500/10 border-orange-500/30"
-                : "bg-secondary/30 border-border/50"
-          )}>
-            <div className="flex items-center gap-2">
-              {isHighPriceImpact && <AlertTriangle className={cn("w-4 h-4", getPriceImpactColor())} />}
-              <span className="text-sm text-muted-foreground">Price Impact</span>
+        {/* Route Selector */}
+        {hasValidAmount && (
+          <div className="rounded-xl border border-border bg-muted/30 p-3 space-y-2">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+              <Zap className="w-3 h-3" />
+              <span>Best Route</span>
             </div>
-            <span className={cn("text-sm font-medium", getPriceImpactColor())}>
-              {priceImpact < 0.01 ? "<0.01" : priceImpact.toFixed(2)}%
-            </span>
+
+            {isLoadingQuotes ? (
+              <div className="text-xs text-muted-foreground animate-pulse">Fetching quotes...</div>
+            ) : quotes.length === 0 ? (
+              <div className="text-xs text-muted-foreground">No liquidity found for this pair</div>
+            ) : (
+              <div className="space-y-1.5">
+                {quotes.map((quote) => {
+                  const label = DEX_LABELS[quote.dex];
+                  const isSelected = selectedDex === quote.dex;
+                  return (
+                    <button
+                      key={quote.dex}
+                      onClick={() => setSelectedDex(quote.dex)}
+                      className={cn(
+                        "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors",
+                        isSelected
+                          ? "bg-primary/10 border border-primary/30"
+                          : "hover:bg-muted/50 border border-transparent"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        {isSelected && <Check className="w-3 h-3 text-primary" />}
+                        {!isSelected && <div className="w-3 h-3" />}
+                        <span className={cn("font-medium", label.color)}>{label.name}</span>
+                        {quote.isBest && (
+                          <span className="text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded font-medium">
+                            Best
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-mono text-xs">
+                        {parseFloat(quote.amountOutFormatted).toFixed(6)} {receiveToken.symbol}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Path display */}
+            {quotes.find(q => q.dex === selectedDex)?.path && (
+              <div className="text-[10px] text-muted-foreground/60 flex items-center gap-1 mt-1">
+                {quotes
+                  .find(q => q.dex === selectedDex)!
+                  .path.map((addr, i, arr) => {
+                    const token = TOKEN_LIST.find(
+                      t => t.address.toLowerCase() === addr.toLowerCase()
+                    );
+                    return (
+                      <span key={addr} className="flex items-center gap-1">
+                        <span>{token?.symbol ?? addr.slice(0, 6)}</span>
+                        {i < arr.length - 1 && <span>→</span>}
+                      </span>
+                    );
+                  })}
+              </div>
+            )}
           </div>
         )}
-
-        {/* Exchange Rate Display */}
-        {payAmount && receiveAmount && (
-          <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/50">
-            <span className="text-sm text-muted-foreground">Rate</span>
-            <span className="text-sm">
-              1 {payToken} = {(parseFloat(receiveAmount) / parseFloat(payAmount)).toFixed(6)} {receiveToken}
-            </span>
-          </div>
-        )}
-
-        {/* Slippage Display */}
-        <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/50">
-          <span className="text-sm text-muted-foreground">Max Slippage</span>
-          <span className="text-sm">{effectiveSlippage}%</span>
-        </div>
 
         {/* Action Button */}
-        {!isConnected ? (
-          <button className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors mt-4">
-            Connect Wallet
-          </button>
-        ) : (
-          <button
-            disabled={!isValidSwap || isSwapping}
-            onClick={handleSwap}
-            className={cn(
-              "w-full py-4 rounded-xl font-semibold transition-colors mt-4",
-              isValidSwap && !isSwapping
-                ? isVeryHighPriceImpact
-                  ? "bg-red-500 text-white hover:bg-red-600"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
-            )}
-          >
-            {isSwapping
-              ? "Swapping..."
-              : isVeryHighPriceImpact
-                ? "Swap Anyway (High Impact)"
-                : isValidSwap
-                  ? "Swap"
-                  : "Enter Amount"
-            }
-          </button>
+        <button
+          onClick={() => { if (isValidSwap && !isLoading) executeSwap(); }}
+          disabled={!isValidSwap || isLoading}
+          className="swap-action-btn mt-4"
+        >
+          {isLoading
+            ? isApproving
+              ? `Approving ${payToken.symbol}...`
+              : 'Swapping...'
+            : !hasValidAmount
+              ? 'Enter Amount'
+              : !hasSufficientBalance
+                ? 'Insufficient Balance'
+                : !hasQuote
+                  ? 'No Liquidity'
+                  : needsApproval
+                    ? `Approve ${payToken.symbol} on ${DEX_LABELS[selectedDex].name}`
+                    : `Swap via ${DEX_LABELS[selectedDex].name}`}
+        </button>
+
+        {/* Success */}
+        {isSuccess && hash && (
+          <div className="mt-4 p-3 bg-success/10 border border-success/20 rounded-xl">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-success font-medium">Swap Successful!</span>
+              <a
+                href={`https://snowtrace.io/tx/${hash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-primary hover:underline flex items-center gap-1"
+              >
+                View <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div className="mt-2 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+            <div className="font-medium mb-1">Transaction Error</div>
+            <div className="text-xs">{error}</div>
+          </div>
+        )}
+
+        {/* Warnings */}
+        {hasValidAmount && !hasSufficientBalance && (
+          <div className="mt-2 text-sm text-destructive">Insufficient balance</div>
         )}
       </div>
 
-      {/* Token Selector Modals */}
-      <TokenSelectorModal
-        open={isPayTokenOpen}
-        onOpenChange={setIsPayTokenOpen}
-        type="pay"
-      />
-      <TokenSelectorModal
-        open={isReceiveTokenOpen}
-        onOpenChange={setIsReceiveTokenOpen}
-        type="receive"
-      />
+      <TokenSelectorModal open={isPayTokenOpen} onOpenChange={setIsPayTokenOpen} type="pay" />
+      <TokenSelectorModal open={isReceiveTokenOpen} onOpenChange={setIsReceiveTokenOpen} type="receive" />
     </div>
   );
 }

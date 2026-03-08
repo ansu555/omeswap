@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, RefObject } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Suspense, lazy } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -9,7 +9,6 @@ import { NavBar } from '@/components/ui/nav-bar';
 import { Compass, ArrowLeftRight, Wallet, Coins, Receipt } from 'lucide-react';
 import { gsap } from 'gsap';
 import { motion } from 'framer-motion';
-import VariableProximity from '@/components/ui/VariableProximity';
 
 const Spline = lazy(() => import('@splinetool/react-spline'));
 
@@ -77,44 +76,14 @@ function ScreenshotSection({ screenshotRef }: { screenshotRef: React.RefObject<H
   );
 }
 
-function HeroContent({ containerRef }: { containerRef: RefObject<HTMLDivElement | null> }) {
+function HeroContent() {
   return (
-    <div
-      ref={containerRef}
-      className="text-left text-white pt-14 sm:pt-20 md:pt-28 px-4 max-w-3xl"
-      style={{ position: 'relative' }}
-    >
-      <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold mb-4 leading-tight tracking-wide">
-        <VariableProximity
-          label="Trade Smarter"
-          className="text-white"
-          fromFontVariationSettings="'wght' 400, 'opsz' 9"
-          toFontVariationSettings="'wght' 900, 'opsz' 40"
-          containerRef={containerRef}
-          radius={150}
-          falloff="gaussian"
-        />
-        <br />
-        <VariableProximity
-          label="with Omeswap."
-          className="text-white"
-          fromFontVariationSettings="'wght' 400, 'opsz' 9"
-          toFontVariationSettings="'wght' 900, 'opsz' 40"
-          containerRef={containerRef}
-          radius={150}
-          falloff="gaussian"
-        />
+    <div className="text-left text-white pt-16 sm:pt-24 md:pt-32 px-4 max-w-3xl">
+      <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 leading-tight tracking-wide">
+        Trade smarter <br className="sm:hidden" />on Avalanche<br className="sm:hidden" /> with Omeswap.
       </h1>
       <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 opacity-80 max-w-xl">
-        <VariableProximity
-          label="The next-generation decentralized exchange on Mantle Network. Swap tokens instantly with minimal fees, deep liquidity, and a seamless trading experience."
-          className="text-gray-200"
-          fromFontVariationSettings="'wght' 300, 'opsz' 9"
-          toFontVariationSettings="'wght' 600, 'opsz' 20"
-          containerRef={containerRef}
-          radius={100}
-          falloff="linear"
-        />
+        The next-generation decentralized exchange on Avalanche. Swap tokens instantly with minimal fees, deep liquidity, and a seamless trading experience.
       </p>
       <div className="flex pointer-events-auto flex-col sm:flex-row items-start space-y-3 sm:space-y-0 sm:space-x-3">
         <Link
@@ -317,7 +286,6 @@ function ProtocolStatsSection() {
 export function HeroSection() {
   const screenshotRef = useRef<HTMLDivElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
-  const variableProximityRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -353,8 +321,8 @@ export function HeroSection() {
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100vh',
           display: 'flex', justifyContent: 'flex-start', alignItems: 'center', zIndex: 10, pointerEvents: 'none'
         }}>
-          <div className="container mx-auto px-4">
-            <HeroContent containerRef={variableProximityRef} />
+          <div className="container mx-auto">
+            <HeroContent />
           </div>
         </div>
       </div>

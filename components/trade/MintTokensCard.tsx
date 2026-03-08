@@ -1,325 +1,161 @@
 "use client";
 
 import { useState } from "react";
-import { Coins, ChevronDown, Check, Loader2, ExternalLink } from "lucide-react";
-import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useMantleWallet } from "@/hooks/use-mantle-wallet";
-
-interface MintableToken {
-  symbol: string;
-  name: string;
-  color: string;
-  decimals: number;
-  maxMint: number;
-  description: string;
-}
-
-const MINTABLE_TOKENS: MintableToken[] = [
-  {
-    symbol: "tUSDC",
-    name: "Test USDC",
-    color: "#2775CA",
-    decimals: 6,
-    maxMint: 10000,
-    description: "Test USDC stablecoin for development",
-  },
-  {
-    symbol: "tUSDT",
-    name: "Test USDT",
-    color: "#26A17B",
-    decimals: 6,
-    maxMint: 10000,
-    description: "Test USDT stablecoin for development",
-  },
-];
-
-interface MintTransaction {
-  id: string;
-  token: string;
-  amount: number;
-  txHash: string;
-  timestamp: Date;
-  status: "pending" | "confirmed" | "failed";
-}
+import { Coins, ExternalLink, RefreshCw } from "lucide-react";
+import { useTokenMint } from "@/hooks/use-token-mint";
+import { useAvalancheWallet } from "@/hooks/use-avalanche-wallet";
+import { TOKENS, TOKEN_LIST } from "@/contracts/config";
+import AvalancheWalletConnect from "@/components/features/avalanche/avalanche-wallet-connect";
+import { avalanche } from '@/lib/chains/avalanche';
 
 export function MintTokensCard() {
-  const { address, isConnected, chain } = useMantleWallet();
+  const { isConnected, chain } = useAvalancheWallet();
+  const [minting, setMinting] = useState<{ [key: string]: boolean }>({});
+  const [lastMinted, setLastMinted] = useState<{ [key: string]: string }>({});
 
-  const [selectedToken, setSelectedToken] = useState<MintableToken>(MINTABLE_TOKENS[0]);
-  const [amount, setAmount] = useState("");
-  const [isTokenSelectorOpen, setIsTokenSelectorOpen] = useState(false);
-  const [isMinting, setIsMinting] = useState(false);
-  const [mintHistory, setMintHistory] = useState<MintTransaction[]>([]);
+  const TokenMintRow = ({ tokenSymbol }: { tokenSymbol: string }) => {
+    const { balance, mint, isLoading, isSuccess, hash, refetchBalance } = useTokenMint(tokenSymbol);
+    const token = TOKENS[tokenSymbol];
+    if (!token) return null;
 
-  const handleMint = async () => {
-    if (!isConnected || !amount || parseFloat(amount) <= 0) return;
-
-    setIsMinting(true);
-
-    const txId = `mint-${Date.now()}`;
-    const newTx: MintTransaction = {
-      id: txId,
-      token: selectedToken.symbol,
-      amount: parseFloat(amount),
-      txHash: "",
-      timestamp: new Date(),
-      status: "pending",
+    const handleMint = async (amount: string) => {
+      setMinting({ ...minting, [tokenSymbol]: true });
+      await mint(amount);
+      await refetchBalance();
+      setLastMinted({ ...lastMinted, [tokenSymbol]: hash || '' });
+      setMinting({ ...minting, [tokenSymbol]: false });
     };
 
-    setMintHistory(prev => [newTx, ...prev]);
-
-    try {
-      // Simulate minting transaction
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Simulate success
-      const fakeTxHash = `0x${Math.random().toString(16).slice(2, 66)}`;
-
-      setMintHistory(prev =>
-        prev.map(tx =>
-          tx.id === txId
-            ? { ...tx, status: "confirmed" as const, txHash: fakeTxHash }
-            : tx
-        )
-      );
-
-      console.log("Minted:", {
-        token: selectedToken.symbol,
-        amount: amount,
-      });
-
-      setAmount("");
-    } catch (error) {
-      console.error("Mint failed:", error);
-      setMintHistory(prev =>
-        prev.map(tx =>
-          tx.id === txId
-            ? { ...tx, status: "failed" as const }
-            : tx
-        )
-      );
-    } finally {
-      setIsMinting(false);
-    }
-  };
-
-  const handleQuickAmount = (value: number) => {
-    setAmount(value.toString());
-  };
-
-  const isValidMint = amount && parseFloat(amount) > 0 && parseFloat(amount) <= selectedToken.maxMint && isConnected;
-
-  const explorerUrl = chain?.blockExplorers?.default?.url || "https://explorer.sepolia.mantle.xyz";
-
-  return (
-    <div className="w-full max-w-md p-1 bg-card/80 backdrop-blur-xl rounded-2xl border border-border">
-      {/* Header */}
-      <div className="flex items-center gap-3 p-5 pb-2">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
-          <Coins className="w-5 h-5 text-primary" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold">Mint Test Tokens</h2>
-          <p className="text-xs text-muted-foreground">Get tokens for testing on testnet</p>
-        </div>
-      </div>
-
-      <div className="p-4 pt-2 space-y-4">
-        {/* Token Selector */}
-        <div className="space-y-2">
-          <label className="text-sm text-muted-foreground">Select Token</label>
-          <button
-            onClick={() => setIsTokenSelectorOpen(true)}
-            className="w-full flex items-center justify-between p-4 rounded-xl bg-secondary/30 border border-border/50 hover:bg-secondary/50 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                style={{ backgroundColor: selectedToken.color }}
-              >
-                {selectedToken.symbol.slice(0, 2)}
-              </div>
-              <div className="text-left">
-                <div className="font-semibold">{selectedToken.symbol}</div>
-                <div className="text-xs text-muted-foreground">{selectedToken.name}</div>
-              </div>
+    return (
+      <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/20 hover:bg-secondary/30 transition-colors">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
+            {token.symbol.substring(0, 1)}
+          </div>
+          <div>
+            <div className="font-semibold">{token.symbol}</div>
+            <div className="text-xs text-muted-foreground">
+              Balance: {parseFloat(balance).toFixed(2)}
             </div>
-            <ChevronDown className="w-5 h-5 text-muted-foreground" />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {isSuccess && lastMinted[tokenSymbol] && (
+            <a
+              href={`${'https://snowtrace.io'}/tx/${lastMinted[tokenSymbol]}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-success hover:underline flex items-center gap-1"
+            >
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
+          <button
+            onClick={() => handleMint('1000')}
+            disabled={isLoading || minting[tokenSymbol]}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isLoading || minting[tokenSymbol] ? (
+              <RefreshCw className="w-3 h-3 animate-spin" />
+            ) : (
+              "Mint 1,000"
+            )}
+          </button>
+          <button
+            onClick={() => handleMint('10000')}
+            disabled={isLoading || minting[tokenSymbol]}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-secondary hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isLoading || minting[tokenSymbol] ? "..." : "10K"}
           </button>
         </div>
+      </div>
+    );
+  };
 
-        {/* Amount Input */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-sm text-muted-foreground">Amount to Mint</label>
-            <span className="text-xs text-muted-foreground">Max: {selectedToken.maxMint.toLocaleString()}</span>
+  if (!isConnected) {
+    return (
+      <div className="swap-card w-full max-w-2xl p-8 text-center">
+        <Coins className="w-12 h-12 mx-auto mb-4 text-primary" />
+        <h3 className="text-xl font-semibold mb-4">Mint Test Tokens</h3>
+        <p className="text-muted-foreground mb-6">
+          Connect your wallet to mint test tokens for the DEX
+        </p>
+        <AvalancheWalletConnect variant="default" />
+      </div>
+    );
+  }
+
+  if (chain?.id !== avalanche.id) {
+    return (
+      <div className="swap-card w-full max-w-2xl p-8 text-center">
+        <h3 className="text-xl font-semibold mb-4 text-destructive">Wrong Network</h3>
+        <p className="text-muted-foreground">
+          Please switch to Avalanche Mainnet
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="swap-card w-full p-1">
+      <div className="p-5">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Coins className="w-6 h-6 text-primary" />
           </div>
+          <div>
+            <h3 className="text-xl font-semibold">Mint Test Tokens</h3>
+            <p className="text-sm text-muted-foreground">
+              Get free test tokens to try out the DEX
+            </p>
+          </div>
+        </div>
 
-          <div className="bg-secondary/30 rounded-xl p-4 border border-border/50">
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0"
-              max={selectedToken.maxMint}
-              className="w-full bg-transparent text-3xl font-medium outline-none placeholder:text-muted-foreground/50"
-            />
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-sm text-muted-foreground">
-                {selectedToken.symbol}
-              </span>
-              {parseFloat(amount) > selectedToken.maxMint && (
-                <span className="text-xs text-red-500">Exceeds max mint amount</span>
-              )}
+        <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+          <div className="flex gap-2">
+            <div className="text-blue-500 text-2xl">ℹ️</div>
+            <div className="text-sm text-blue-500">
+              <strong>Test Tokens Only:</strong> These tokens have no real value and are only for testing purposes on Avalanche Mainnet. You can mint as many as you need!
             </div>
           </div>
         </div>
 
-        {/* Quick Amount Buttons */}
-        <div className="flex items-center gap-2">
-          {[100, 500, 1000, 5000].map((value) => (
-            <button
-              key={value}
-              onClick={() => handleQuickAmount(value)}
-              className={cn(
-                "flex-1 py-2 rounded-lg text-sm font-medium border transition-colors",
-                amount === value.toString()
-                  ? "bg-primary/10 border-primary text-primary"
-                  : "bg-secondary/50 border-transparent hover:bg-secondary text-muted-foreground"
-              )}
-            >
-              {value >= 1000 ? `${value / 1000}K` : value}
-            </button>
+        <div className="space-y-2">
+          {Object.keys(TOKENS).map((key) => (
+            <TokenMintRow key={key} tokenSymbol={key} />
           ))}
         </div>
 
-        {/* Info Box */}
-        <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
-          <p className="text-xs text-blue-400">
-            These are testnet tokens with no real value. Use them to test DEX features on Mantle Sepolia testnet.
-          </p>
+        <div className="mt-6 p-4 bg-muted/30 rounded-xl">
+          <h4 className="font-semibold mb-2 text-sm">Quick Start Guide:</h4>
+          <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+            <li>Mint some test tokens (at least 2 different types)</li>
+            <li>Go to "Add Liquidity" to create or join a pool</li>
+            <li>Use the "Swap" tab to trade tokens</li>
+            <li>Check your positions and earned fees</li>
+          </ol>
         </div>
 
-        {/* Action Button */}
-        {!isConnected ? (
-          <button className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors">
-            Connect Wallet
-          </button>
-        ) : (
+        <div className="mt-4 flex gap-2">
           <button
-            disabled={!isValidMint || isMinting}
-            onClick={handleMint}
-            className={cn(
-              "w-full py-4 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2",
-              isValidMint && !isMinting
-                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
-            )}
+            onClick={() => {
+              // Mint all tokens sequentially
+              TOKEN_LIST.forEach((token, index) => {
+                setTimeout(() => {
+                  const { mint } = useTokenMint(token.symbol);
+                  mint('1000');
+                }, index * 1000);
+              });
+            }}
+            className="flex-1 py-3 px-4 rounded-xl font-medium bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:opacity-90 transition-opacity"
           >
-            {isMinting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Minting...
-              </>
-            ) : isValidMint ? (
-              `Mint ${amount} ${selectedToken.symbol}`
-            ) : (
-              "Enter Amount"
-            )}
+            🚀 Mint All Tokens (1K each)
           </button>
-        )}
-
-        {/* Recent Mints */}
-        {mintHistory.length > 0 && (
-          <div className="space-y-2 pt-2">
-            <h3 className="text-sm font-medium text-muted-foreground">Recent Mints</h3>
-            <div className="space-y-2 max-h-32 overflow-y-auto">
-              {mintHistory.slice(0, 5).map((tx) => (
-                <div
-                  key={tx.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border/50"
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={cn(
-                        "w-2 h-2 rounded-full",
-                        tx.status === "confirmed"
-                          ? "bg-green-500"
-                          : tx.status === "pending"
-                            ? "bg-yellow-500 animate-pulse"
-                            : "bg-red-500"
-                      )}
-                    />
-                    <span className="text-sm">
-                      {tx.amount.toLocaleString()} {tx.token}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground capitalize">
-                      {tx.status}
-                    </span>
-                    {tx.txHash && (
-                      <a
-                        href={`${explorerUrl}/tx/${tx.txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        </div>
       </div>
-
-      {/* Token Selector Modal */}
-      <Dialog open={isTokenSelectorOpen} onOpenChange={setIsTokenSelectorOpen}>
-        <DialogContent className="sm:max-w-md bg-card border-border backdrop-blur-xl">
-          <DialogHeader>
-            <DialogTitle>Select Token to Mint</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-2">
-            {MINTABLE_TOKENS.map((token) => (
-              <button
-                key={token.symbol}
-                onClick={() => {
-                  setSelectedToken(token);
-                  setIsTokenSelectorOpen(false);
-                }}
-                className="flex items-center justify-between p-4 rounded-xl hover:bg-secondary/50 transition-colors group"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                    style={{ backgroundColor: token.color }}
-                  >
-                    {token.symbol.slice(0, 2)}
-                  </div>
-                  <div className="text-left">
-                    <div className="font-semibold">{token.symbol}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {token.description}
-                    </div>
-                  </div>
-                </div>
-                {selectedToken.symbol === token.symbol && (
-                  <Check className="w-5 h-5 text-primary" />
-                )}
-              </button>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
+

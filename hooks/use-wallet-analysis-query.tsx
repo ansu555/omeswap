@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useMantleWallet } from './use-mantle-wallet';
+import { useAvalancheWallet } from './use-avalanche-wallet';
 import { analyzeWallet, defaultAnalysisConfig } from '@/lib/api/wallet-analysis';
 import type { WalletAnalysisRequest } from '@/types';
 
@@ -20,7 +20,7 @@ interface UseWalletAnalysisOptions {
  * - Loading and error states
  */
 export function useWalletAnalysisQuery(options: UseWalletAnalysisOptions = {}) {
-  const { address, isConnected } = useMantleWallet();
+  const { address, isConnected } = useAvalancheWallet();
 
   const {
     chains = defaultAnalysisConfig.chains,

@@ -550,7 +550,7 @@ export default function LiquidEther({
           this.scene.add(this.plane);
         }
       }
-      update(..._args: any[]) {
+      update(_params?: any) {
         if (!Common.renderer || !this.scene || !this.camera) return;
         Common.renderer.setRenderTarget(this.props.output || null);
         Common.renderer.render(this.scene, this.camera);

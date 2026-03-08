@@ -1,0 +1,256 @@
+[
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "provider", "type": "address" },
+      { "indexed": false, "internalType": "uint256", "name": "amount0", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "amount1", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "lpTokens", "type": "uint256" }
+    ],
+    "name": "LiquidityAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "provider", "type": "address" },
+      { "indexed": false, "internalType": "uint256", "name": "amount0", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "amount1", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "lpTokens", "type": "uint256" }
+    ],
+    "name": "LiquidityRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "token0", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "token1", "type": "address" }
+    ],
+    "name": "PoolCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "user", "type": "address" },
+      { "indexed": false, "internalType": "address", "name": "tokenIn", "type": "address" },
+      { "indexed": false, "internalType": "uint256", "name": "amountIn", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "amountOut", "type": "uint256" }
+    ],
+    "name": "Swap",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "FEE_DENOMINATOR",
+    "outputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "FEE_PERCENT",
+    "outputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount0Desired", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount1Desired", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount0Min", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount1Min", "type": "uint256" }
+    ],
+    "name": "addLiquidity",
+    "outputs": [
+      { "internalType": "uint256", "name": "amount0", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount1", "type": "uint256" },
+      { "internalType": "uint256", "name": "lpTokens", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "token0", "type": "address" },
+      { "internalType": "address", "name": "token1", "type": "address" }
+    ],
+    "name": "createPool",
+    "outputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "amountIn", "type": "uint256" },
+      { "internalType": "uint256", "name": "reserveIn", "type": "uint256" },
+      { "internalType": "uint256", "name": "reserveOut", "type": "uint256" }
+    ],
+    "name": "getAmountOut",
+    "outputs": [
+      { "internalType": "uint256", "name": "amountOut", "type": "uint256" }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "token0", "type": "address" },
+      { "internalType": "address", "name": "token1", "type": "address" }
+    ],
+    "name": "getPoolId",
+    "outputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" }
+    ],
+    "name": "getPoolInfo",
+    "outputs": [
+      { "internalType": "address", "name": "token0", "type": "address" },
+      { "internalType": "address", "name": "token1", "type": "address" },
+      { "internalType": "uint256", "name": "reserve0", "type": "uint256" },
+      { "internalType": "uint256", "name": "reserve1", "type": "uint256" },
+      { "internalType": "uint256", "name": "totalLPTokens", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "address", "name": "user", "type": "address" }
+    ],
+    "name": "getUserPosition",
+    "outputs": [
+      { "internalType": "uint256", "name": "lpTokens", "type": "uint256" },
+      { "internalType": "uint256", "name": "token0Deposited", "type": "uint256" },
+      { "internalType": "uint256", "name": "token1Deposited", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "address", "name": "", "type": "address" }
+    ],
+    "name": "lpPositions",
+    "outputs": [
+      { "internalType": "uint256", "name": "lpTokens", "type": "uint256" },
+      { "internalType": "uint256", "name": "token0Deposited", "type": "uint256" },
+      { "internalType": "uint256", "name": "token1Deposited", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      { "internalType": "address", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "address", "name": "", "type": "address" }
+    ],
+    "name": "pairToPoolId",
+    "outputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "poolCount",
+    "outputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "name": "pools",
+    "outputs": [
+      { "internalType": "address", "name": "token0", "type": "address" },
+      { "internalType": "address", "name": "token1", "type": "address" },
+      { "internalType": "uint256", "name": "reserve0", "type": "uint256" },
+      { "internalType": "uint256", "name": "reserve1", "type": "uint256" },
+      { "internalType": "uint256", "name": "totalLPTokens", "type": "uint256" },
+      { "internalType": "bool", "name": "exists", "type": "bool" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "amountA", "type": "uint256" },
+      { "internalType": "uint256", "name": "reserveA", "type": "uint256" },
+      { "internalType": "uint256", "name": "reserveB", "type": "uint256" }
+    ],
+    "name": "quote",
+    "outputs": [
+      { "internalType": "uint256", "name": "amountB", "type": "uint256" }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "uint256", "name": "lpTokens", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount0Min", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount1Min", "type": "uint256" }
+    ],
+    "name": "removeLiquidity",
+    "outputs": [
+      { "internalType": "uint256", "name": "amount0", "type": "uint256" },
+      { "internalType": "uint256", "name": "amount1", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "poolId", "type": "uint256" },
+      { "internalType": "address", "name": "tokenIn", "type": "address" },
+      { "internalType": "uint256", "name": "amountIn", "type": "uint256" },
+      { "internalType": "uint256", "name": "amountOutMin", "type": "uint256" }
+    ],
+    "name": "swap",
+    "outputs": [
+      { "internalType": "uint256", "name": "amountOut", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

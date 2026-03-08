@@ -1,10 +1,10 @@
 // Application constants
 
-export const APP_NAME = 'Mantle Dex';
+export const APP_NAME = 'Omeswap';
 
 export const CHAIN_IDS = {
-  MANTLE_MAINNET: 5000,
-  MANTLE_SEPOLIA: 5003,
+  AVALANCHE_MAINNET: 43114,
+  AVALANCHE_FUJI: 43113,
 } as const;
 
 export const ROUTES = {
@@ -17,6 +17,6 @@ export const ROUTES = {
 } as const;
 
 export const EXTERNAL_LINKS = {
-  DOCS: 'https://docs.mantle.xyz',
-  GITHUB: 'https://github.com/mantlenetworkio',
+  DOCS: 'https://docs.avax.network',
+  GITHUB: 'https://github.com/ava-labs',
 } as const;

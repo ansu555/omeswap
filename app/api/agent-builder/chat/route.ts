@@ -2,15 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { z } from 'zod';
 
-// Initialize OpenAI client with OpenRouter
-const openai = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: 'https://openrouter.ai/api/v1',
-  defaultHeaders: {
-    'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-    'X-Title': 'Mantle DEX Agent Builder',
-  },
-});
+// Lazy initialize OpenAI client to avoid build-time errors
+let openaiClient: OpenAI | null = null;
+
+function getOpenAIClient() {
+  if (!openaiClient) {
+    const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
+    
+    openaiClient = new OpenAI({
+      apiKey: apiKey || 'dummy-key-for-build',
+      baseURL: 'https://openrouter.ai/api/v1',
+      defaultHeaders: {
+        'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+        'X-Title': 'Omeswap Agent Builder',
+      },
+    });
+  }
+  return openaiClient;
+}
 
 // Structured output schema for agent blocks
 const BlockParameterSchema = z.object({
@@ -134,7 +143,17 @@ If user asks for a complete strategy, provide 3-5 connected blocks that form a w
       });
     }
 
+    // Check for API key at runtime
+    const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'API key not configured. Please set OPENROUTER_API_KEY or OPENAI_API_KEY environment variable.' },
+        { status: 500 }
+      );
+    }
+
     // Call OpenRouter with JSON mode
+    const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
       model: "google/gemini-2.5-flash-lite", // Free model from OpenRouter
       messages,

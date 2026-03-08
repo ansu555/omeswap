@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useMantleWallet } from './use-mantle-wallet';
+import { useAvalancheWallet } from './use-avalanche-wallet';
 import { analyzeWallet, defaultAnalysisConfig } from '@/lib/api/wallet-analysis';
 import type { WalletAnalysisData, WalletAnalysisRequest } from '@/types';
 
@@ -23,13 +23,13 @@ interface UseWalletAnalysisReturn {
 export function useWalletAnalysis(
   options: UseWalletAnalysisOptions = {}
 ): UseWalletAnalysisReturn {
-  const { address, isConnected } = useMantleWallet();
+  const { address, isConnected } = useAvalancheWallet();
   const [data, setData] = useState<WalletAnalysisData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [cacheHit, setCacheHit] = useState(false);
   const [analysisTimeMs, setAnalysisTimeMs] = useState(0);
-  
+
   // Track if we've already fetched for this address to prevent duplicates
   const fetchedAddressRef = useRef<string | null>(null);
   const isFetchingRef = useRef(false);
@@ -87,8 +87,34 @@ export function useWalletAnalysis(
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error occurred');
-      setError(error);
       console.error('Wallet analysis error:', error);
+
+      // Fallback to empty data so UI is not blank
+      setData({
+        address: address || '',
+        chains_analyzed: [],
+        token_balances: [],
+        nft_holdings: [],
+        recent_transactions: [],
+        portfolio_summary: {
+          wallet_address: address || '',
+          total_value_usd: '0',
+          total_tokens: 0,
+          total_nfts: 0,
+          chains_active: [],
+          value_by_chain: {},
+          top_assets: [],
+          unique_tokens: 0,
+          unique_nft_collections: 0,
+          total_token_value: '0',
+          total_nft_value: '0',
+          snapshot_time: new Date().toISOString(),
+        },
+        cache_hit: false,
+        analysis_time_ms: 0,
+      });
+
+      setError(error);
     } finally {
       setIsLoading(false);
       isFetchingRef.current = false;

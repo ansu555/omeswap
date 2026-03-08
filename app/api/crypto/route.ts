@@ -55,24 +55,40 @@ const transformCoinGeckoData = (cgData: CoinGeckoMarket[]): TokenRow[] => {
     }));
 };
 
-// Transform CoinMarketCap data to TokenRow format (fallback)
+// Transform CoinMarketCap data to TokenRow format (Primary source)
 const transformCMCData = (cmcData: CMCResponse): TokenRow[] => {
-    return cmcData.data.map((crypto) => ({
-        id: crypto.id.toString(),
-        rank: crypto.cmc_rank,
-        name: crypto.name,
-        symbol: crypto.symbol,
-        imageUrl: `https://s2.coinmarketcap.com/static/img/coins/64x64/${crypto.id}.png`,
-        price: crypto.quote.USD.price,
-        change1h: crypto.quote.USD.percent_change_1h,
-        change24h: crypto.quote.USD.percent_change_24h,
-        change7d: crypto.quote.USD.percent_change_7d,
-        marketCap: crypto.quote.USD.market_cap,
-        volume24h: crypto.quote.USD.volume_24h,
-        circulatingSupply: crypto.circulating_supply,
-        sparklineData: generateSparklineData(crypto.quote.USD.percent_change_7d),
-        isFavorite: false,
-    }));
+    if (!cmcData.data || !Array.isArray(cmcData.data)) {
+        return [];
+    }
+
+    const tokens: TokenRow[] = [];
+
+    for (const crypto of cmcData.data) {
+        const quote = crypto.quote?.USD;
+        if (!quote) {
+            // Skip if no USD quote data
+            continue;
+        }
+
+        tokens.push({
+            id: crypto.id.toString(),
+            rank: crypto.cmc_rank || 0,
+            name: crypto.name || 'Unknown',
+            symbol: crypto.symbol || 'UNKNOWN',
+            imageUrl: `https://s2.coinmarketcap.com/static/img/coins/64x64/${crypto.id}.png`,
+            price: quote.price || 0,
+            change1h: quote.percent_change_1h || 0,
+            change24h: quote.percent_change_24h || 0,
+            change7d: quote.percent_change_7d || 0,
+            marketCap: quote.market_cap || 0,
+            volume24h: quote.volume_24h || 0,
+            circulatingSupply: crypto.circulating_supply || 0,
+            sparklineData: generateSparklineData(quote.percent_change_7d || 0),
+            isFavorite: false,
+        });
+    }
+
+    return tokens;
 };
 
 // Transform GeckoTerminal pools to PoolRow format
@@ -141,46 +157,46 @@ async function fetchFromCoinGecko(apiKey: string): Promise<CoinGeckoMarket[]> {
 
     const allCoins: CoinGeckoMarket[] = await response.json();
 
-    // Filter for specific Mantle ecosystem tokens
-    const mantleEcosystemTokens = [
-        'mantle',                    // Mantle (MNT)
+    // Filter for specific Avalanche ecosystem tokens
+    const avaxEcosystemTokens = [
+        
+        'avalanche-2',               // Avalanche (AVAX)
         'weth',                      // Wrapped Ether (WETH)
-        'wrapped-steth',             // Wrapped stETH (wstETH)
-        'ethena',                    // Ethena (ENA)
-        'fbtc',                      // Ignition FBTC (fBTC)
-        'solv-btc',                  // Solv BTC (solvBTC)
-        'meth',                      // mETH
-        'mantle-inu',                // Mantle Inu (MINU)
-        'stakestone-ether',          // StakeStone ETH (STONE)
-        'usdlr',                     // USDLR
-        'ktx-finance',               // KTX Finance (KTC)
-        'aperture-finance',          // Aperture Finance (APTR)
-        'lqdx',                      // Reddex (LQDX)
-        'bladeswap',                 // Blades (BLADE) - using bladeswap as potential ID
-        'davos-protocol',            // Davos USD (DUSD)
-        'vertex-protocol',           // Vertex (VRTX)
-        'tether',                    // USDT (Bridged)
-        'chainlink',                 // LINK (Bridged)
-        'usd-coin',                  // USDC/AXLUSDC
+        'joe',                       // Trader Joe (JOE)
+        'benqi',                     // BENQI (QI)
+        'pangolin',                  // Pangolin (PNG)
+        'wrapped-avax',              // Wrapped AVAX (WAVAX)
+        'usd-coin',                  // USDC
+        'tether',                    // USDT
+        'chainlink',                 // Chainlink (LINK)
+        'aave',                      // Aave (AAVE)
+        'curve-dao-token',           // Curve (CRV)
+        'bitcoin',                   // Bitcoin (BTC)
+        'ethereum',                  // Ethereum (ETH)
+        'uniswap',                   // Uniswap (UNI)
+        
+        
+        
+        
     ];
 
-    const mantleCoins = allCoins.filter(coin =>
-        mantleEcosystemTokens.includes(coin.id.toLowerCase()) ||
-        coin.name.toLowerCase().includes('mantle') ||
-        coin.symbol.toLowerCase() === 'musd' ||
-        coin.symbol.toLowerCase() === 'mi4' ||
-        coin.symbol.toLowerCase() === 'axlusdc'
+    const avaxCoins = allCoins.filter(coin =>
+        avaxEcosystemTokens.includes(coin.id.toLowerCase()) ||
+
+        coin.symbol.toLowerCase() === 'wavax' ||
+        
+        coin.symbol.toLowerCase() === 'savax'
     );
 
-    // Return filtered Mantle ecosystem coins
-    return mantleCoins;
+    // Return filtered Avalanche ecosystem coins
+    return avaxCoins;
 }
 
 // Fetch pools from GeckoTerminal
 async function fetchPoolsFromGeckoTerminal(): Promise<GeckoTerminalResponse> {
-    // Mantle network ID on GeckoTerminal is 'mantle'
+    // Avalanche network ID on GeckoTerminal is 'avax'
     const response = await fetch(
-        `https://api.geckoterminal.com/api/v2/networks/mantle/pools?page=1`,
+        `https://api.geckoterminal.com/api/v2/networks/avax/pools?page=1`,
         {
             method: 'GET',
             headers: {
@@ -197,22 +213,27 @@ async function fetchPoolsFromGeckoTerminal(): Promise<GeckoTerminalResponse> {
     return await response.json();
 }
 
-// Fallback to CoinMarketCap
-async function fetchFromCoinMarketCap(apiKey: string): Promise<CMCResponse> {
+// Fetch from CoinMarketCap (Primary source)
+async function fetchFromCoinMarketCap(apiKey: string, limit: number = 100): Promise<CMCResponse> {
+    if (!apiKey || apiKey === 'your_coinmarketcap_api_key_here') {
+        throw new Error('CoinMarketCap API key is required');
+    }
+
     const response = await fetch(
-        `https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?start=1&limit=100&convert=USD`,
+        `https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?start=1&limit=${limit}&convert=USD`,
         {
             method: 'GET',
             headers: {
                 'X-CMC_PRO_API_KEY': apiKey,
                 'Accept': 'application/json',
             },
-            next: { revalidate: 300 },
+            next: { revalidate: 300 }, // Cache for 5 minutes
         }
     );
 
     if (!response.ok) {
-        throw new Error(`CoinMarketCap API error: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`CoinMarketCap API error: ${response.status} - ${errorText}`);
     }
 
     return await response.json();
@@ -264,8 +285,11 @@ const transformKryllData = (kryllData: KryllToken[]): TokenRow[] => {
     }));
 };
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        const { searchParams } = new URL(request.url);
+        const limit = parseInt(searchParams.get('limit') || '100', 10);
+
         const coinGeckoKey = process.env.COINGECKO_API_KEY || '';
         const coinMarketCapKey = process.env.COINMARKETCAP_API_KEY || '';
 
@@ -304,6 +328,11 @@ export async function GET() {
             pools = [];
         }
 
+        // Helper function to format numbers with commas
+        const formatNumberWithCommas = (num: number): string => {
+            return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+
         // Calculate metrics from token data
         const totalMarketCap = tokens.reduce((sum, t) => sum + t.marketCap, 0);
         const totalVolume24h = tokens.reduce((sum, t) => sum + t.volume24h, 0);
@@ -311,16 +340,16 @@ export async function GET() {
         const metrics: Metric[] = [
             {
                 label: 'Total Market Cap',
-                value: `$${(totalMarketCap / 1e9).toFixed(2)}B`,
+                value: `$${formatNumberWithCommas(totalMarketCap / 1e9)}B`,
                 change: tokens.length > 0 ? tokens.reduce((sum, t) => sum + t.change24h, 0) / tokens.length : 0
             },
             {
                 label: '24h Volume',
-                value: `$${(totalVolume24h / 1e6).toFixed(2)}M`,
+                value: `$${formatNumberWithCommas(totalVolume24h / 1e6)}M`,
             },
             {
                 label: 'Active Tokens',
-                value: tokens.length.toString(),
+                value: tokens.length.toLocaleString('en-US'),
             },
         ];
 

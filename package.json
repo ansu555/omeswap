@@ -1,12 +1,19 @@
 {
-  "name": "mantle-dex",
+  "name": "avalanche-dex",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "hardhat:compile": "cd ../Avalanche_contract && npx hardhat compile",
+    "hardhat:test": "cd ../Avalanche_contract && npx hardhat test",
+    "hardhat:mint": "cd ../Avalanche_contract && npx hardhat run scripts/mintTokens.js --network avalanche",
+    "hardhat:liquidity": "cd ../Avalanche_contract && npx hardhat run scripts/addLiquidity.js --network avalanche",
+    "hardhat:swap": "cd ../Avalanche_contract && npx hardhat run scripts/swap.js --network avalanche",
+    "hardhat:multihop": "cd ../Avalanche_contract && npx hardhat run scripts/multiHopSwap.js --network avalanche",
+    "hardhat:quickstart": "cd ../Avalanche_contract && npx hardhat run scripts/quickStart.js --network avalanche"
   },
   "dependencies": {
     "@coingecko/coingecko-typescript": "^2.5.0",
@@ -42,15 +49,17 @@
     "@splinetool/react-spline": "^4.1.0",
     "@tanstack/react-query": "^5.90.16",
     "@types/three": "^0.182.0",
-    "@types/uuid": "^10.0.0",
+    "@xyflow/react": "^12.10.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.0.0",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
+    "ethers": "^6.16.0",
     "framer-motion": "^11.18.2",
     "gsap": "^3.14.2",
     "input-otp": "^1.4.2",
+    "lightweight-charts": "^5.1.0",
     "lucide-react": "^0.562.0",
     "next": "^15.0.0",
     "next-themes": "^0.4.6",
@@ -66,11 +75,11 @@
     "tailwind-merge": "^2.2.0",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.182.0",
-    "uuid": "^13.0.0",
     "vaul": "^1.1.2",
     "viem": "^2.44.1",
     "wagmi": "^2.19.5",
-    "zod": "^4.3.5"
+    "zod": "^4.3.5",
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

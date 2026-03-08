@@ -1,96 +1,247 @@
-# Mantle Dex
+# 🌊 Avalanche DEX
 
-A modern decentralized exchange application built on the Mantle Network.
+A fully functional decentralized exchange (DEX) built on Avalanche Network with multi-hop routing capabilities.
 
-## Project Structure
+![Avalanche DEX](https://img.shields.io/badge/Avalanche-DEX-red) ![License](https://img.shields.io/badge/license-MIT-green) ![Next.js](https://img.shields.io/badge/Next.js-15-black) ![React](https://img.shields.io/badge/React-19-blue)
 
-```
-Mantle_Dex/
-├── app/                      # Next.js App Router (pages & layouts only)
-│   ├── globals.css           # Global styles
-│   ├── layout.tsx            # Root layout
-│   ├── page.tsx              # Home page
-│   ├── explore/              # Explore route
-│   └── portfolio/            # Portfolio route
-│
-├── components/               # Reusable React components
-│   ├── explore/              # Explore page components
-│   ├── features/             # Feature-specific components
-│   │   └── mantle/           # Mantle wallet integration
-│   ├── layout/               # Layout components (Header, Footer, etc.)
-│   ├── portfolio/            # Portfolio page components
-│   ├── providers/            # Context providers
-│   ├── shared/               # Shared/common components
-│   └── ui/                   # Base UI components (shadcn/ui)
-│
-├── constants/                # Application constants
-│   └── index.ts              # Centralized constants
-│
-├── hooks/                    # Custom React hooks
-│   ├── use-mantle-wallet.tsx # Wallet hook
-│   └── use-mobile.tsx        # Mobile detection hook
-│
-├── lib/                      # Utility functions & configurations
-│   ├── utils.ts              # Helper utilities
-│   └── chains/               # Blockchain configurations
-│       └── mantle.ts         # Mantle chain config
-│
-├── public/                   # Static assets
-│
-└── types/                    # TypeScript type definitions
-    └── index.ts              # Global types
-```
+## ✨ Features
 
-## Key Conventions
+- 🔄 **Uniswap V2 AMM** - Constant product market maker
+- 🛣️ **Multi-Hop Routing** - Route through multiple pools in a single transaction
+- 💧 **Liquidity Provision** - Add/remove liquidity and earn 0.3% fees
+- 🪙 **Test Token Minting** - Mint test tokens for experimentation
+- 💰 **Low Gas Fees** - Built on Avalanche for 100x cheaper transactions
+- 🎨 **Modern UI** - Beautiful, responsive interface with shadcn/ui
+- 🔐 **Wallet Integration** - Connect with MetaMask, WalletConnect, and more
 
-### Naming Conventions
+## 🚀 Quick Start
 
-- **Files**: Use kebab-case for files (e.g., `mantle-wallet-connect.tsx`)
-- **Components**: Use PascalCase for component names
-- **Routes**: Use lowercase for route folders (e.g., `/explore`, `/portfolio`)
-- **Hooks**: Prefix with `use-` (e.g., `use-mobile.tsx`)
-
-### Import Organization
-
-```typescript
-// 1. External packages
-import { useState } from 'react';
-
-// 2. Internal aliases (@/)
-import { Button } from '@/components/ui/button';
-
-// 3. Relative imports
-import { Logo } from './logo';
-```
-
-### Component Structure
-
-Each feature folder should have an `index.ts` barrel file for clean exports:
-
-```typescript
-// components/layout/index.ts
-export { Header } from './header';
-export { Logo } from './logo';
-```
-
-## Getting Started
+### 1. Install Dependencies
 
 ```bash
-# Install dependencies
 npm install
-
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
 ```
 
-## Tech Stack
+### 2. Setup Environment
 
-- **Framework**: Next.js 14+ (App Router)
-- **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui
-- **Animations**: Framer Motion, GSAP
-- **Wallet**: wagmi + viem
-- **Language**: TypeScript
+Create `.env.local`:
+
+```bash
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
+```
+
+Get your WalletConnect Project ID from: https://cloud.walletconnect.com/
+
+### 3. Start Development Server
+
+```bash
+npm run dev
+```
+
+Visit: **http://localhost:3000**
+
+### 4. Connect & Trade
+
+1. **Connect Wallet** (top right corner)
+2. **Switch to Avalanche Mainnet**
+3. **Get AVAX** for gas fees
+4. **Mint test tokens** (Mint Tokens tab)
+5. **Add liquidity** or **start swapping**!
+
+## 📋 Prerequisites
+
+- Node.js 18+
+- MetaMask or compatible wallet
+- AVAX (for gas fees)
+
+## 🏗️ Tech Stack
+
+### Frontend
+- **Framework:** Next.js 15 (App Router)
+- **UI Library:** React 19
+- **Styling:** Tailwind CSS + shadcn/ui
+- **Web3:** wagmi v2 + viem v2
+- **Wallet:** RainbowKit
+
+### Smart Contracts
+- **Language:** Solidity 0.8.20
+- **Framework:** Hardhat
+- **Network:** Avalanche Mainnet
+- **Testing:** Chai + Ethers.js
+
+## 📝 Smart Contracts
+
+### Deployed on Avalanche
+
+| Contract | Address |
+|----------|---------|
+| **Liquidity Pools** | `0xe63514C2B0842B58A16Ced0C63668BAA91B033Af` |
+| **Swap Router** | `0xFe2108798dC74481d5cCE1588cBD00801758dD6d` |
+
+[View on Explorer →](https://snowtrace.io)
+
+## 🎯 Use Cases
+
+### For Traders
+- Swap tokens with minimal slippage
+- Multi-hop routing finds best paths
+- Low gas costs on L2
+
+### For Liquidity Providers
+- Earn 0.3% on all swaps
+- Receive LP tokens
+- Remove liquidity anytime
+
+### For Developers
+- Learn AMM mechanics
+- Study DeFi integration
+- Fork and customize
+
+## 📚 Documentation
+
+- **[Implementation Summary](./IMPLEMENTATION_SUMMARY.md)** - Complete technical overview and implementation details
+
+## 🧪 Testing
+
+### Frontend Testing
+```bash
+npm run dev
+```
+
+### Smart Contract Testing
+```bash
+cd ../Avalanche_contract
+npx hardhat test
+```
+
+### Backend Scripts
+```bash
+# Mint test tokens
+npm run hardhat:mint
+
+# Add liquidity
+npm run hardhat:liquidity
+
+# Execute swap
+npm run hardhat:swap
+
+# Multi-hop swap
+npm run hardhat:multihop
+
+# Complete setup
+npm run hardhat:quickstart
+```
+
+## 🔒 Security
+
+⚠️ **Mainnet**: This DEX is deployed on Avalanche Mainnet.
+
+For production use:
+- Professional security audit required
+- Implement additional safety checks
+- Add protocol fee mechanism
+- Enable emergency pause functionality
+
+## 🛠️ Development
+
+### Project Structure
+
+```
+Avalanche_Dex/
+├── app/                  # Next.js pages
+├── components/           # React components
+│   ├── trade/           # DEX trading components
+│   ├── portfolio/       # Portfolio management
+│   └── features/        # Wallet integration
+├── contracts/           # Contract ABIs & config
+├── hooks/               # Custom React hooks
+├── lib/                 # Utilities
+└── scripts/             # Hardhat interaction scripts
+```
+
+### Available Scripts
+
+```bash
+npm run dev              # Start dev server
+npm run build           # Build for production
+npm run start           # Start production server
+npm run lint            # Run linter
+npm run hardhat:*       # Hardhat operations
+```
+
+## 🌐 Network Configuration
+
+### Avalanche Mainnet
+
+- **Chain ID:** 43114
+- **RPC URL:** https://api.avax.network/ext/bc/C/rpc
+- **Explorer:** https://snowtrace.io
+
+Add to MetaMask:
+1. Networks → Add Network → Add Manually
+2. Enter the details above
+3. Save
+
+## 🎨 Features Walkthrough
+
+### 1. Token Swapping
+- Select input/output tokens
+- Enter amount
+- Review estimated output
+- Approve & swap
+- Track transaction on explorer
+
+### 2. Liquidity Management
+- Choose token pair
+- Enter amounts (auto-calculated ratio)
+- Approve both tokens
+- Add liquidity
+- Receive LP tokens
+
+### 3. Multi-Hop Routing
+- Swap tokens without direct pools
+- Example: DAI → USDC → WETH → WBTC
+- Atomic transaction (all-or-nothing)
+- Automatic path finding
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## 📄 License
+
+MIT License - see [LICENSE](./LICENSE) file
+
+## 🙏 Acknowledgments
+
+- Uniswap V2 for the AMM design
+- Avalanche Network for L2 infrastructure
+- shadcn/ui for beautiful components
+- wagmi & viem for Web3 integration
+
+## 📞 Support
+
+- **Issues:** GitHub Issues
+- **Docs:** [Integration Guide](./DEX_INTEGRATION_GUIDE.md)
+- **Explorer:** https://snowtrace.io
+
+## 🎉 Getting Started
+
+Ready to try it out?
+
+```bash
+npm install
+npm run dev
+```
+
+Then visit **http://localhost:3000/trade** and start trading!
+
+---
+
+**Built with ❤️ on Avalanche Network**
+
+⭐ Star this repo if you found it helpful!
