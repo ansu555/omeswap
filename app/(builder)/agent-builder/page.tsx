@@ -78,7 +78,9 @@ export default function AgentBuilderPage() {
         blocks.forEach((block) => {
           const nodeType = resolveNodeType(block);
           if (!nodeType) {
-            console.warn(`Skipping unknown block type: ${block.type}/${block.subType}`);
+            console.warn(
+              `Skipping unknown block type: ${block.type}/${block.subType}`,
+            );
             nodeIds.push("");
             return;
           }
