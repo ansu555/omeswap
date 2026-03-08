@@ -7,7 +7,9 @@ import type {
     SummaryItem,
     Metric,
     CryptoAPIResponse,
-    CMCResponse
+    CMCResponse,
+    KryllResponse,
+    KryllToken
 } from './types';
 
 // Generate sparkline data (placeholder since we need historical data)
@@ -216,6 +218,52 @@ async function fetchFromCoinMarketCap(apiKey: string): Promise<CMCResponse> {
     return await response.json();
 }
 
+// Fetch from Kryll X-Ray API
+async function fetchFromKryll(): Promise<KryllToken[]> {
+    const response = await fetch(
+        'https://dapi.kryll.io/xray/list?limit=100&page=1',
+        {
+            method: 'GET',
+            headers: {
+                'Accept': '*/*',
+                'Origin': 'https://app.kryll.io',
+                'Referer': 'https://app.kryll.io/',
+            },
+            next: { revalidate: 300 },
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Kryll API error: ${response.status}`);
+    }
+
+    const json: KryllResponse = await response.json();
+    return json.data.items;
+}
+
+// Transform Kryll data to TokenRow format
+const transformKryllData = (kryllData: KryllToken[]): TokenRow[] => {
+    return kryllData.map((coin, index) => ({
+        id: coin.id,
+        rank: index + 1,
+        name: coin.name,
+        symbol: coin.symbol.toUpperCase(),
+        imageUrl: coin.image,
+        price: coin.current_price || 0,
+        change1h: 0,
+        change24h: coin.price_change_percentage_24h_in_currency || 0,
+        change7d: coin.price_change_percentage_30d_in_currency || 0,
+        marketCap: coin.market_cap || 0,
+        volume24h: 0,
+        circulatingSupply: 0,
+        sparklineData: generateSparklineData(coin.price_change_percentage_30d_in_currency || 0),
+        isFavorite: false,
+        auditScore: coin.audit_score || 0,
+        sentiment: coin.sentiment || 0,
+        newsCount: coin.news_last_7days || 0,
+    }));
+};
+
 export async function GET() {
     try {
         const coinGeckoKey = process.env.COINGECKO_API_KEY || '';
@@ -224,29 +272,36 @@ export async function GET() {
         let tokens: TokenRow[] = [];
         let pools: PoolRow[] = [];
 
-        // Try CoinGecko first
+        // Try Kryll first (no API key required)
         try {
-            const cgData = await fetchFromCoinGecko(coinGeckoKey);
-            tokens = transformCoinGeckoData(cgData);
+            const kryllData = await fetchFromKryll();
+            tokens = transformKryllData(kryllData);
+        } catch (kryllError) {
+            console.warn('Kryll fetch failed, falling back to CoinGecko:', kryllError);
 
-            // Fetch pools from GeckoTerminal
+            // Fallback to CoinGecko
             try {
-                const gtData = await fetchPoolsFromGeckoTerminal();
-                pools = transformGeckoTerminalPools(gtData);
-            } catch (poolError) {
-                console.warn('GeckoTerminal fetch failed:', poolError);
-                pools = []; // Empty pools on error
-            }
-        } catch (cgError) {
-            console.warn('CoinGecko fetch failed, falling back to CoinMarketCap:', cgError);
+                const cgData = await fetchFromCoinGecko(coinGeckoKey);
+                tokens = transformCoinGeckoData(cgData);
+            } catch (cgError) {
+                console.warn('CoinGecko fetch failed, falling back to CoinMarketCap:', cgError);
 
-            // Fallback to CoinMarketCap
-            if (coinMarketCapKey) {
-                const cmcData = await fetchFromCoinMarketCap(coinMarketCapKey);
-                tokens = transformCMCData(cmcData);
-            } else {
-                throw new Error('Both CoinGecko and CoinMarketCap failed, and no CMC key available');
+                if (coinMarketCapKey) {
+                    const cmcData = await fetchFromCoinMarketCap(coinMarketCapKey);
+                    tokens = transformCMCData(cmcData);
+                } else {
+                    throw new Error('All API sources failed');
+                }
             }
+        }
+
+        // Fetch pools from GeckoTerminal
+        try {
+            const gtData = await fetchPoolsFromGeckoTerminal();
+            pools = transformGeckoTerminalPools(gtData);
+        } catch (poolError) {
+            console.warn('GeckoTerminal fetch failed:', poolError);
+            pools = [];
         }
 
         // Calculate metrics from token data

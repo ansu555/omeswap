@@ -1,288 +1,410 @@
-import { NextResponse } from 'next/server';
-import type { CMCCryptocurrency, CMCQuote } from '../../crypto/types';
-
-// DeFi Llama Historical Data Types
-interface DefiLlamaPricePoint {
-    timestamp: number;
-    price: number;
-}
-
-interface DefiLlamaResponse {
-    coins: {
-        [key: string]: {
-            price: number;
-            timestamp: number;
-            symbol: string;
-            confidence: number;
-        };
-    };
-}
+import { NextResponse } from "next/server";
+import type { KryllAuditData, KryllAuditResponse } from "../../crypto/types";
 
 // Token Detail Response Type
 export interface TokenDetailResponse {
-    id: string;
-    name: string;
-    symbol: string;
-    imageUrl: string;
-    price: number;
-    priceChange24h: number;
-    rank: number;
-    marketCap: number;
-    volume24h: number;
-    circulatingSupply: number;
-    totalSupply: number | null;
-    maxSupply: number | null;
-    // Audit Scores (calculated based on metrics)
-    auditScores: {
-        financial: number;
-        fundamental: number;
-        social: number;
-        security: number;
-        overall: number;
-    };
-    // Historical price data
-    historicalData: Array<{
-        timestamp: number;
-        price: number;
-    }>;
-    // Volume breakdown
-    volumeBreakdown: {
-        cex: number;
-        dex: number;
-    };
-    // Additional metrics
-    liquidityRatio: number;
-    tags: string[];
-    dateAdded: string;
-    lastUpdated: string;
-}
-
-// Calculate audit scores based on token metrics
-function calculateAuditScores(token: CMCCryptocurrency): {
+  id: string;
+  name: string;
+  symbol: string;
+  imageUrl: string;
+  description: string;
+  price: number;
+  priceChange24h: number;
+  rank: number;
+  marketCap: number;
+  volume24h: number;
+  circulatingSupply: number;
+  totalSupply: number | null;
+  maxSupply: number | null;
+  auditScores: {
     financial: number;
     fundamental: number;
     social: number;
     security: number;
     overall: number;
-} {
-    const quote = token.quote.USD;
-    
-    // Financial Score (0-100): Based on market cap, volume, liquidity
-    const financialScore = Math.min(100, Math.max(0,
-        (Math.log10(quote.market_cap || 1) / 12) * 40 + // Market cap component
-        (Math.log10(quote.volume_24h || 1) / 11) * 30 + // Volume component
-        (token.num_market_pairs / 500) * 30 // Market pairs component
-    ));
+  };
+  historicalData: Array<{
+    timestamp: number;
+    price: number;
+  }>;
+  volumeBreakdown: {
+    cex: number;
+    dex: number;
+  };
+  liquidityRatio: number;
+  tags: string[];
+  dateAdded: string;
+  lastUpdated: string;
+  // Rich data from Kryll audit
+  fundamental: {
+    website: string;
+    whitepaper: string;
+    country: string;
+    maturityMonths: number;
+    globalHype: number;
+    narratives: Record<string, { perf: number }>;
+    git: {
+      name: string;
+      url: string;
+      description: string;
+      forks: number;
+      watchers: number;
+      subscribers: number;
+    } | null;
+    news: Array<{
+      time: string;
+      title: string;
+      score: number;
+      sentiment: "bullish" | "bearish";
+      link: string;
+      source: string;
+    }>;
+    cexListings: Array<{
+      name: string;
+      logo: string;
+      link: string;
+      trustScore: number;
+    }>;
+  };
+  social: {
+    sentiment: number;
+    platforms: Array<{
+      name: string;
+      icon: string;
+      status: string;
+      url: string;
+      posts?: string;
+      postsChange?: string;
+      users?: string;
+      usersChange?: string;
+      usersLabel?: string;
+      activeUsers?: string;
+      subscribers?: string;
+    }>;
+  };
+  security: {
+    grade: string;
+    infrastructureScore: number;
+    securityInfo: Array<{
+      label: string;
+      value: string;
+      status: "neutral" | "success";
+    }>;
+    dnsItems: Array<{ label: string; status: "ok" | "warning" }>;
+    emailItems: Array<{ label: string; status: "ok" | "warning" }>;
+    exposedPorts: string[];
+  };
+}
 
-    // Fundamental Score (0-100): Based on supply, age, market pairs
-    const ageInDays = (Date.now() - new Date(token.date_added).getTime()) / (1000 * 60 * 60 * 24);
-    const fundamentalScore = Math.min(100, Math.max(0,
-        (ageInDays / 365) * 30 + // Age component
-        (token.num_market_pairs / 300) * 40 + // Market pairs
-        (token.max_supply ? 30 : 0) // Supply cap bonus
-    ));
+const KRYLL_HEADERS = {
+  Accept: "*/*",
+  Origin: "https://app.kryll.io",
+  Referer: "https://app.kryll.io/",
+};
 
-    // Social Score (0-100): Based on rank and market presence
-    const socialScore = Math.min(100, Math.max(0,
-        (token.cmc_rank ? (101 - token.cmc_rank) : 50) + // Rank component
-        (token.num_market_pairs / 200) * 30 // Market presence
-    ));
+// Fetch token audit data from Kryll
+async function fetchTokenAudit(
+  tokenId: string,
+): Promise<KryllAuditData | null> {
+  const response = await fetch(
+    `https://dapi.kryll.io/xray/audit/${encodeURIComponent(tokenId)}`,
+    {
+      method: "GET",
+      headers: KRYLL_HEADERS,
+      next: { revalidate: 300 },
+    },
+  );
 
-    // Security Score (0-100): Based on age, stability, supply
-    const securityScore = Math.min(100, Math.max(0,
-        Math.min(ageInDays / 365, 1) * 40 + // Age/trust component
-        (token.max_supply ? 30 : 20) + // Supply cap
-        (Math.abs(quote.percent_change_24h) < 20 ? 30 : 10) // Price stability
-    ));
+  if (!response.ok) {
+    return null;
+  }
 
-    const overall = (financialScore + fundamentalScore + socialScore + securityScore) / 4;
+  const json: KryllAuditResponse = await response.json();
+  return json.data || null;
+}
 
+function formatNumber(n: number): string {
+  return n.toLocaleString();
+}
+
+function formatChange(n: number): string {
+  const sign = n >= 0 ? "+" : "";
+  return `${sign}${formatNumber(n)}`;
+}
+
+// Map social platform icon
+function platformIcon(name: string): string {
+  switch (name) {
+    case "twitter":
+      return "𝕏";
+    case "coingecko":
+      return "🦎";
+    case "telegram":
+      return "✈️";
+    case "reddit":
+      return "👽";
+    default:
+      return "🔗";
+  }
+}
+
+// Build social platforms from audit data
+function buildSocialPlatforms(social: KryllAuditData["social"]) {
+  const platforms: TokenDetailResponse["social"]["platforms"] = [];
+  const sm = social.social_media;
+
+  if (sm.twitter) {
+    platforms.push({
+      name: "twitter",
+      icon: platformIcon("twitter"),
+      status: sm.twitter.rate?.toUpperCase() || "N/A",
+      url: sm.twitter.link || "",
+      posts: formatNumber(sm.twitter.posts || 0),
+      postsChange: formatChange(sm.twitter.posts_evolution_24h || 0),
+      users: formatNumber(sm.twitter.followers || 0),
+      usersChange: formatChange(sm.twitter.followers_evolution_24h || 0),
+    });
+  }
+
+  if (sm.coingecko) {
+    platforms.push({
+      name: "coingecko",
+      icon: platformIcon("coingecko"),
+      status: sm.coingecko.rate?.toUpperCase() || "N/A",
+      url: sm.coingecko.link || "",
+      users: formatNumber(sm.coingecko.followers || 0),
+      usersChange: formatChange(sm.coingecko.followers_evolution_24h || 0),
+      usersLabel: "Users watching this token",
+    });
+  }
+
+  if (sm.telegram) {
+    platforms.push({
+      name: "telegram",
+      icon: platformIcon("telegram"),
+      status: sm.telegram.rate?.toUpperCase() || "N/A",
+      url: sm.telegram.link || "",
+      users: formatNumber(sm.telegram.members || 0),
+      usersChange: formatChange(sm.telegram.members_evolution_24h || 0),
+      usersLabel: "Members",
+    });
+  }
+
+  if (sm.reddit) {
+    platforms.push({
+      name: "reddit",
+      icon: platformIcon("reddit"),
+      status: sm.reddit.rate?.toUpperCase() || "N/A",
+      url: sm.reddit.link || "",
+      activeUsers: String(sm.reddit.active_users || 0),
+      subscribers: formatNumber(sm.reddit.subscribers || 0),
+    });
+  }
+
+  return platforms;
+}
+
+// Build security data from audit
+function buildSecurityData(sec: KryllAuditData["security"]) {
+  const grade = sec.web?.rate || "N/A";
+
+  const securityInfo: TokenDetailResponse["security"]["securityInfo"] = [
+    { label: "Domain", value: sec.web?.hostname || "N/A", status: "neutral" },
+    {
+      label: "IP Address",
+      value: sec.network?.ip || "N/A",
+      status: sec.network?.ip === "protected" ? "success" : "neutral",
+    },
+    {
+      label: "WAF Protected",
+      value: sec.web?.waf ? `Yes (${sec.web.waf})` : "No",
+      status: sec.web?.waf ? "success" : "neutral",
+    },
+    {
+      label: "Last Scan",
+      value: sec.last_audit
+        ? new Date(sec.last_audit).toLocaleDateString()
+        : "N/A",
+      status: "neutral",
+    },
+  ];
+
+  if (sec.web?.exposed) {
+    for (const [key, value] of Object.entries(sec.web.exposed)) {
+      securityInfo.push({
+        label: key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+        value: String(value),
+        status: value === "protected" ? "success" : "neutral",
+      });
+    }
+  }
+
+  // DNS items
+  const dnsItems: TokenDetailResponse["security"]["dnsItems"] = [];
+  if (sec.dns && !("error" in sec.dns)) {
+    for (const [label, risk] of Object.entries(sec.dns)) {
+      dnsItems.push({
+        label,
+        status: risk === "safe" ? "ok" : "warning",
+      });
+    }
+  }
+
+  // Email items
+  const emailItems: TokenDetailResponse["security"]["emailItems"] = [];
+  if (sec.email && !("error" in sec.email)) {
+    for (const [label, risk] of Object.entries(sec.email)) {
+      emailItems.push({
+        label,
+        status: risk === "safe" ? "ok" : "warning",
+      });
+    }
+  }
+
+  // Exposed ports
+  const exposedPorts: string[] = [];
+  if (sec.network?.openPorts) {
+    for (const p of sec.network.openPorts) {
+      const portLabel = p.port ? `${p.desc} ${p.port}` : p.desc;
+      exposedPorts.push(portLabel);
+    }
+  }
+
+  return {
+    grade,
+    infrastructureScore: Math.round(sec.network?.score || 0),
+    securityInfo,
+    dnsItems,
+    emailItems,
+    exposedPorts,
+  };
+}
+
+// Build news items from audit
+function buildNewsItems(news: KryllAuditData["fundamental"]["news"]) {
+  if (!news?.hotest) return [];
+  return news.hotest.map((n) => {
+    const date = new Date(n.pubDate);
+    const time = date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
     return {
-        financial: Math.round(financialScore),
-        fundamental: Math.round(fundamentalScore),
-        social: Math.round(socialScore),
-        security: Math.round(securityScore),
-        overall: Math.round(overall * 10) / 10, // Round to 1 decimal
+      time,
+      title: n.title,
+      score: (n.rates.sentiment + n.rates.importance) / 20, // normalize to 0-10
+      sentiment: (n.rates.sentiment >= 50 ? "bullish" : "bearish") as
+        | "bullish"
+        | "bearish",
+      link: n.link,
+      source: n.source,
     };
-}
-
-// Fetch token detail from CoinMarketCap
-async function fetchTokenFromCMC(apiKey: string, tokenId: string): Promise<CMCCryptocurrency | null> {
-    if (!apiKey || apiKey === 'your_coinmarketcap_api_key_here') {
-        throw new Error('CoinMarketCap API key is required');
-    }
-
-    const response = await fetch(
-        `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?id=${tokenId}&convert=USD`,
-        {
-            method: 'GET',
-            headers: {
-                'X-CMC_PRO_API_KEY': apiKey,
-                'Accept': 'application/json',
-            },
-            next: { revalidate: 300 }, // Cache for 5 minutes
-        }
-    );
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`CoinMarketCap API error: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    
-    if (data.status?.error_code && data.status.error_code !== 0) {
-        throw new Error(`CoinMarketCap API error: ${data.status.error_message || 'Unknown error'}`);
-    }
-
-    const tokenData = data.data?.[tokenId];
-    if (!tokenData) {
-        return null;
-    }
-
-    return tokenData;
-}
-
-// Fetch historical data from DeFi Llama
-async function fetchHistoricalDataFromDefiLlama(symbol: string, days: number = 365): Promise<Array<{ timestamp: number; price: number }>> {
-    try {
-        // DeFi Llama uses coingecko IDs, so we'll use a different approach
-        // For now, we'll generate synthetic data based on current price
-        // In production, you'd map CMC symbols to Coingecko IDs
-        
-        // Alternative: Use CoinMarketCap historical endpoint (requires higher tier)
-        // For now, return empty array - we'll generate synthetic data on frontend
-        return [];
-    } catch (error) {
-        console.warn('DeFi Llama fetch failed:', error);
-        return [];
-    }
-}
-
-// Generate synthetic historical data based on current metrics
-function generateHistoricalData(
-    currentPrice: number,
-    priceChange24h: number,
-    priceChange7d: number,
-    days: number = 365
-): Array<{ timestamp: number; price: number }> {
-    const data: Array<{ timestamp: number; price: number }> = [];
-    const now = Date.now();
-    const dayMs = 24 * 60 * 60 * 1000;
-    
-    // Generate data points for the last N days
-    for (let i = days; i >= 0; i--) {
-        const timestamp = now - (i * dayMs);
-        
-        // Create a trend based on 7d and 24h changes
-        const trend = priceChange7d / 7; // Daily trend
-        const volatility = Math.random() * 0.02 - 0.01; // Small random volatility
-        
-        // Calculate price at this point
-        const daysAgo = days - i;
-        const priceChange = (trend * daysAgo) + (volatility * daysAgo);
-        const price = currentPrice * (1 - priceChange / 100);
-        
-        data.push({
-            timestamp,
-            price: Math.max(0, price),
-        });
-    }
-    
-    return data;
+  });
 }
 
 export async function GET(
-    request: Request,
-    { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
 ) {
-    try {
-        const tokenId = params.id;
-        const { searchParams } = new URL(request.url);
-        const days = parseInt(searchParams.get('days') || '365', 10);
+  try {
+    const { id: tokenId } = await params;
 
-        const coinMarketCapKey = process.env.COINMARKETCAP_API_KEY || '';
+    const audit = await fetchTokenAudit(tokenId);
 
-        if (!coinMarketCapKey || coinMarketCapKey === 'your_coinmarketcap_api_key_here') {
-            return NextResponse.json(
-                { error: 'CoinMarketCap API key is required' },
-                { status: 500 }
-            );
-        }
-
-        // Fetch token data from CMC
-        const tokenData = await fetchTokenFromCMC(coinMarketCapKey, tokenId);
-        
-        if (!tokenData) {
-            return NextResponse.json(
-                { error: 'Token not found' },
-                { status: 404 }
-            );
-        }
-
-        const quote = tokenData.quote.USD;
-        
-        // Calculate audit scores
-        const auditScores = calculateAuditScores(tokenData);
-        
-        // Generate or fetch historical data
-        let historicalData = await fetchHistoricalDataFromDefiLlama(tokenData.symbol, days);
-        if (historicalData.length === 0) {
-            // Generate synthetic data if DeFi Llama fails
-            historicalData = generateHistoricalData(
-                quote.price,
-                quote.percent_change_24h,
-                quote.percent_change_7d,
-                days
-            );
-        }
-
-        // Estimate volume breakdown (CMC doesn't provide this directly)
-        // In production, you'd fetch this from another API
-        const volumeBreakdown = {
-            cex: quote.volume_24h * 0.95, // Estimate 95% CEX
-            dex: quote.volume_24h * 0.05, // Estimate 5% DEX
-        };
-
-        // Calculate liquidity ratio
-        const liquidityRatio = tokenData.max_supply && tokenData.circulating_supply
-            ? (tokenData.circulating_supply / tokenData.max_supply) * 100
-            : 95; // Default if no max supply
-
-        const response: TokenDetailResponse = {
-            id: tokenData.id.toString(),
-            name: tokenData.name,
-            symbol: tokenData.symbol,
-            imageUrl: `https://s2.coinmarketcap.com/static/img/coins/64x64/${tokenData.id}.png`,
-            price: quote.price,
-            priceChange24h: quote.percent_change_24h,
-            rank: tokenData.cmc_rank || 0,
-            marketCap: quote.market_cap,
-            volume24h: quote.volume_24h,
-            circulatingSupply: tokenData.circulating_supply,
-            totalSupply: tokenData.total_supply,
-            maxSupply: tokenData.max_supply,
-            auditScores,
-            historicalData,
-            volumeBreakdown,
-            liquidityRatio: Math.round(liquidityRatio),
-            tags: tokenData.tags || [],
-            dateAdded: tokenData.date_added,
-            lastUpdated: tokenData.last_updated,
-        };
-
-        return NextResponse.json(response);
-    } catch (error) {
-        console.error('Error fetching token detail:', error);
-        return NextResponse.json(
-            {
-                error: 'Internal server error',
-                message: error instanceof Error ? error.message : 'Unknown error',
-            },
-            { status: 500 }
-        );
+    if (!audit) {
+      return NextResponse.json({ error: "Token not found" }, { status: 404 });
     }
+
+    const fin = audit.financial;
+    const fund = audit.fundamental;
+    const soc = audit.social;
+    const sec = audit.security;
+
+    // Map monthly history to historicalData (real prices!)
+    const historicalData = fin.market.history.monthly.map(([ts, price]) => ({
+      timestamp: ts,
+      price,
+    }));
+
+    // Extract narratives as tags
+    const tags = fund.narratives
+      ? Object.keys(fund.narratives).slice(0, 10)
+      : [];
+
+    const response: TokenDetailResponse = {
+      id: audit.id,
+      name: audit.name,
+      symbol: audit.symbol.toUpperCase(),
+      imageUrl: audit.tokenLogo,
+      description: audit.description || fund.description || "",
+      price: fin.market.price,
+      priceChange24h: fin.market.price_evolution_24h,
+      rank: 0,
+      marketCap: fin.market.marketcap,
+      volume24h: fin.market.volume?.total?.volume || 0,
+      circulatingSupply:
+        fund.supply?.circulating || fin.market.supply?.circulating || 0,
+      totalSupply: fund.supply?.total || fin.market.supply?.total || null,
+      maxSupply: fund.supply?.max || fin.market.supply?.max || null,
+      auditScores: {
+        financial: Math.round(fin.score),
+        fundamental: Math.round(fund.score),
+        social: Math.round(soc.score),
+        security: Math.round(sec.score),
+        overall: Math.round(audit.global_score * 10) / 10,
+      },
+      historicalData,
+      volumeBreakdown: {
+        cex: fin.market.volume?.cex?.volume || 0,
+        dex: fin.market.volume?.dex?.volume || 0,
+      },
+      liquidityRatio: fund.supply?.ratio || 0,
+      tags,
+      dateAdded: fund.maturity?.inception || "",
+      lastUpdated: sec.last_audit || new Date().toISOString(),
+      fundamental: {
+        website: fund.website || "",
+        whitepaper: fund.whitepaper || "",
+        country: fund.country_origin?.name || "Unknown",
+        maturityMonths: fund.maturity?.age_in_months || 0,
+        globalHype: fund.global_hype || 0,
+        narratives: fund.narratives || {},
+        git: fund.git?.name
+          ? {
+              name: fund.git.name,
+              url: fund.git.html_url,
+              description: fund.git.description,
+              forks: fund.git.forks,
+              watchers: fund.git.watchers,
+              subscribers: fund.git.subscribers_count,
+            }
+          : null,
+        news: buildNewsItems(fund.news),
+        cexListings:
+          fund.cex_listings?.links?.map((l) => ({
+            name: l.name,
+            logo: l.logo,
+            link: l.link,
+            trustScore: l.trust_score,
+          })) || [],
+      },
+      social: {
+        sentiment: soc.community_sentiment?.score || 0,
+        platforms: buildSocialPlatforms(soc),
+      },
+      security: buildSecurityData(sec),
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error("Error fetching token detail:", error);
+    return NextResponse.json(
+      {
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    );
+  }
 }
-
-
-

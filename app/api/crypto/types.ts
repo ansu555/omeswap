@@ -176,6 +176,9 @@ export interface TokenRow {
     circulatingSupply: number;
     sparklineData: number[];
     isFavorite?: boolean;
+    auditScore?: number;
+    sentiment?: number;
+    newsCount?: number;
 }
 
 // Pool Row Type
@@ -205,6 +208,182 @@ export interface Metric {
     label: string;
     value: string;
     change?: number;
+}
+
+// Kryll X-Ray API Types
+export interface KryllToken {
+    id: string;
+    name: string;
+    symbol: string;
+    image: string;
+    current_price: number;
+    price_change_percentage_24h_in_currency: number;
+    price_change_percentage_30d_in_currency: number;
+    market_cap: number;
+    audit_score: number;
+    news_last_7days: number;
+    sentiment: number;
+}
+
+export interface KryllResponse {
+    status: string;
+    code: number;
+    data: {
+        items: KryllToken[];
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+        };
+    };
+}
+
+// Kryll X-Ray Audit (per-token detail) Types
+export interface KryllAuditData {
+    id: string;
+    symbol: string;
+    name: string;
+    tokenLogo: string;
+    description: string;
+    hashtag: string | null;
+    global_score: number;
+    financial: {
+        score: number;
+        market: {
+            history: {
+                monthly: [number, number][];
+            };
+            price: number;
+            price_evolution_24h: number;
+            marketcap: number;
+            volume: {
+                total: { volume: number; volume_evolution_24h: number };
+                dex: { volume: number; volume_evolution_24h: number; ratio: number };
+                cex: { volume: number; volume_evolution_24h: number; ratio: number };
+            };
+            supply: {
+                circulating: number;
+                total: number;
+                max: number;
+                ratio: number;
+            };
+        };
+        alerts: Record<string, string>;
+    };
+    fundamental: {
+        score: number;
+        website: string;
+        whitepaper: string;
+        country_origin: { code: string | null; name: string };
+        supply: {
+            circulating: number;
+            total: number;
+            max: number;
+            ratio: number;
+        };
+        global_hype: number;
+        narratives: Record<string, { perf: number }>;
+        narratives_24h_perf: number;
+        narratives_30d_perf: number;
+        git: {
+            name: string;
+            html_url: string;
+            description: string;
+            created_at: string;
+            pushed_at: string;
+            forks: number;
+            watchers: number;
+            subscribers_count: number;
+        };
+        news: {
+            total_week: number;
+            hotest: Array<{
+                id: string;
+                title: string;
+                description: string;
+                pubDate: string;
+                link: string;
+                source: string;
+                rates: { sentiment: number; importance: number };
+            }>;
+        };
+        cex_listings: {
+            score: number;
+            links: Array<{
+                name: string;
+                logo: string;
+                link: string;
+                trust_score: number;
+            }>;
+        };
+        maturity: {
+            inception: string;
+            age_in_months: number;
+        };
+        alerts: Record<string, string>;
+        description: string;
+    };
+    social: {
+        score: number;
+        community_sentiment: { score: number; can_vote: boolean };
+        social_media: {
+            twitter: {
+                link: string;
+                rate: string;
+                followers: number;
+                followers_evolution_24h: number;
+                followers_chart: number[];
+                posts: number;
+                posts_evolution_24h: number;
+                posts_chart: number[];
+            };
+            coingecko: {
+                link: string;
+                rate: string;
+                followers: number;
+                followers_evolution_24h: number;
+            };
+            telegram: {
+                link: string;
+                rate: string;
+                members: number;
+                members_evolution_24h: number;
+            };
+            reddit: {
+                link: string;
+                rate: string;
+                subscribers: number;
+                active_users: number;
+            };
+        };
+        alerts: Record<string, string>;
+    };
+    security: {
+        score: number;
+        last_audit: string;
+        web: {
+            hostname: string;
+            rate: string;
+            score: number;
+            waf: string;
+            exposed: Record<string, string>;
+        };
+        network: {
+            score: number;
+            ip: string;
+            openPorts: Array<{ desc: string; port: string; risk: string }>;
+        };
+        email: Record<string, string>;
+        dns: Record<string, string>;
+        onchain: Record<string, string> | { error: string };
+        alerts: Record<string, string>;
+    };
+}
+
+export interface KryllAuditResponse {
+    status: string;
+    code: number;
+    data: KryllAuditData;
 }
 
 // API Response Type
