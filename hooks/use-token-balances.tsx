@@ -1,7 +1,7 @@
 'use client';
 
 import { useReadContracts } from 'wagmi';
-import { formatUnits, Address } from 'viem';
+import { formatUnits, Address, Abi } from 'viem';
 import { TOKEN_ADDRESSES } from '@/contracts/config';
 import { ERC20ABI } from '@/contracts/abis';
 import { avalanche } from '@/lib/chains/avalanche';
@@ -12,7 +12,7 @@ export function useTokenBalances(walletAddress: string | undefined) {
   const { data } = useReadContracts({
     contracts: TOKEN_ENTRIES.map(([, token]) => ({
       address: token.address as Address,
-      abi: ERC20ABI,
+      abi: ERC20ABI as Abi,
       functionName: 'balanceOf' as const,
       args: [walletAddress as Address],
       chainId: avalanche.id,

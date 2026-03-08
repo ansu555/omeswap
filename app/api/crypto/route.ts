@@ -285,11 +285,8 @@ const transformKryllData = (kryllData: KryllToken[]): TokenRow[] => {
     }));
 };
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
     try {
-        const { searchParams } = new URL(request.url);
-        const limit = parseInt(searchParams.get('limit') || '100', 10);
-
         const coinGeckoKey = process.env.COINGECKO_API_KEY || '';
         const coinMarketCapKey = process.env.COINMARKETCAP_API_KEY || '';
 

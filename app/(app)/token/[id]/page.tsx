@@ -247,7 +247,6 @@ export default function TokenDetailPage() {
           <PriceChart
             basePrice={tokenData.price}
             priceChange24h={tokenData.priceChange24h}
-            historicalData={tokenData.historicalData}
           />
           <SwapCardDex />
         </div>

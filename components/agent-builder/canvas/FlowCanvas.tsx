@@ -72,7 +72,6 @@ export default function FlowCanvas() {
       const nodeType = (node.data as Record<string, unknown>)
         ?.nodeType as string;
       if (nodeType === "swap" || nodeType === "limit_order") {
-        const id = node.id;
         // read from nodeInstances via store — accessed indirectly through node.data config
         const config = (node.data as Record<string, unknown>)?.config as
           | Record<string, unknown>

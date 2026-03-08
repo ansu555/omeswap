@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider } from "wagmi";
+import { WagmiProvider, createStorage, cookieStorage } from "wagmi";
 import {
   getDefaultConfig,
   RainbowKitProvider,
@@ -20,7 +20,9 @@ const config = getDefaultConfig({
   projectId:
     process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "YOUR_PROJECT_ID",
   chains: [avalanche],
-  ssr: true,
+  storage: createStorage({
+    storage: cookieStorage,
+  }),
 });
 
 interface AvalancheWalletProviderProps {
