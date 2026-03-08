@@ -4,14 +4,9 @@ import { AvalancheWalletProvider } from "@/components/providers/avalanche-wallet
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ChatProvider } from "@/components/providers/chat-provider";
 import { ChatbotPanel, ChatToggleButton } from "@/components/ui/chatbot-panel";
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider
       attribute="class"

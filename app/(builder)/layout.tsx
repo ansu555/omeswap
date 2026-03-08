@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ChatProvider } from "@/components/providers/chat-provider";
 import { ChatbotPanel, ChatToggleButton } from "@/components/ui/chatbot-panel";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function BuilderLayout({
   children,
