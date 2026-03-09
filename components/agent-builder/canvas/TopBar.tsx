@@ -23,6 +23,7 @@ import {
   AlertCircle,
   Info,
   AlertTriangle,
+  Bot,
 } from "lucide-react";
 import clsx from "clsx";
 import WorkflowManager from "./WorkflowManager";
@@ -51,6 +52,8 @@ export default function TopBar() {
     setChartOpen,
     addChartMarker,
     clearChartMarkers,
+    agentOpen,
+    setAgentOpen,
     backtestMode,
     setBacktestMode,
     backtestConfig,
@@ -439,6 +442,20 @@ export default function TopBar() {
             >
               <FolderOpen size={14} />
               Workflows
+            </button>
+
+            {/* Agent toggle */}
+            <button
+              onClick={() => setAgentOpen(!agentOpen)}
+              className={clsx(
+                "flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all",
+                agentOpen
+                  ? "bg-primary/20 border-primary/40 text-primary"
+                  : "text-muted-foreground hover:text-foreground border-border/50 hover:border-primary/40 hover:bg-primary/10",
+              )}
+            >
+              <Bot size={14} />
+              Agent
             </button>
 
             <div className="flex-1" />

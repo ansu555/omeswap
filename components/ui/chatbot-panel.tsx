@@ -48,6 +48,9 @@ interface ChatMessage {
 export function ChatbotPanel() {
   const { isOpen, closeChat, agentBuilderMode, agentBuilderContext } =
     useChatContext();
+
+  // Hide the generic chat panel when agent-builder page has its own AgentSidebar
+  if (agentBuilderMode) return null;
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
@@ -558,9 +561,10 @@ export function ChatbotPanel() {
 }
 
 export function ChatToggleButton() {
-  const { isOpen, openChat } = useChatContext();
+  const { isOpen, openChat, agentBuilderMode } = useChatContext();
 
-  if (isOpen) return null;
+  // Hide toggle when agent-builder page has its own AgentSidebar
+  if (isOpen || agentBuilderMode) return null;
 
   return (
     <motion.div

@@ -7,6 +7,7 @@ import FlowCanvas from "@/components/agent-builder/canvas/FlowCanvas";
 import ConfigPanel from "@/components/agent-builder/canvas/ConfigPanel";
 import ToastContainer from "@/components/agent-builder/canvas/ToastContainer";
 import ChartPanel from "@/components/agent-builder/canvas/ChartPanel";
+import AgentSidebar from "@/components/agent-builder/canvas/AgentSidebar";
 import { useStore } from "@/store/agent-builder";
 import { useChatContext } from "@/components/providers/chat-provider";
 import LiquidEther from "@/components/ui/liquid-ether";
@@ -63,7 +64,7 @@ function resolveNodeType(block: {
 }
 
 export default function AgentBuilderPage() {
-  const { chartOpen, setChartOpen, addNodeToCanvas, appendEdges } = useStore();
+  const { chartOpen, setChartOpen, addNodeToCanvas, appendEdges, agentOpen } = useStore();
   const { setAgentBuilderMode } = useChatContext();
 
   // Enable agent builder mode when component mounts
@@ -156,6 +157,7 @@ export default function AgentBuilderPage() {
             <NodePalette />
             <FlowCanvas />
             <ConfigPanel />
+            {agentOpen && <AgentSidebar />}
           </div>
           <ToastContainer />
           {chartOpen && <ChartPanel onClose={() => setChartOpen(false)} />}
