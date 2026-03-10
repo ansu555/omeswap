@@ -226,7 +226,7 @@ MIT License - see [LICENSE](./LICENSE) file
 ## 📞 Support
 
 - **Issues:** GitHub Issues
-- **Docs:** [Integration Guide](./DEX_INTEGRATION_GUIDE.md)
+- **Docs** [Integration Guide](./DEX_INTEGRATION_GUIDE.md)
 - **Explorer:** https://snowtrace.io
 
 ## 🎉 Getting Started
