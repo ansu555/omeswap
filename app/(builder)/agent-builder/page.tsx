@@ -64,7 +64,8 @@ function resolveNodeType(block: {
 }
 
 export default function AgentBuilderPage() {
-  const { chartOpen, setChartOpen, addNodeToCanvas, appendEdges, agentOpen } = useStore();
+  const { chartOpen, setChartOpen, addNodeToCanvas, appendEdges, agentOpen } =
+    useStore();
   const { setAgentBuilderMode } = useChatContext();
 
   // Enable agent builder mode when component mounts

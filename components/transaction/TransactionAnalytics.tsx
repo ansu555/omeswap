@@ -2,7 +2,13 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp, Activity, Clock, Calculator, LucideIcon } from "lucide-react";
+import {
+  TrendingUp,
+  Activity,
+  Clock,
+  Calculator,
+  LucideIcon,
+} from "lucide-react";
 import {
   ChartContainer,
   ChartTooltip,
@@ -39,7 +45,11 @@ const chartConfig = {
 };
 
 // Generate smooth SVG path for sparkline
-const generateSmoothPath = (points: number[], width: number, height: number): string => {
+const generateSmoothPath = (
+  points: number[],
+  width: number,
+  height: number,
+): string => {
   if (!points || points.length < 2) {
     return `M 0 ${height}`;
   }
@@ -52,7 +62,7 @@ const generateSmoothPath = (points: number[], width: number, height: number): st
   const pathData = points.map((point, i) => {
     const x = i * xStep;
     const normalized = ((point - minPoint) / range) * 100;
-    const y = height - (normalized / 100) * (height * 0.8) - (height * 0.1);
+    const y = height - (normalized / 100) * (height * 0.8) - height * 0.1;
     return [x, y];
   });
 
@@ -86,7 +96,7 @@ const MiniSparkline = ({ data, color, gradientId }: MiniSparklineProps) => {
 
   const linePath = useMemo(
     () => generateSmoothPath(data, svgWidth, svgHeight),
-    [data]
+    [data],
   );
 
   const areaPath = useMemo(() => {
@@ -100,20 +110,20 @@ const MiniSparkline = ({ data, color, gradientId }: MiniSparklineProps) => {
 
     if (path && area) {
       const length = path.getTotalLength();
-      path.style.transition = 'none';
-      path.style.strokeDasharray = length + ' ' + length;
+      path.style.transition = "none";
+      path.style.strokeDasharray = length + " " + length;
       path.style.strokeDashoffset = String(length);
 
-      area.style.transition = 'none';
-      area.style.opacity = '0';
+      area.style.transition = "none";
+      area.style.opacity = "0";
 
       path.getBoundingClientRect();
 
-      path.style.transition = 'stroke-dashoffset 0.8s ease-in-out';
-      path.style.strokeDashoffset = '0';
+      path.style.transition = "stroke-dashoffset 0.8s ease-in-out";
+      path.style.strokeDashoffset = "0";
 
-      area.style.transition = 'opacity 0.8s ease-in-out 0.2s';
-      area.style.opacity = '1';
+      area.style.transition = "opacity 0.8s ease-in-out 0.2s";
+      area.style.opacity = "1";
     }
   }, [linePath]);
 
@@ -129,11 +139,7 @@ const MiniSparkline = ({ data, color, gradientId }: MiniSparklineProps) => {
           <stop offset="100%" stopColor={color} stopOpacity={0} />
         </linearGradient>
       </defs>
-      <path
-        ref={areaPathRef}
-        d={areaPath}
-        fill={`url(#${gradientId})`}
-      />
+      <path ref={areaPathRef} d={areaPath} fill={`url(#${gradientId})`} />
       <path
         ref={linePathRef}
         d={linePath}
@@ -173,7 +179,7 @@ export const TransactionAnalytics = ({
   const stats: StatItem[] = [
     {
       label: "Total Volume",
-      value: `${totalVolume.toFixed(2)} ALGO`,
+      value: `${totalVolume.toFixed(2)} AVAX`,
       subValue: `≈ $${(totalVolume * 0.13).toFixed(2)} USD`,
       icon: TrendingUp,
       delay: "0ms",
@@ -203,7 +209,7 @@ export const TransactionAnalytics = ({
     },
     {
       label: "Avg Transaction",
-      value: `${avgTransaction.toFixed(2)} ALGO`,
+      value: `${avgTransaction.toFixed(2)} AVAX`,
       subValue: "Per transaction",
       icon: Calculator,
       delay: "150ms",
@@ -218,7 +224,9 @@ export const TransactionAnalytics = ({
       <CardContent className="p-6">
         <div className="flex items-center gap-2 mb-6">
           <TrendingUp className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold text-foreground">Transaction Analytics</h2>
+          <h2 className="text-lg font-semibold text-foreground">
+            Transaction Analytics
+          </h2>
         </div>
 
         {/* Stats Grid */}
@@ -234,10 +242,16 @@ export const TransactionAnalytics = ({
                 <div className="flex flex-col min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <stat.icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-xs text-muted-foreground truncate">{stat.label}</span>
+                    <span className="text-xs text-muted-foreground truncate">
+                      {stat.label}
+                    </span>
                   </div>
-                  <p className="text-xl font-bold text-foreground truncate">{stat.value}</p>
-                  <p className="text-xs text-muted-foreground mt-1 truncate">{stat.subValue}</p>
+                  <p className="text-xl font-bold text-foreground truncate">
+                    {stat.value}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 truncate">
+                    {stat.subValue}
+                  </p>
                 </div>
 
                 {/* Right side chart */}
@@ -265,8 +279,16 @@ export const TransactionAnalytics = ({
             >
               <defs>
                 <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-volume)" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="var(--color-volume)" stopOpacity={0.05} />
+                  <stop
+                    offset="0%"
+                    stopColor="var(--color-volume)"
+                    stopOpacity={0.4}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-volume)"
+                    stopOpacity={0.05}
+                  />
                 </linearGradient>
               </defs>
               <XAxis
@@ -282,7 +304,7 @@ export const TransactionAnalytics = ({
                 width={35}
               />
               <ChartTooltip
-                cursor={{ strokeDasharray: '3 3' }}
+                cursor={{ strokeDasharray: "3 3" }}
                 content={<ChartTooltipContent indicator="line" />}
               />
               <Area

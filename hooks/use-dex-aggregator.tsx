@@ -1,45 +1,56 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   useAccount,
   useWriteContract,
   useWaitForTransactionReceipt,
   usePublicClient,
   useReadContract,
-} from 'wagmi';
-import { parseUnits, formatUnits, Address } from 'viem';
-import { MAINNET_TOKENS, DEX_ROUTERS, WAVAX_ADDRESS, TOKEN_ADDRESSES, TRADER_JOE_V2 } from '@/contracts/config';
-import { ERC20ABI } from '@/contracts/abis';
-import { avalanche } from '@/lib/chains/avalanche';
+} from "wagmi";
+import { parseUnits, formatUnits, Address } from "viem";
+import {
+  MAINNET_TOKENS,
+  DEX_ROUTERS,
+  WAVAX_ADDRESS,
+  TOKEN_ADDRESSES,
+  TRADER_JOE_V2,
+} from "@/contracts/config";
+import { ERC20ABI } from "@/contracts/abis";
+import { avalanche } from "@/lib/chains/avalanche";
+import { useTransactionStore } from "@/store/transaction-store";
 
 // USDC.e (bridged) — used as intermediate hop when direct path has no liquidity
-const USDCE_ADDRESS = TOKEN_ADDRESSES['USDC.e'].address;
+const USDCE_ADDRESS = TOKEN_ADDRESSES["USDC.e"].address;
 
 // UniswapV2-compatible router ABI (TraderJoe V1, Pangolin)
 const V1_ROUTER_ABI = [
   {
     inputs: [
-      { internalType: 'uint256', name: 'amountIn', type: 'uint256' },
-      { internalType: 'address[]', name: 'path', type: 'address[]' },
+      { internalType: "uint256", name: "amountIn", type: "uint256" },
+      { internalType: "address[]", name: "path", type: "address[]" },
     ],
-    name: 'getAmountsOut',
-    outputs: [{ internalType: 'uint256[]', name: 'amounts', type: 'uint256[]' }],
-    stateMutability: 'view',
-    type: 'function',
+    name: "getAmountsOut",
+    outputs: [
+      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
+    ],
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
-      { internalType: 'uint256', name: 'amountIn', type: 'uint256' },
-      { internalType: 'uint256', name: 'amountOutMin', type: 'uint256' },
-      { internalType: 'address[]', name: 'path', type: 'address[]' },
-      { internalType: 'address', name: 'to', type: 'address' },
-      { internalType: 'uint256', name: 'deadline', type: 'uint256' },
+      { internalType: "uint256", name: "amountIn", type: "uint256" },
+      { internalType: "uint256", name: "amountOutMin", type: "uint256" },
+      { internalType: "address[]", name: "path", type: "address[]" },
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256", name: "deadline", type: "uint256" },
     ],
-    name: 'swapExactTokensForTokens',
-    outputs: [{ internalType: 'uint256[]', name: 'amounts', type: 'uint256[]' }],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    name: "swapExactTokensForTokens",
+    outputs: [
+      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
   },
 ] as const;
 
@@ -47,27 +58,27 @@ const V1_ROUTER_ABI = [
 const TJ_V2_QUOTER_ABI = [
   {
     inputs: [
-      { internalType: 'address[]', name: 'route', type: 'address[]' },
-      { internalType: 'uint128', name: 'amountIn', type: 'uint128' },
+      { internalType: "address[]", name: "route", type: "address[]" },
+      { internalType: "uint128", name: "amountIn", type: "uint128" },
     ],
-    name: 'findBestPathFromAmountIn',
+    name: "findBestPathFromAmountIn",
     outputs: [
       {
-        name: 'quote',
-        type: 'tuple',
+        name: "quote",
+        type: "tuple",
         components: [
-          { name: 'route', type: 'address[]' },
-          { name: 'pairs', type: 'address[]' },
-          { name: 'binSteps', type: 'uint256[]' },
-          { name: 'versions', type: 'uint8[]' },
-          { name: 'amounts', type: 'uint128[]' },
-          { name: 'virtualAmountsWithoutSlippage', type: 'uint128[]' },
-          { name: 'fees', type: 'uint256[]' },
+          { name: "route", type: "address[]" },
+          { name: "pairs", type: "address[]" },
+          { name: "binSteps", type: "uint256[]" },
+          { name: "versions", type: "uint8[]" },
+          { name: "amounts", type: "uint128[]" },
+          { name: "virtualAmountsWithoutSlippage", type: "uint128[]" },
+          { name: "fees", type: "uint256[]" },
         ],
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
 ] as const;
 
@@ -75,28 +86,28 @@ const TJ_V2_QUOTER_ABI = [
 const TJ_V2_ROUTER_ABI = [
   {
     inputs: [
-      { internalType: 'uint256', name: 'amountIn', type: 'uint256' },
-      { internalType: 'uint256', name: 'amountOutMinShares', type: 'uint256' },
+      { internalType: "uint256", name: "amountIn", type: "uint256" },
+      { internalType: "uint256", name: "amountOutMinShares", type: "uint256" },
       {
-        name: 'path',
-        type: 'tuple',
+        name: "path",
+        type: "tuple",
         components: [
-          { name: 'pairBinSteps', type: 'uint256[]' },
-          { name: 'versions', type: 'uint8[]' },
-          { name: 'tokenPath', type: 'address[]' },
+          { name: "pairBinSteps", type: "uint256[]" },
+          { name: "versions", type: "uint8[]" },
+          { name: "tokenPath", type: "address[]" },
         ],
       },
-      { internalType: 'address', name: 'to', type: 'address' },
-      { internalType: 'uint256', name: 'deadline', type: 'uint256' },
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256", name: "deadline", type: "uint256" },
     ],
-    name: 'swapExactTokensForTokens',
-    outputs: [{ internalType: 'uint256', name: 'amountOut', type: 'uint256' }],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    name: "swapExactTokensForTokens",
+    outputs: [{ internalType: "uint256", name: "amountOut", type: "uint256" }],
+    stateMutability: "nonpayable",
+    type: "function",
   },
 ] as const;
 
-export type DexSource = 'traderjoe' | 'traderjoe_v2' | 'pangolin';
+export type DexSource = "traderjoe" | "traderjoe_v2" | "pangolin";
 
 export interface DexQuote {
   dex: DexSource;
@@ -111,8 +122,12 @@ export interface DexQuote {
 }
 
 const V1_DEX_CONFIG: { dex: DexSource; dexName: string; router: Address }[] = [
-  { dex: 'traderjoe', dexName: 'Trader Joe V1', router: DEX_ROUTERS.TRADER_JOE },
-  { dex: 'pangolin',  dexName: 'Pangolin',      router: DEX_ROUTERS.PANGOLIN },
+  {
+    dex: "traderjoe",
+    dexName: "Trader Joe V1",
+    router: DEX_ROUTERS.TRADER_JOE,
+  },
+  { dex: "pangolin", dexName: "Pangolin", router: DEX_ROUTERS.PANGOLIN },
 ];
 
 export function useDexAggregator(
@@ -125,19 +140,20 @@ export function useDexAggregator(
   const publicClient = usePublicClient({ chainId: avalanche.id });
 
   const [quotes, setQuotes] = useState<DexQuote[]>([]);
-  const [selectedDex, setSelectedDex] = useState<DexSource>('traderjoe_v2');
+  const [selectedDex, setSelectedDex] = useState<DexSource>("traderjoe_v2");
   const [isLoadingQuotes, setIsLoadingQuotes] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const tokenIn  = MAINNET_TOKENS[tokenInSymbol];
+  const tokenIn = MAINNET_TOKENS[tokenInSymbol];
   const tokenOut = MAINNET_TOKENS[tokenOutSymbol];
 
-  const selectedDexConfig = V1_DEX_CONFIG.find(d => d.dex === selectedDex);
-  const selectedQuote = quotes.find(q => q.dex === selectedDex) ?? quotes[0] ?? null;
+  const selectedDexConfig = V1_DEX_CONFIG.find((d) => d.dex === selectedDex);
+  const selectedQuote =
+    quotes.find((q) => q.dex === selectedDex) ?? quotes[0] ?? null;
 
   const approvalSpender: Address =
-    selectedDex === 'traderjoe_v2'
+    selectedDex === "traderjoe_v2"
       ? TRADER_JOE_V2.ROUTER
       : (selectedDexConfig?.router ?? DEX_ROUTERS.TRADER_JOE);
 
@@ -145,7 +161,7 @@ export function useDexAggregator(
   const { data: balance, refetch: refetchBalance } = useReadContract({
     address: tokenIn?.address as Address,
     abi: ERC20ABI,
-    functionName: 'balanceOf',
+    functionName: "balanceOf",
     args: [address as Address],
     chainId: avalanche.id,
     query: { enabled: !!address && !!tokenIn },
@@ -155,7 +171,7 @@ export function useDexAggregator(
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: tokenIn?.address as Address,
     abi: ERC20ABI,
-    functionName: 'allowance',
+    functionName: "allowance",
     args: [address as Address, approvalSpender],
     chainId: avalanche.id,
     query: { enabled: !!address && !!tokenIn },
@@ -183,17 +199,30 @@ export function useDexAggregator(
 
   // After approval confirmed → execute swap
   useEffect(() => {
-    if (isApproveSuccess && isApproving && selectedQuote && address && amountInRaw && tokenIn) {
+    if (
+      isApproveSuccess &&
+      isApproving &&
+      selectedQuote &&
+      address &&
+      amountInRaw &&
+      tokenIn
+    ) {
       setIsApproving(false);
       refetchAllowance().then(() => executeSwapTx());
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isApproveSuccess, isApproving]);
 
   // Fetch quotes (debounced)
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
-      if (!publicClient || !amountInRaw || parseFloat(amountInRaw) <= 0 || !tokenIn || !tokenOut) {
+      if (
+        !publicClient ||
+        !amountInRaw ||
+        parseFloat(amountInRaw) <= 0 ||
+        !tokenIn ||
+        !tokenOut
+      ) {
         setQuotes([]);
         return;
       }
@@ -204,19 +233,19 @@ export function useDexAggregator(
 
       // --- TraderJoe V2 quote ---
       try {
-        const quote = await publicClient.readContract({
+        const quote = (await publicClient.readContract({
           address: TRADER_JOE_V2.QUOTER,
           abi: TJ_V2_QUOTER_ABI,
-          functionName: 'findBestPathFromAmountIn',
+          functionName: "findBestPathFromAmountIn",
           args: [[tokenIn.address, tokenOut.address], BigInt(amountIn)],
-        }) as any;
+        })) as any;
 
         const amounts: bigint[] = quote.amounts;
         const amountOut = amounts[amounts.length - 1];
         if (amountOut > 0n) {
           newQuotes.push({
-            dex: 'traderjoe_v2',
-            dexName: 'Trader Joe',
+            dex: "traderjoe_v2",
+            dexName: "Trader Joe",
             amountOut,
             amountOutFormatted: formatUnits(amountOut, tokenOut.decimals),
             path: quote.route as Address[],
@@ -234,14 +263,14 @@ export function useDexAggregator(
         const paths: Address[][] = [[tokenIn.address, tokenOut.address]];
 
         if (
-          tokenIn.address.toLowerCase()  !== WAVAX_ADDRESS.toLowerCase() &&
+          tokenIn.address.toLowerCase() !== WAVAX_ADDRESS.toLowerCase() &&
           tokenOut.address.toLowerCase() !== WAVAX_ADDRESS.toLowerCase()
         ) {
           paths.push([tokenIn.address, WAVAX_ADDRESS, tokenOut.address]);
         }
 
         if (
-          tokenIn.address.toLowerCase()  !== USDCE_ADDRESS.toLowerCase() &&
+          tokenIn.address.toLowerCase() !== USDCE_ADDRESS.toLowerCase() &&
           tokenOut.address.toLowerCase() !== USDCE_ADDRESS.toLowerCase()
         ) {
           paths.push([tokenIn.address, USDCE_ADDRESS, tokenOut.address]);
@@ -252,15 +281,20 @@ export function useDexAggregator(
 
         for (const path of paths) {
           try {
-            const amounts = await publicClient.readContract({
+            const amounts = (await publicClient.readContract({
               address: router,
               abi: V1_ROUTER_ABI,
-              functionName: 'getAmountsOut',
+              functionName: "getAmountsOut",
               args: [amountIn, path],
-            }) as bigint[];
+            })) as bigint[];
             const out = amounts[amounts.length - 1];
-            if (out > bestAmountOut) { bestAmountOut = out; bestPath = path; }
-          } catch { /* no pool */ }
+            if (out > bestAmountOut) {
+              bestAmountOut = out;
+              bestPath = path;
+            }
+          } catch {
+            /* no pool */
+          }
         }
 
         if (bestAmountOut > 0n) {
@@ -297,14 +331,19 @@ export function useDexAggregator(
 
     const amountIn = parseUnits(amountInRaw, tokenIn.decimals);
     const slippageBps = BigInt(Math.floor(slippage * 100));
-    const amountOutMin = (selectedQuote.amountOut * (10000n - slippageBps)) / 10000n;
+    const amountOutMin =
+      (selectedQuote.amountOut * (10000n - slippageBps)) / 10000n;
     const deadline = BigInt(Math.floor(Date.now() / 1000) + 20 * 60);
 
-    if (selectedDex === 'traderjoe_v2' && selectedQuote.v2BinSteps && selectedQuote.v2Versions) {
+    if (
+      selectedDex === "traderjoe_v2" &&
+      selectedQuote.v2BinSteps &&
+      selectedQuote.v2Versions
+    ) {
       writeSwap({
         address: TRADER_JOE_V2.ROUTER,
         abi: TJ_V2_ROUTER_ABI,
-        functionName: 'swapExactTokensForTokens',
+        functionName: "swapExactTokensForTokens",
         args: [
           amountIn,
           amountOutMin,
@@ -319,11 +358,11 @@ export function useDexAggregator(
         chainId: avalanche.id,
       });
     } else {
-      const router = V1_DEX_CONFIG.find(d => d.dex === selectedDex)!.router;
+      const router = V1_DEX_CONFIG.find((d) => d.dex === selectedDex)!.router;
       writeSwap({
         address: router,
         abi: V1_ROUTER_ABI,
-        functionName: 'swapExactTokensForTokens',
+        functionName: "swapExactTokensForTokens",
         args: [amountIn, amountOutMin, selectedQuote.path, address, deadline],
         chainId: avalanche.id,
       });
@@ -339,7 +378,7 @@ export function useDexAggregator(
       writeApprove({
         address: tokenIn.address as Address,
         abi: ERC20ABI,
-        functionName: 'approve',
+        functionName: "approve",
         args: [approvalSpender, parseUnits(amountInRaw, tokenIn.decimals)],
         chainId: avalanche.id,
       });
@@ -349,15 +388,42 @@ export function useDexAggregator(
   };
 
   useEffect(() => {
-    if (approveError) { setError(approveError.message || 'Approval failed'); setIsApproving(false); }
+    if (approveError) {
+      setError(approveError.message || "Approval failed");
+      setIsApproving(false);
+    }
   }, [approveError]);
 
   useEffect(() => {
-    if (swapError) setError(swapError.message || 'Swap failed');
+    if (swapError) setError(swapError.message || "Swap failed");
   }, [swapError]);
 
+  // Record transaction in store
+  const addTransaction = useTransactionStore((s) => s.addTransaction);
   useEffect(() => {
-    if (isSwapSuccess) { setError(null); refetchBalance(); refetchAllowance(); }
+    if (isSwapSuccess && swapHash && address && tokenIn && tokenOut) {
+      const dexName = selectedQuote?.dexName ?? selectedDex;
+      addTransaction({
+        type: "SWAP",
+        fromToken: tokenInSymbol,
+        toToken: tokenOutSymbol,
+        fromAmount: parseFloat(amountInRaw) || 0,
+        toAmount: parseFloat(selectedQuote?.amountOutFormatted ?? "0") || 0,
+        txHash: swapHash,
+        walletAddress: address,
+        timestamp: Date.now(),
+        source: "dex-aggregator",
+        dex: dexName,
+      });
+    }
+  }, [isSwapSuccess, swapHash]);
+
+  useEffect(() => {
+    if (isSwapSuccess) {
+      setError(null);
+      refetchBalance();
+      refetchAllowance();
+    }
   }, [isSwapSuccess]);
 
   return {
@@ -366,14 +432,20 @@ export function useDexAggregator(
     setSelectedDex,
     selectedQuote,
     isLoadingQuotes,
-    estimatedOutput: selectedQuote?.amountOutFormatted ?? '0',
-    balance: balance !== undefined && tokenIn
-      ? formatUnits(balance as bigint, tokenIn.decimals)
-      : '0',
+    estimatedOutput: selectedQuote?.amountOutFormatted ?? "0",
+    balance:
+      balance !== undefined && tokenIn
+        ? formatUnits(balance as bigint, tokenIn.decimals)
+        : "0",
     needsApproval: needsApproval(),
     executeSwap,
     isApproving,
-    isLoading: isApprovePending || isApproveConfirming || isSwapPending || isSwapConfirming || isApproving,
+    isLoading:
+      isApprovePending ||
+      isApproveConfirming ||
+      isSwapPending ||
+      isSwapConfirming ||
+      isApproving,
     isSuccess: isSwapSuccess,
     hash: swapHash,
     error,

@@ -35,6 +35,7 @@ export const TransactionFilters = ({
     { value: "ADD_LIQUIDITY", label: "Add Liquidity" },
     { value: "REMOVE_LIQUIDITY", label: "Remove Liquidity" },
     { value: "POOL_CREATION", label: "Pool Creation" },
+    { value: "MINT", label: "Token Mint" },
   ];
 
   const sortOptions: { value: SortOrder; label: string }[] = [
@@ -45,7 +46,10 @@ export const TransactionFilters = ({
   ];
 
   return (
-    <div className="mb-6 space-y-4 animate-fade-in" style={{ animationDelay: "100ms" }}>
+    <div
+      className="mb-6 space-y-4 animate-fade-in"
+      style={{ animationDelay: "100ms" }}
+    >
       {/* Search and Filters Row */}
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Search Input */}
@@ -62,7 +66,9 @@ export const TransactionFilters = ({
         {/* Type Filter */}
         <Select
           value={typeFilter}
-          onValueChange={(value) => setTypeFilter(value as TransactionType | "ALL")}
+          onValueChange={(value) =>
+            setTypeFilter(value as TransactionType | "ALL")
+          }
         >
           <SelectTrigger className="w-full sm:w-[180px] bg-muted/30 border-border/50">
             <SelectValue placeholder="Filter by type" />
@@ -96,7 +102,10 @@ export const TransactionFilters = ({
 
       {/* Results Count */}
       <div className="flex items-center gap-2">
-        <Badge variant="secondary" className="bg-muted/50 text-muted-foreground">
+        <Badge
+          variant="secondary"
+          className="bg-muted/50 text-muted-foreground"
+        >
           {resultCount} transaction{resultCount !== 1 ? "s" : ""}
         </Badge>
         {typeFilter !== "ALL" && (

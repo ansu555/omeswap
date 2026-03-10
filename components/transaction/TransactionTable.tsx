@@ -1,5 +1,14 @@
 import { formatDistanceToNow } from "date-fns";
-import { ArrowRight, Copy, ExternalLink, ArrowUpRight, Plus, Minus, Layers } from "lucide-react";
+import {
+  ArrowRight,
+  Copy,
+  ExternalLink,
+  ArrowUpRight,
+  Plus,
+  Minus,
+  Layers,
+  Coins,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -17,7 +26,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import type { Transaction, TransactionType } from "@/app/(app)/transactions/page";
+import type {
+  Transaction,
+  TransactionType,
+} from "@/app/(app)/transactions/page";
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -49,6 +61,18 @@ const getTypeConfig = (type: TransactionType) => {
         icon: Layers,
         className: "bg-purple-500/10 text-purple-400 border-purple-500/20",
       };
+    case "MINT":
+      return {
+        label: "Token Mint",
+        icon: Coins,
+        className: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+      };
+    default:
+      return {
+        label: String(type),
+        icon: Layers,
+        className: "bg-muted/10 text-muted-foreground border-muted/20",
+      };
   }
 };
 
@@ -67,7 +91,9 @@ export const TransactionTable = ({ transactions }: TransactionTableProps) => {
               <Layers className="h-8 w-8 text-muted-foreground" />
             </div>
             <div>
-              <h3 className="text-lg font-medium text-foreground">No transactions found</h3>
+              <h3 className="text-lg font-medium text-foreground">
+                No transactions found
+              </h3>
               <p className="text-sm text-muted-foreground mt-1">
                 Try adjusting your filters or make your first transaction
               </p>
@@ -79,17 +105,28 @@ export const TransactionTable = ({ transactions }: TransactionTableProps) => {
   }
 
   return (
-    <Card className="glass-card bg-card/50 overflow-hidden animate-fade-in" style={{ animationDelay: "150ms" }}>
+    <Card
+      className="glass-card bg-card/50 overflow-hidden animate-fade-in"
+      style={{ animationDelay: "150ms" }}
+    >
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="border-border/50 hover:bg-transparent">
               <TableHead className="text-primary font-semibold">Time</TableHead>
               <TableHead className="text-primary font-semibold">Type</TableHead>
-              <TableHead className="text-primary font-semibold">Token Amount</TableHead>
-              <TableHead className="text-primary font-semibold">Pool Address</TableHead>
-              <TableHead className="text-primary font-semibold">Wallet</TableHead>
-              <TableHead className="text-primary font-semibold text-right">Explorer</TableHead>
+              <TableHead className="text-primary font-semibold">
+                Token Amount
+              </TableHead>
+              <TableHead className="text-primary font-semibold">
+                Tx Hash
+              </TableHead>
+              <TableHead className="text-primary font-semibold">
+                Wallet
+              </TableHead>
+              <TableHead className="text-primary font-semibold text-right">
+                Explorer
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -123,7 +160,9 @@ export const TransactionTable = ({ transactions }: TransactionTableProps) => {
                         {typeConfig.label}
                       </Badge>
                       <span className="text-xs text-foreground font-medium">
-                        {tx.fromToken} <ArrowRight className="inline h-3 w-3 text-muted-foreground mx-1" /> {tx.toToken}
+                        {tx.fromToken}{" "}
+                        <ArrowRight className="inline h-3 w-3 text-muted-foreground mx-1" />{" "}
+                        {tx.toToken}
                       </span>
                     </div>
                   </TableCell>
@@ -131,9 +170,13 @@ export const TransactionTable = ({ transactions }: TransactionTableProps) => {
                   {/* Token Amount */}
                   <TableCell>
                     <div className="flex items-center gap-2 text-foreground">
-                      <span className="font-mono">{tx.fromAmount.toFixed(6)}</span>
+                      <span className="font-mono">
+                        {tx.fromAmount.toFixed(6)}
+                      </span>
                       <ArrowRight className="h-4 w-4 text-primary" />
-                      <span className="font-mono">{tx.toAmount.toFixed(6)}</span>
+                      <span className="font-mono">
+                        {tx.toAmount.toFixed(6)}
+                      </span>
                     </div>
                   </TableCell>
 
@@ -141,7 +184,8 @@ export const TransactionTable = ({ transactions }: TransactionTableProps) => {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <code className="text-sm text-muted-foreground font-mono">
-                        {tx.poolAddress}
+                        {tx.poolAddress.slice(0, 10)}...
+                        {tx.poolAddress.slice(-8)}
                       </code>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -149,12 +193,14 @@ export const TransactionTable = ({ transactions }: TransactionTableProps) => {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => copyToClipboard(tx.poolAddress, "Pool address")}
+                            onClick={() =>
+                              copyToClipboard(tx.poolAddress, "Tx hash")
+                            }
                           >
                             <Copy className="h-3.5 w-3.5" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Copy pool address</TooltipContent>
+                        <TooltipContent>Copy tx hash</TooltipContent>
                       </Tooltip>
                     </div>
                   </TableCell>
@@ -171,7 +217,12 @@ export const TransactionTable = ({ transactions }: TransactionTableProps) => {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => copyToClipboard(tx.walletAddress, "Wallet address")}
+                            onClick={() =>
+                              copyToClipboard(
+                                tx.walletAddress,
+                                "Wallet address",
+                              )
+                            }
                           >
                             <Copy className="h-3.5 w-3.5" />
                           </Button>
